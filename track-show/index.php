@@ -1,16 +1,16 @@
 <?
-	define('_TRACK_SHOW_PATH', dirname (__FILE__)."/../../common/v1.6/track-show");
+	define('_TRACK_SHOW_PATH', dirname (__FILE__)."/../track/common/v1.6/track-show");
 
 	// Replace only last occurrence of track-show, to allow track-show in path
 	define('_TRACK_PATH', strrev(preg_replace(strrev('/track-show/'), strrev('track'), strrev(dirname (__FILE__)), 1)));	
 
 	define('_CACHE_PATH', _TRACK_PATH.'/cache');
 
-	define('_TRACK_COMMON_PATH', dirname (__FILE__)."/../../common/v1.6/track");
+	define('_TRACK_COMMON_PATH', dirname (__FILE__)."/../track/common/v1.6/track");
 	define('_TRACK_LIB_PATH', _TRACK_COMMON_PATH."/lib");
 
-	define('_HTML_LIB_PATH', "../../common/v1.6/track-show/lib");
-	define('_HTML_TEMPLATE_PATH', "../../common/v1.6/track-show/templates");
+	define('_HTML_LIB_PATH', "../track/common/v1.6/track-show/lib");
+	define('_HTML_TEMPLATE_PATH', "../track/common/v1.6/track-show/templates");
 
 	// Get full HTML url
     $s = (empty($_SERVER["HTTPS"]) && empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) ? '' : ($_SERVER["HTTPS"] == "on" || $_SERVER['HTTP_X_FORWARDED_PROTO']=='https' ) ? "s" : "";
