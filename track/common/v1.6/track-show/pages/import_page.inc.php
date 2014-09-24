@@ -1,4 +1,7 @@
-<? if (!$include_flag){exit();} ?>
+<? if (!$include_flag){exit();} 
+	$mode = (isset($_POST['leadsType']) and $_POST['leadsType'] == 'lead') ? 'lead' : 'sale';
+	
+?>
 <script type="text/javascript">
 	function check_import()
 	{
@@ -42,11 +45,11 @@
 <form role="form" method='post' onSubmit='return check_import();'>
 	<div class="form-group">
 		<div class="btn-group" data-toggle="buttons">
-			<label class="btn btn-default active" onclick="$('#leadsType').val('sale'); $('#sale_amount').show();">
+			<label class="btn btn-default <?if($mode == 'sale') { ?>active<? } ?>" onclick="$('#leadsType').val('sale'); $('#sale_amount').show(); $('#amount_value').attr('required', true);">
 				<input type="radio" name="options" id="option1"> Продажа
 			</label>
 
-			<label class="btn btn-default" onclick="$('#leadsType').val('lead'); $('#sale_amount').hide();">
+			<label class="btn btn-default <?if($mode == 'lead') { ?>active<? } ?>" onclick="$('#leadsType').val('lead'); $('#sale_amount').hide(); $('#amount_value').removeAttr('required');">
 				<input type="radio" name="options" id="option2"> Лид
 			</label>
 		</div>
@@ -84,4 +87,10 @@
         <input type="hidden" name="csrfkey" value="<?php echo CSRF_KEY;?>">
   	<input type='hidden' id='currency_code' name='currency_code' value='rub'>
 	<input type='hidden' id='leadsType' name='leadsType' value='sale'>
+		
+	<? if($mode == 'lead') { ?>
+		<script>
+			$('#leadsType').val('lead'); $('#sale_amount').hide(); $('#amount_value').removeAttr('required');
+		</script>
+	<? } ?>
 </form>
