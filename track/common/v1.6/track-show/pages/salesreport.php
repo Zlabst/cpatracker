@@ -126,6 +126,16 @@ krsort($sales);
 <script src="<?=_HTML_LIB_PATH;?>/daterangepicker/daterangepicker.js"></script>
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script>
+	<?php		
+		if($_REQUEST['subtype']=='monthly') {
+			$from = empty($_POST['sStart']) ? date('m.Y') : date('m.Y', strtotime($_POST['sStart']));
+			$to = empty($_POST['sEnd']) ? date('m.Y') : date('m.Y', strtotime($_POST['sEnd']));
+		} else {
+    		$from = empty($_POST['sStart']) ? date('d.m.Y', time() - 3600*24*6) : date('d.m.Y', strtotime($_POST['sStart']));
+    		$to = empty($_POST['sEnd']) ? date('d.m.Y') : date('d.m.Y', strtotime($_POST['sEnd']));
+    	}
+    ?>
+	
     $('#per_day_range').daterangepicker(
             {
                 <?php if ($_REQUEST['subtype']=='monthly') :?>
@@ -133,6 +143,8 @@ krsort($sales);
                 <?php else : ?>    
                 format: 'DD.MM.YYYY',
                 <?php endif; ?>
+                startDate: '<?=_e($from)?>',
+                endDate: '<?=_e($to)?>',
                 locale: {
                     applyLabel: "Выбрать",
                     cancelLabel: "<i class='fa fa-times' style='color:gray'></i>",

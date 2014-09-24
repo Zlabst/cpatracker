@@ -642,7 +642,7 @@
                     }
                 } else {
                     //ignore times when comparing dates if time picker is not enabled
-                    if (this.startDate.format('YYYY-MM-DD') == this.ranges[range][0].format('YYYY-MM-DD') && this.endDate.format('YYYY-MM-DD') == this.ranges[range][1].format('YYYY-MM-DD')) {
+                    if (this.startDate.format(this.format) == this.ranges[range][0].format(this.format) && this.endDate.format(this.format) == this.ranges[range][1].format(this.format)) {
                         customRange = false;
                         this.container.find('.ranges li:eq(' + i + ')').addClass('active');
                     }

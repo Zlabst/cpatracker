@@ -158,9 +158,15 @@ switch ($_REQUEST['type']) {
 //        }});
     
     
+    <?php
+    	$from = empty($_POST['from']) ? date('d.m.Y', time() - 3600*24*6) : date('d.m.Y', strtotime($_POST['from']));
+    	$to = empty($_POST['to']) ? date('d.m.Y') :  date('d.m.Y', strtotime($_POST['to']));
+    ?>
+    
     $('#per_day_range').daterangepicker(
             {
-                
+                startDate: '<?=_e($from)?>',
+                endDate: '<?=_e($to)?>',
                 format: 'DD.MM.YYYY',
                 locale: {
                     applyLabel: "Выбрать",
