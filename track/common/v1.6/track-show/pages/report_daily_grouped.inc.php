@@ -99,6 +99,7 @@ $(document).ready(function() {
 			$report_name="Отчет по ссылке";
 			$report_main_column_name="Ссылка";
 			$empty_name="Без ссылки";
+			$source_name = $_REQUEST['limited_to'];
 		break;	
 	
 		case 'source_name': 
