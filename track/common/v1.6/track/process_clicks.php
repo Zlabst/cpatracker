@@ -212,14 +212,15 @@
 		$click_subaccount=$arr_click_info[8];
 		$click_rule_id=$arr_click_info[9];
 		$click_out_id=$arr_click_info[10];
-		$click_param1=$arr_click_info[11];
-		$click_param2=$arr_click_info[12];
-		$click_param3=$arr_click_info[13];
-		$click_param4=$arr_click_info[14];
-		$click_param5=$arr_click_info[15];
+		$click_is_unique=$arr_click_info[11];
+		$click_param1=$arr_click_info[12];
+		$click_param2=$arr_click_info[13];
+		$click_param3=$arr_click_info[14];
+		$click_param4=$arr_click_info[15];
+		$click_param5=$arr_click_info[16];
 		
 		// Parse get string
-		parse_str ($arr_click_info[16], $click_get_params);
+		parse_str ($arr_click_info[17], $click_get_params);
 		$i=1;
 		$sql_click_params=array();
 
@@ -296,6 +297,7 @@
 				out_id='"._str($click_out_id)."', 
 				subid='"._str($click_subid)."', 
 				is_connected='"._str($is_connected)."', 
+				is_unique='"._str($click_is_unique)."', 
 				parent_id='"._str($parent_id)."', 
 				subaccount='"._str($click_subaccount)."', 
 				source_name='"._str($click_link_source)."', 

@@ -17,7 +17,7 @@
 
 	// Set allowed for inclusion files list, security measure
 	$page_sidebar_allowed=array('sidebar-left-links.inc.php', 'sidebar-left-reports.inc.php');
-	$page_content_allowed=array('reports.php', 'sales.php', 'stats-flow.php','links_page.inc.php','rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'import_page_postback.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'register.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php');
+	$page_content_allowed=array('reports.php', 'sales.php', 'stats-flow.php','links_page.inc.php','rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'import_page_postback.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'register.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php');
 
 	// Include main functions
 	include _TRACK_SHOW_PATH."/functions_general.php";
@@ -841,6 +841,10 @@
 
 						case 'salesreport':
 							$page_content = 'salesreport.php';
+						break;
+						
+						case 'targetreport':
+							$page_content = 'targetreport.php';
 						break;
 
 						default:

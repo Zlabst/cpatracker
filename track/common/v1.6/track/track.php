@@ -1,4 +1,5 @@
 <?php
+	
 	ob_start();
 
 	$settings_file=_CACHE_PATH.'/settings.php';
@@ -17,6 +18,32 @@
 	{
 		function remove_tab($str){
 			return str_replace ("\t", ' ', $str);
+		}
+	}
+	
+	if (!function_exists('add_parent_subid')) {
+		function add_parent_subid($domain, $subid) {
+			$unique = 0;
+			if(array_key_exists('cpa_parents', $_COOKIE)) {
+				$parents = json_decode($_COOKIE['cpa_parents'], true);
+			} else {
+				$parents = array();
+			}
+			$parents[$domain] = $subid;
+			
+			// Parent click
+			$cookie_time = $_SERVER['REQUEST_TIME'] + 60;
+			
+			// Unique user
+			$cookie_name = 'cpa_was_here_' . str_replace('.', '_', $domain);
+			if(empty($_COOKIE[$cookie_name])) {
+				$cookie_time = $_SERVER['REQUEST_TIME'] + (60 * 60 * 24 * 31);
+				setcookie($cookie_name, 1, $cookie_time, "/", $_SERVER['HTTP_HOST']);
+				$unique = 1;
+			}
+			
+			setcookie("cpa_parents", json_encode($parents), $cookie_time, "/", $_SERVER['HTTP_HOST']);
+			return $unique;
 		}
 	}
 
@@ -370,9 +397,6 @@
 
 	$link_params=implode ("\t", $arr_link_params);
 
-	// Possibly last value, don't add \t to the end
-	$str.=$link_params;
-
 	// Additional GET params
 	$request_params=$_GET;
 	$get_request=array();
@@ -390,6 +414,16 @@
     // Cleaning not used []-params
     $redirect_link = preg_replace('/(\[[a-z\_0-9]+\])/i', '', $redirect_link);
 	
+	// Write cookie with parent SubID
+	$url = parse_url($redirect_link);
+	$is_unique = add_parent_subid($url['host'], $subid);
+	
+	// Add unique user
+	$str.=$is_unique."\t";
+	
+	// Possibly last value, don't add \t to the end
+	$str.=$link_params;
+	
 	// Last value, don't add \t
 	$request_string=implode ('&', $get_request);
 	if (strlen($request_string)>0)
@@ -401,6 +435,8 @@
 
 	// Save click information in file	
 	file_put_contents(_CACHE_PATH.'/clicks/'.'.clicks_'.date('Y-m-d-H-i'), $str, FILE_APPEND | LOCK_EX);
+	
+	
 	
 	// Redirect
 	header("Location: ".$redirect_link);

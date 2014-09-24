@@ -6,7 +6,7 @@
 	
 	function _e($str)
 	{
-	    return htmlspecialchars($str, ENT_QUOTES, 'UTF-8');
+	    return htmlspecialchars($str, ENT_QUOTES, 'UTF-8', false);
 	}
 
 	function disable_magic_quotes()
@@ -1275,18 +1275,16 @@ function show_country_select($selected='')
 	    }   
 
 	    $str=array();
-
-	    foreach ($arr_data as $cur)
-	    {
-	        $cur_str='{'."text:'"._e($cur['optgroup'])."', children:[";
-	        $arr_children=array();
-	        foreach ($cur['data'] as $cur_item)
-	        {
-	            $arr_children[]="{id:'"._e($cur_item[0])."', text:'"._e($cur_item[1])."'}";
+		
+	    foreach ($arr_data as $cur) {
+	    	$tmp = array();
+	    	foreach ($cur['data'] as $cur_item) {
+	    		$tmp[] = array('id' => $cur_item[0], 'text' => $cur_item[1]);
 	        }
-	        $cur_str=$cur_str.implode (',', $arr_children);
-	        $cur_str=$cur_str.']}';   
-	        $str[]=$cur_str;
+	        $str[] = json_encode(array(
+    			'text' => $cur['optgroup'] . ' ',
+    			'children' => $tmp
+    		));
 	    }
 
 	    return (array(_e($last_offer_id), implode (',', $str)));

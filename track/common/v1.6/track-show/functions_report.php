@@ -18,7 +18,7 @@
 			}
 		}
 		
-		$sql="select *, date_format(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '".mysql_real_escape_string($timezone_shift)."'), '%d.%m.%Y %H:%i') as dt, timediff(NOW(), tbl_clicks.date_add) as td from tbl_clicks 
+		$sql="select *, date_format(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '".mysql_real_escape_string($timezone_shift)."'), '%d.%m.%Y %H:%i') as dt, timediff(NOW(), CONVERT_TZ(tbl_clicks.date_add, '+00:00', '".mysql_real_escape_string($timezone_shift)."')) as td from tbl_clicks 
 		{$filter_str}
 		order by date_add desc limit 20";
 

@@ -152,7 +152,7 @@ krsort($sales);
                     'Вчера': [moment().subtract('days', 1), moment().subtract('days', 1)],
                     'Последние 7 дней': [moment().subtract('days', 6), moment()],
                     'Последние 30 дней': [moment().subtract('days', 29), moment()],
-                    'Ткущий месяц': [moment().startOf('month'), moment().endOf('month')],
+                    'Текущий месяц': [moment().startOf('month'), moment().endOf('month')],
                     'Прошлый месяц': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')]
                     <?php endif; ?>
                 }
