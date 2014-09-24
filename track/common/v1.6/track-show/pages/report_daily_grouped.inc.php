@@ -124,18 +124,18 @@ $(document).ready(function() {
         $fromF=date ('d.m.Y', strtotime($from));
         $toF=date ('d.m.Y', strtotime($to));
         $value_date_range = "$fromF - $toF";
-                                
-        echo '<form method="post"  name="datachangeform">
-        <div style="width: 229px;float: right;position: relative;top: -5px;">
-            <div class="input-group">                          
-                  <div class="input-group-addon"><i class="fa fa-calendar"></i></div>
-                  <input style="width: 192px;" type="text" name="date_range" value="'.$value_date_range.'" id="putdate_range" class="form-control">
-                  <input type="hidden" id="form_range_from" name="from" value="'.$from.'">
-                  <input  id="form_range_to"  type="hidden" name="to" value="'.$to.'">
-            </div>
-        </div>
-        <div><h5>'._e($report_name)." "._e($source_name).'</h5></div>
-        </form>';
+        
+        echo '<form method="post"  name="datachangeform" id="range_form">
+                <div id="per_day_range" class="pull-right" style="margin-top:0px; margin-bottom:10px;">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                    <span id="cur_day_range">'.date('d.m.Y', strtotime($from)).' - '. date('d.m.Y', strtotime($to)).'</span> <b class="caret"></b>
+                    <input type="hidden" name="from" id="sStart" value="">
+                    <input type="hidden" name="to" id="sEnd" value="">
+                </div>
+                
+                <div><h5>'._e($report_name)." "._e($source_name).'</h5></div>
+              </form>';
+        
         foreach ($arr_report_data as $source_name=>$data)
 	{
 		?>

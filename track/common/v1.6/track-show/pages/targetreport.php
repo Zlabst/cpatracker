@@ -20,6 +20,7 @@
     				FROM `tbl_clicks` t1
     				LEFT JOIN `tbl_clicks` t2 on t2.parent_id = t1.id
     				WHERE t1.`date_add_day` > '" . $from . "'
+    					AND t1.`is_connected` = 0
     				GROUP BY `t1`.`id`
     		) t1
     		WHERE 1
@@ -48,17 +49,14 @@
 			<thead>
 				<tr>
 					<th>Ссылка</th>
-					<th>Переходов</th>
-					<th>Затраты</th>
+					<th>Переходы на LP</th>
+					<th>Ушло на офферы</th>
 					<th>Продажи</th>
 					<th>Конверсия</th>
 					<th>Доход</th>
+					<th>Затраты</th>
 					<th>Прибыль</th>
 					<th>ROI</th>
-					<th>Исх.</th>
-					<th>Follow</th>
-					<th>Уникальные</th>
-					<th>Повт.</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -72,16 +70,13 @@
 						echo '<tr>
 							<td nowrap="">'.$r['name'].'</td>
 							<td>'.$r['cnt'].'</td>
-							<td>'.$r['price'].'</td>
+							<td>'.$r['out'].'</td>
 							<td>'.$r['sale'].'</td>
 							<td>'.$conversion.'%</td>
 							<td>'.$r['income'].'</td>
+							<td>'.$r['price'].'</td>
 							<td>'.$profit.'</td>
 							<td>'.$roi.'%</td>
-							<td>'.$r['out'].'</td>
-							<td>'.$follow.'%</td>
-							<td>'.$r['unique'].'</td>
-							<td>'.(($r['cnt'] - $r['unique'])/$r['cnt'] * 100).'%</td>
 						</tr>';
 					}
 				?>
