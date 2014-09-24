@@ -78,6 +78,9 @@ $(document).ready(function() {
 	$arr_months=getMonthsBetween($from, $to);
 
 	$arr_report_data=get_clicks_report_grouped($main_type, $group_by, $limited_to, $report_type, $from, $to);
+	
+	
+	$arr_months = strip_empty_dates($arr_months, $arr_report_data, true);
                                 
 echo "<div class='row'>";
 echo "<div class='col-md-12'>";

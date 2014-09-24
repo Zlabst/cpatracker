@@ -451,4 +451,17 @@
             return $return;
         }
         
+        function strip_empty_dates($arr_dates, $arr_report_data, $month = false) {
+			$dates = array();
+			foreach ($arr_report_data as $source_name => $data) {
+				foreach($data as $k => $v) {
+					if($month) $k = date ('m.Y', strtotime($k)); 
+					$dates[$k] = 1;
+				}
+			}
+			foreach($arr_dates as $k => $v) {
+				if(!isset($dates[$v])) unset($arr_dates[$k]);
+			}
+			return $arr_dates;
+		}
 ?>

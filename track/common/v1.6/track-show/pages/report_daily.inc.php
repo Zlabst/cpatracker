@@ -76,6 +76,9 @@ $(document).ready(function() {
 	$arr_dates=getDatesBetween($from, $to);
 
 	$arr_report_data=get_clicks_report_grouped($main_type, $group_by, $limited_to, $report_type, $from, $to);
+	
+	$arr_dates = strip_empty_dates($arr_dates, $arr_report_data);
+	
 echo "<div class='row'>";
 echo "<div class='col-md-12'>";
 echo "<table class='table table-condensed table-striped table-bordered dataTableT' style='margin-bottom:15px !important;'>";
