@@ -90,6 +90,7 @@ $(document).ready(function() {
 	$main_type=$_REQUEST['subtype'];
 	$group_by=$_REQUEST['group_by'];
 	$limited_to=$_REQUEST['limited_to'];
+	$source_name = $_REQUEST['limited_to'];
 	$report_type='daily';
 	$arr_report_data=get_clicks_report_grouped($main_type, $group_by, $limited_to, $report_type,$from,$to);
 
@@ -99,7 +100,6 @@ $(document).ready(function() {
 			$report_name="Отчет по ссылке";
 			$report_main_column_name="Ссылка";
 			$empty_name="Без ссылки";
-			$source_name = $_REQUEST['limited_to'];
 		break;	
 	
 		case 'source_name': 
@@ -117,6 +117,7 @@ $(document).ready(function() {
 				break;	
 			
 				default: 
+					
 				break;
 			}
 	
