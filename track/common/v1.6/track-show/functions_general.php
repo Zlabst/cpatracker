@@ -1357,4 +1357,37 @@ function show_country_select($selected='')
 			break;
         }
     }
+    
+/*
+ * Получение переменной из POST|GET|REQUEST 
+ *
+ * @param string $name - имя переменной
+ * @param string $type - p|g|r откуда получаем
+ * @param int $num - ожидаемый тип данных: 0 - строка, 1 - целое число, 2 - целое положительное, 3 - json
+ * @param mixed $df - значение по умолчанию
+ * @return mised
+ */
+	function rq($name, $num = 0, $df = null, $type = 'r') {
+		global $_POST, $_GET, $_REQUEST;
+		
+		if ($type == 'r') {
+			$d = &$_REQUEST;
+		} elseif ($type == 'p') {
+			$d = &$_POST;
+		} elseif ($type == 'g') {
+			$d = &$_GET;
+		}
+
+		if ($num == 0) {
+			$def = ($df == null ? '' : $df);
+			return array_key_exists($name, $d) ? $d[$name] : $def;
+		} elseif($num < 3) {
+			$def = ($df == null ? 0 : $df);
+			$out = array_key_exists($name, $d) ? intval($d[$name]) : $def;
+			return $num == 2 ? abs($out) : $out;
+		} else {
+			return array_key_exists($name, $d) ? json_decode($d[$name], true) : array();
+		}
+		return false;
+	}
 ?>

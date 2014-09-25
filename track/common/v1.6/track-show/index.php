@@ -842,11 +842,11 @@
 						case 'salesreport':
 							$page_content = 'salesreport.php';
 						break;
-						
+						/*
 						case 'targetreport':
 							$page_content = 'targetreport.php';
 						break;
-
+						*/
 						default:
 							$page_content="reports.php"; 
 						break;

@@ -1,44 +1,4 @@
 <? if (!$include_flag){exit();} ?>
-
-<script>
-$(document).ready(function() {
-
-    $('.dataTableT').dataTable
-    ({    	
-    	"fnDrawCallback":function(){
-	    if ( $('#writerHistory_paginate span span.paginate_button').size()) {
-	      	if ($('#writerHistory_paginate')[0])
-	      	{
-	      		$('#writerHistory_paginate')[0].style.display = "block";
-		    }
-		    else 
-		    {
-		    	$('#writerHistory_paginate')[0].style.display = "none";
-		   	}
-	    }
-
-		},
-    	"aoColumns": [
-            null,
-            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
-            { "asSorting": [ "desc", "asc"], "sType": "click-data" },
-            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
-            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
-            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
-            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
-            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
-			{ "asSorting": [ "desc", "asc" ], "sType": "click-data" },            
-        ],
-		"bPaginate": false,
-	    "bLengthChange": false,
-	    "bFilter": false,
-	    "bSort": true,
-	    "bInfo": false,
-    "bAutoWidth": false
-	})
-} );
-</script>
-
 <?php
 
 	$main_type=$subtype;
@@ -198,6 +158,38 @@ echo "</table>";
 echo "</div>";
 echo "</div>";
 ?>
+<script>
+$(document).ready(function() {
+
+    $('.dataTableT').dataTable
+    ({    	
+    	"fnDrawCallback":function(){
+	    if ( $('#writerHistory_paginate span span.paginate_button').size()) {
+	      	if ($('#writerHistory_paginate')[0])
+	      	{
+	      		$('#writerHistory_paginate')[0].style.display = "block";
+		    }
+		    else 
+		    {
+		    	$('#writerHistory_paginate')[0].style.display = "none";
+		   	}
+	    }
+
+		},
+    	"aoColumns": [
+            null,
+            <?=str_repeat('{ "asSorting": [ "desc", "asc"], "sType": "click-data" },', count($arr_dates))?>
+			{ "asSorting": [ "desc", "asc" ], "sType": "click-data" },            
+        ],
+		"bPaginate": false,
+	    "bLengthChange": false,
+	    "bFilter": false,
+	    "bSort": true,
+	    "bInfo": false,
+    "bAutoWidth": false
+	})
+} );
+</script>
 <script>
 	$(document).ready(function() 
 	{

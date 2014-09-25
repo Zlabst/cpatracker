@@ -137,6 +137,14 @@ switch ($_REQUEST['type']) {
         // Show report data
         include _TRACK_SHOW_PATH."/pages/report_daily_grouped.inc.php";
     break;
+    
+    case 'targetreport':
+    	
+    	$from = empty($_POST['from']) ? date('Y-m-d', time() - 3600*24*6) : date('Y-m-d', strtotime($_POST['from']));
+    	$to = empty($_POST['to']) ? date('Y-m-d') :  date('Y-m-d', strtotime($_POST['to']));
+    	
+    	include _TRACK_SHOW_PATH."/pages/targetreport.php";
+   	break;
 }
 ?>
 
@@ -150,7 +158,7 @@ switch ($_REQUEST['type']) {
 <script src="<?=_HTML_LIB_PATH;?>/daterangepicker/daterangepicker.js"></script>
 <link href="<?=_HTML_LIB_PATH;?>/datepicker/css/datepicker.css" rel="stylesheet"/>
 <script type="text/javascript" src="<?=_HTML_LIB_PATH;?>/datepicker/js/bootstrap-datepicker.js"></script>
- 
+
 <script>
     $('#dpMonthsF').datepicker();
     $('#dpMonthsT').datepicker();
@@ -224,7 +232,7 @@ switch ($_REQUEST['type']) {
         return ((x < y) ? 1 : ((x > y) ? -1 : 0));
     };
 </script>
-
+<? if($_REQUEST['type'] != 'targetreport') { ?>
 <div class="row" id='report_toolbar'>
     <div class="col-md-12">
         <div class="form-group">
@@ -250,7 +258,7 @@ switch ($_REQUEST['type']) {
         </div>
     </div> <!-- ./col-md-12 -->
 </div> <!-- ./row -->
-
+<? } ?>
 <input type='hidden' id='usd_selected' value='1'>
 <input type='hidden' id='type_selected' value='clicks'>
 <input type='hidden' id='sales_selected' value='1'>

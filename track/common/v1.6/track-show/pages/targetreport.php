@@ -1,139 +1,274 @@
 <?php
-	if (!$include_flag) {
-	    exit();
+if (!$include_flag) {
+    exit();
+}
+$days = getDatesBetween($from, $to);
+
+$group_by = rq('group_by', 0, 'out_id');
+
+$group_join = array(
+	'out_id' => array('offer_name', 'tbl_offers', 'out_id', 'id')
+);
+
+$limited_to = empty($_REQUEST['limited_to']) ? 0 : intval($_REQUEST['limited_to']);
+
+$rows = array();
+
+$q="SELECT " . (empty($group_join[$group_by]) ? mysql_real_escape_string($group_by) : 't2.' . $group_join[$group_by][0]) . " as `name`, t1.*
+	FROM `tbl_clicks` t1
+	" . (empty($group_join[$group_by]) ? '' : "LEFT JOIN `".$group_join[$group_by][1]."` t2 ON ".$group_join[$group_by][2]." = t2." . $group_join[$group_by][3]) . "
+	WHERE t1.`date_add_day` BETWEEN '" . $from . "' AND '" . $to . "'";
+$rs = mysql_query($q) or die(mysql_error());
+$data = array();
+while($r = mysql_fetch_assoc($rs)) {
+	$rows[$r['id']] = $r;
+}
+
+$data = array();
+$landings = array();
+$parent_clicks = array();
+
+foreach($rows as $id => &$r) {
+	// Если группировка по рефереру - обрезаем до домена
+	if($r['parent_id'] == 0) {
+		$k = $r[$group_by];
+		$r['out'] = 0;
+		$r['cnt'] = 1;
+	} else { // подчинённая ссылка
+		// не будем считать более одного исходящего с лэндинга
+		$out_calc = isset($parent_clicks[$r['parent_id']]) ? 0 : 1;
+		$parent_clicks[$r['parent_id']] = 1;
+		
+		$r = $rows[$r['parent_id']];
+		$k = $r[$group_by];
+		
+		$r['out'] = $out_calc;
+		$r['cnt'] = 0;
 	}
-	$from = get_current_day('-6 days');
-    $to = get_current_day();
-    $days = getDatesBetween($from, $to);
-    
-    $group_by = 'out_id';
-    
-    $rows = array();
-    $q="SELECT t2.offer_name as `name`, t1.*
-    	FROM `tbl_clicks` t1
-    	LEFT JOIN `tbl_offers` t2 ON out_id = t2.id
-    	WHERE t1.`date_add_day` >= '" . $from . "' AND t1.date_add_day <= '" . $to . "'";
-    $rs = mysql_query($q) or die(mysql_error());
-    $data = array();
-    while($r = mysql_fetch_assoc($rs)) {
-    	$rows[$r['id']] = $r;
-    	//echo '<pre>'.print_r($r, true).'</pre>';
-    }
-    
-    $data = array();
-    foreach($rows as $id => $r) {
-    	if($r['parent_id'] == 0) {
-    		$k = $r[$group_by];
-    		$r['out'] = 0;
-    		$r['cnt'] = 1;
-    	} else { // подчинённая ссылка
-    		$k = $rows[$r['parent_id']][$group_by];
-    		$r['out'] = 1;
-    		$r['cnt'] = 0;
-    	}
-    	
-    	if(!isset($data[$k])) {
-    		$data[$k] = array(
-    			'name' => $r['name'],
-    			'price' => 0,
-    			'unique' => 0,
-    			'income' => 0,
-    			'sale' => 0,
-    			'out' => 0,
-    			'cnt' => 0,
-    		);
-    	}
-    	
-    	$data[$k]['cnt'] += $r['cnt'];
-    	$data[$k]['price'] += $r['click_price'];
-    	$data[$k]['unique'] += $r['is_unique'];
-    	$data[$k]['income'] += $r['conversion_price_main'];
-    	$data[$k]['sale'] += $r['is_sale'];
-    	$data[$k]['out'] += $r['out'];
-    }
-    
-    /*
-    echo '<pre>';
-    print_r($data);*/
-    
-    /*
-    $q="SELECT t2.offer_name as `name`, t1.*
-    	FROM (
-    		SELECT `id`, `out_id`, 
-    			COUNT(`id`) as `cnt`, 
-    			SUM(`is_unique`) as `unique`, 
-    			SUM(`click_price`) as `price`, 
-    			SUM(`conversion_price_main`) as `income`, 
-    			SUM(`is_sale`) as `sale`,
-    			SUM(`out`) as `out`
-    		FROM (
-    			SELECT t1.*, COUNT(t2.id) as `out`
-    				FROM `tbl_clicks` t1
-    				LEFT JOIN `tbl_clicks` t2 on t2.parent_id = t1.id
-    				WHERE t1.`date_add_day` >= '" . $from . "'
-    					AND t1.date_add_day <= '" . $to . "'
-    					AND t1.`is_connected` = 0
-    				GROUP BY `t1`.`id`
-    		) t1
-    		WHERE 1
-    		GROUP BY `out_id`) t1
-    	LEFT JOIN `tbl_offers` t2 ON out_id = t2.id
-    	LEFT JOIN `tbl_clicks` t3 ON t3.parent_id = t1.id
-    	WHERE `t2`.status = '0'";
-    */
-    /*
-    $rs = mysql_query($q) or die(mysql_error());
-    $data = array();
-    while($r = mysql_fetch_assoc($rs)) {
-    	$data[] = $r;
-    	//echo '<pre>'.print_r($r, true).'</pre>';
-    }*/
-    //echo $q;
-    //$sales = get_sales($from, $to, $days, $month);
-    
-    
-    //echo '<pre>'.print_r($sales, true).'</pre>';
+	
+	// Если запрошен отчет по конкретной ссылке - отсеиваем остальные
+	if($limited_to and $r['out_id'] != $limited_to) continue;
+	
+	if($group_by == 'referer' and $r[$group_by] != '') {
+		$url = parse_url($r[$group_by]);
+		$k = $r['name'] = $url['host'];
+	}
+	
+	if(!isset($data[$k])) {
+		$data[$k] = array(
+			'id' => $r['out_id'],
+			'name' => $r['name'],
+			'price' => 0,
+			'unique' => 0,
+			'income' => 0,
+			'sale' => 0,
+			'out' => 0,
+			'cnt' => 0,
+		);
+	}
+	
+	$data[$k]['cnt'] += $r['cnt'];
+	$data[$k]['price'] += $r['click_price'];
+	$data[$k]['unique'] += $r['is_unique'];
+	$data[$k]['income'] += $r['conversion_price_main'];
+	$data[$k]['sale'] += $r['is_sale'];
+	$data[$k]['out'] += $r['out'];
+}
+
+
+$fromF=date ('d.m.Y', strtotime($from));
+$toF=date ('d.m.Y', strtotime($to));
+$value_date_range = "$fromF - $toF";
+
+if($limited_to) {
+	$report_name = 'Переходы на ' . current(get_out_description($limited_to)) . ' за';
+	$report_name_tag = 'h5';
+} else {
+	$report_name = 'Переходы на целевые страницы за';
+	$report_name_tag = 'h3';
+}
+
+// Выбор даты
+echo '<form method="post"  name="datachangeform" id="range_form">
+        <div id="per_day_range" class="pull-right" style="margin-top:0px; margin-bottom:10px;">
+            <span class="glyphicon glyphicon-calendar"></span>
+            <span id="cur_day_range">'.date('d.m.Y', strtotime($from)).' - '. date('d.m.Y', strtotime($to)).'</span> <b class="caret"></b>
+            <input type="hidden" name="from" id="sStart" value="">
+            <input type="hidden" name="to" id="sEnd" value="">
+        </div>
+        
+        <div><'.$report_name_tag.'>'._e($report_name).'</'.$report_name_tag.'></div>
+      </form>';
+
+// Группировки
+if($limited_to) {
 ?>
-<div class='row'>
-        <div class="col-md-4"><h3>Продажи за 7 дней:</h3></div>
-</div>
+<div class='row report_grouped_menu'>
+<div class='col-md-12'>
+
+	<div class="btn-group">
+		<? if ($group_by=='campaign_name'){$class="active";}else{$class='';} ?>
+		<a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=campaign_name&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>" class="btn btn-default <?=$class;?>" >Кампания</a>
+
+		<? if ($group_by=='ads_name'){$class="active";}else{$class='';} ?>
+		<a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=ads_name&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>" class="btn btn-default <?=$class;?>">Объявление</a>
+
+		<? if ($group_by=='referer'){$class="active";}else{$class='';} ?>
+		<a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=referer&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>" class="btn btn-default <?=$class;?>">Площадка</a>
+
+		<? if ($group_by=='out_id'){$class="active";}else{$class='';} ?>
+		<a href="?act=reports&type=targetreport&subtype=<?=$main_type;?>&group_by=out_id&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>" class="btn btn-default <?=$class;?>">Ссылка</a>
+
+		<div class="btn-group">
+			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			Гео
+			<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu">
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=country&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Страна</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=city&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Город</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=region&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Регион</a></li>			
+			<li class="divider"></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=isp&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Провайдер</a></li>			
+			</ul>
+		</div>
+
+		<div class="btn-group">
+			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			Устройство
+			<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu">
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=user_os&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">ОС</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=user_platform&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Платформа</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=user_browser&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Браузер</a></li>
+			</ul>
+		</div>
+
+		<div class="btn-group">
+			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			Другие параметры
+			<span class="caret"></span>
+			</button>
+			<ul class="dropdown-menu">
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=campaign_param1&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Параметр ссылки #1</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=campaign_param2&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Параметр ссылки #2</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=campaign_param3&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Параметр ссылки #3</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=campaign_param4&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Параметр ссылки #4</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=campaign_param5&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Параметр ссылки #5</a></li>
+			<li class="divider"></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=click_param_value1&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Параметр перехода #1</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=click_param_value2&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Параметр перехода #2</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=click_param_value3&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Параметр перехода #3</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=click_param_value4&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Параметр перехода #4</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=click_param_value5&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Параметр перехода #5</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=click_param_value6&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Параметр перехода #6</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=click_param_value7&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Параметр перехода #7</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=click_param_value8&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Параметр перехода #8</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=click_param_value9&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Параметр перехода #9</a></li>
+			<li><a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=click_param_value10&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>">Параметр перехода #10</a></li>
+			</ul>
+		</div>
+	</div>
+
+</div> <!-- ./col-md-12 -->
+</div> <!-- ./row -->
+<div class="row">&nbsp;</div>
+<? } ?>
+<script>
+$(document).ready(function() {
+	jQuery.fn.dataTableExt.oApi.fnSortNeutral = function ( oSettings ){
+		oSettings.aaSorting = [[1, "desc", 0]];
+		oSettings.aiDisplay.sort( function (x,y) {
+		    return x-y;
+		} );
+		oSettings.aiDisplayMaster.sort( function (x,y) {
+		    return x-y;
+		} );
+		oSettings.oApi._fnReDraw( oSettings );
+	};
+	
+	jQuery.fn.dataTableExt.oSort['click-data-asc'] = function(a, b) {
+		console.log(a);
+		console.log(b);
+        x = a.split('%', 1);
+        y = b.split('%', 1);
+
+        if (x == '') {
+            x = 0;
+        }
+        if (y == '') {
+            y = 0;
+        }
+        x = parseFloat(x);
+        y = parseFloat(y);
+
+        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+    };
+
+    jQuery.fn.dataTableExt.oSort['click-data-desc'] = function(a, b)
+    {
+		x = a.split('%', 1);
+        y = b.split('%', 1);
+        if (x == '') {
+            x = 0;
+        }
+        if (y == '') {
+            y = 0;
+        }
+        x = parseFloat(x);
+        y = parseFloat(y);
+        return ((x < y) ? 1 : ((x > y) ? -1 : 0));
+    };
+	
+    var table = $('.dataTableT').dataTable
+    ({    	
+    	"aoColumns": [
+            null,
+            { "asSorting": [ "desc", "asc" ], "sType": "numeric" },
+            <? if($limited_to > 0) { ?>{ "asSorting": [ "desc", "asc" ], "sType": "click-data" },<? } ?>
+            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
+            { "asSorting": [ "desc", "asc" ], "sType": "numeric" },
+            { "asSorting": [ "desc", "asc" ], "sType": "numeric" },
+            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
+            { "asSorting": [ "desc", "asc" ], "sType": "numeric" },
+            { "asSorting": [ "desc", "asc" ], "sType": "numeric" },
+            { "asSorting": [ "desc", "asc" ], "sType": "numeric" },
+            { "asSorting": [ "desc", "asc" ], "sType": "click-data" }
+        ],
+		"bPaginate": true,
+	    "bLengthChange": false,
+	    "bFilter": false,
+	    "bSort": true,
+	    "bInfo": false,
+    	"bAutoWidth": false
+	});
+		
+	table.fnSortNeutral();
+} );
+</script>	
 <div class="row">
 	<div class="col-md-12">
-		<table class="table table-striped table-bordered table-condensed" style="width:600px;">
+		<table class="table table-striped table-bordered table-condensed dataTableT" style="width:600px;">
 			<thead>
-				<tr>
-					<th>Ссылка</th>
-					<th>Переходы на LP</th>
-					<th>LP CTR</th>
-					<th>Ушло на офферы</th>
-					<th>Продаж</th>
-					<th>Конверсия</th>
-					<th>Доход</th>
-					<th>Затраты</th>
-					<th>Прибыль</th>
-					<th>ROI</th>
+				<tr><th>Ссылка</th><th>Переходы</th><? if($limited_to > 0) {?><th>Повторные</th><? } ?><th>LP CTR</th><th>Ушло на офферы</th><th>Продаж</th><th>Конверсия</th><th>Доход</th><th>Затраты</th><th>Прибыль</th><th>ROI</th>
 				</tr>
 			</thead>
 			<tbody>
 				<?
 					foreach($data as $r) {
+						if(!$limited_to and !$r['out']) continue;
+						
 						$profit = $r['income'] - $r['price'];
 						$roi = round($profit / $r['price'] * 100, 1);
 						$conversion = round($r['sale'] / $r['cnt'] * 100, 1);
 						$follow = round($r['out'] / $r['cnt'] * 100, 1);
+						$repeated = $r['cnt'] - $r['unique'];
+						if($repeated < 0) $repeated = 0;
+						$repeated = round($repeated / $r['cnt']  * 100, 1);
 						
-						echo '<tr>
-							<td nowrap="">'.$r['name'].'</td>
-							<td>'.$r['cnt'].'</td>
-							<td>'.$follow.'%</td>
-							<td>'.$r['out'].'</td>
-							<td>'.$r['sale'].'</td>
-							<td>'.$conversion.'%</td>
-							<td>'.$r['income'].'</td>
-							<td>'.$r['price'].'</td>
-							<td>'.$profit.'</td>
-							<td>'.$roi.'%</td>
-						</tr>';
+						echo '<tr><td nowrap=""><a href="?act=reports&type=targetreport&subtype=daily&limited_to='.$r['id'].'">'.$r['name'].'</a></td><td>'.$r['cnt'].'</td>
+'.($limited_to > 0 ? '<td>'.$repeated.'%</td>' : '').'<td>'.$follow.'%</td><td>'.$r['out'].'</td><td>'.$r['sale'].'</td><td>'.$conversion.'%</td><td>'.$r['income'].'</td><td>'.$r['price'].'</td><td>'.$profit.'</td><td>'.$roi.'%</td></tr>';
 					}
 				?>
 			</tbody>
