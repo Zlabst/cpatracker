@@ -103,6 +103,7 @@ echo '<form method="post"  name="datachangeform" id="range_form">
 // Группировки
 if($limited_to) {
 ?>
+<div class="row">&nbsp;</div>
 <div class='row report_grouped_menu'>
 <div class='col-md-12'>
 
@@ -115,9 +116,6 @@ if($limited_to) {
 
 		<? if ($group_by=='referer'){$class="active";}else{$class='';} ?>
 		<a href="?act=reports&type=targetreport&subtype=<?=_e($main_type);?>&group_by=referer&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>" class="btn btn-default <?=$class;?>">Площадка</a>
-
-		<? if ($group_by=='out_id'){$class="active";}else{$class='';} ?>
-		<a href="?act=reports&type=targetreport&subtype=<?=$main_type;?>&group_by=out_id&limited_to=<?=_e($limited_to);?>&from=<?=$from?>&to=<?=$to?>" class="btn btn-default <?=$class;?>">Ссылка</a>
 
 		<div class="btn-group">
 			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
@@ -267,7 +265,7 @@ $(document).ready(function() {
 						if($repeated < 0) $repeated = 0;
 						$repeated = round($repeated / $r['cnt']  * 100, 1);
 						
-						echo '<tr><td nowrap=""><a href="?act=reports&type=targetreport&subtype=daily&limited_to='.$r['id'].'">'.$r['name'].'</a></td><td>'.$r['cnt'].'</td>
+						echo '<tr><td nowrap=""><a href="?act=reports&type=targetreport&subtype=daily&limited_to='.$r['id'].'&group_by=campaign_name">'.$r['name'].'</a></td><td>'.$r['cnt'].'</td>
 '.($limited_to > 0 ? '<td>'.$repeated.'%</td>' : '').'<td>'.$follow.'%</td><td>'.$r['out'].'</td><td>'.$r['sale'].'</td><td>'.$conversion.'%</td><td>'.$r['income'].'</td><td>'.$r['price'].'</td><td>'.$profit.'</td><td>'.$roi.'%</td></tr>';
 					}
 				?>
