@@ -49,8 +49,8 @@ krsort($sales);
     <div class="row">
         <div class="col-md-4">
             <div class="btn-group">
-                <a href="?act=reports&type=salesreport&subtype=daily" type="button" class="btn btn-default <?=$days_active?>">По дням</a>
-                <a href="?act=reports&type=salesreport&subtype=monthly" type="button" class="btn btn-default <?=$month_active?>">По месяцам</a>
+                <a href="?act=reports&type=salesreport&subtype=daily" type="button" class="btn btn-default <?php echo $days_active?>">По дням</a>
+                <a href="?act=reports&type=salesreport&subtype=monthly" type="button" class="btn btn-default <?php echo $month_active?>">По месяцам</a>
             </div>
         </div>
     </div>
@@ -59,7 +59,7 @@ krsort($sales);
         <div id="per_day_range" class="pull-right">
             <span class="glyphicon glyphicon-calendar"></span>
             <span id="cur_day_range"><?php echo date(($month)?'m.Y':'d.m.Y', strtotime($from)); ?> - <?php echo date(($month)?'m.Y':'d.m.Y', strtotime($to)); ?></span> <b class="caret"></b>
-            <form action="index.php?act=reports&type=salesreport&subtype=<?=($month)?'monthly':'daily'?>" method="POST">
+            <form action="index.php?act=reports&type=salesreport&subtype=<?php echo ($month)?'monthly':'daily'?>" method="POST">
                 <input type="hidden" name="sStart" id="sStart" value="">
                 <input type="hidden" name="sEnd" id="sEnd" value="">
             </form>
@@ -79,14 +79,14 @@ krsort($sales);
                     <tr>
                         <th>Источник</th>
                         <?php foreach ($days as $day) : ?>
-                            <th><?= (!$month)?date('d.m', strtotime($day)):$day; ?></th>
+                            <th><?php echo  (!$month)?date('d.m', strtotime($day)):$day; ?></th>
                         <?php endforeach; ?>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if ($sales == FALSE) :?>
                     <tr>
-                        <td colspan="<?=count($days)+1;?>" style="text-align: center;">
+                        <td colspan="<?php echo count($days)+1;?>" style="text-align: center;">
                             За выбранный период продаж не было.
                         </td>
                     </tr>
@@ -98,7 +98,7 @@ krsort($sales);
                                     <?php $dkey = (!$month)?date('d.m', strtotime($day)):$day;?>
                                     <td>
                                         <?php if (isset($d[$dkey])):?>
-                                            <?=$d[$dkey];?>
+                                            <?php echo $d[$dkey];?>
                                             <?php $total[$dkey]+=$d[$dkey];?>
                                         <?php else : ?>
                                             0
@@ -113,7 +113,7 @@ krsort($sales);
                     <tr>
                         <th>Итого:</th>
                         <?php foreach ($days as $day) : ?>
-                            <th><?= intval($total[(!$month)?date('d.m', strtotime($day)):$day]); ?></th>
+                            <th><?php echo  intval($total[(!$month)?date('d.m', strtotime($day)):$day]); ?></th>
                         <?php endforeach; ?>
                     </tr>
                 </tfoot>
@@ -121,9 +121,9 @@ krsort($sales);
         </div>
     </div>
 
-<link href="<?=_HTML_LIB_PATH;?>/daterangepicker/daterangepicker-bs3.css" rel="stylesheet"/>
-<script src="<?=_HTML_LIB_PATH;?>/daterangepicker/moment.min.js"></script>
-<script src="<?=_HTML_LIB_PATH;?>/daterangepicker/daterangepicker.js"></script>
+<link href="<?php echo _HTML_LIB_PATH;?>/daterangepicker/daterangepicker-bs3.css" rel="stylesheet"/>
+<script src="<?php echo _HTML_LIB_PATH;?>/daterangepicker/moment.min.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/daterangepicker/daterangepicker.js"></script>
 <script type="text/javascript" src="https://www.google.com/jsapi"></script>
 <script>
 	<?php		
@@ -143,8 +143,8 @@ krsort($sales);
                 <?php else : ?>    
                 format: 'DD.MM.YYYY',
                 <?php endif; ?>
-                startDate: '<?=_e($from)?>',
-                endDate: '<?=_e($to)?>',
+                startDate: '<?php echo _e($from)?>',
+                endDate: '<?php echo _e($to)?>',
                 locale: {
                     applyLabel: "Выбрать",
                     cancelLabel: "<i class='fa fa-times' style='color:gray'></i>",
@@ -170,7 +170,7 @@ krsort($sales);
                 }
             },
     function(start, end) {
-        $('#cur_day_range').text(start.format(<?=($month)?"'MM.YYYY'":"'DD.MM.YYYY'";?>) + ' - ' + end.format(<?=($month)?"'MM.YYYY'":"'DD.MM.YYYY'";?>));
+        $('#cur_day_range').text(start.format(<?php echo ($month)?"'MM.YYYY'":"'DD.MM.YYYY'";?>) + ' - ' + end.format(<?php echo ($month)?"'MM.YYYY'":"'DD.MM.YYYY'";?>));
         $('#sStart').val(start.format('YYYY-MM-DD'));
         $('#sEnd').val(end.format('YYYY-MM-DD'));
         $('#per_day_range form').submit();
@@ -201,7 +201,7 @@ krsort($sales);
           <?php foreach ($days as $day) : ?>
               <?php $i++;?>
               <?php $dkey = (!$month)?date('d.m', strtotime($day)):$day; ?>
-              <?= '[\''.$dkey.'\', '. intval($total[$dkey]).']'; ?><?php if ($i < count($days)) echo ',';?>
+              <?php echo  '[\''.$dkey.'\', '. intval($total[$dkey]).']'; ?><?php if ($i < count($days)) echo ',';?>
                 
           <?php endforeach; ?>
         ]);

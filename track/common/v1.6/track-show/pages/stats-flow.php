@@ -1,5 +1,5 @@
 <?php if (!$include_flag){exit();} ?>
-<script src="<?=_HTML_TEMPLATE_PATH;?>/js/report_toolbar.js"></script>
+<script src="<?php echo _HTML_TEMPLATE_PATH;?>/js/report_toolbar.js"></script>
 <?php
 	$date=($_REQUEST['date']?$_REQUEST['date']:get_current_day());
 	$prev_date=date('Y-m-d', strtotime('-1 days', strtotime($date)));

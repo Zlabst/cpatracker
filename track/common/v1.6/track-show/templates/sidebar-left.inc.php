@@ -15,7 +15,7 @@ if (is_array($arr_left_menu) && count($arr_left_menu)>0)
 				{
 					$class=($cur['is_active']==1)?'active':'';
 			?>
-				<li class="<?=$class;?>"><a href="<?=_e($cur['link']);?>"><?=_e($cur['caption']);?></a></li>
+				<li class="<?php echo $class;?>"><a href="<?php echo _e($cur['link']);?>"><?php echo _e($cur['caption']);?></a></li>
 			<?
 				}
 			?>

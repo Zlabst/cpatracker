@@ -219,11 +219,11 @@ if ($category_name!='{empty}')
 	<form class="form-inline" role="form" method='post' id='form_category_edit' onsubmit='return check_category_edit();'>
 			<input type='hidden' name='ajax_act' value='category_edit'>
                         <input type="hidden" name="csrfkey" value="<?php echo CSRF_KEY;?>">
-			<input type='hidden' name='category_id' value='<?=_e($_REQUEST['category_id']);?>'>
+			<input type='hidden' name='category_id' value='<?php echo _e($_REQUEST['category_id']);?>'>
 			<input type='hidden' name='is_delete' value='0'>
 
 		  <div class="form-group col-xs-3">
-			    <input type="text" class="form-control" name='category_name' placeholder='Название категории' value='<?=_e($category_name);?>'>
+			    <input type="text" class="form-control" name='category_name' placeholder='Название категории' value='<?php echo _e($category_name);?>'>
 		  </div>
 
 	  <button type="submit" class="btn btn-default">Изменить</button>
@@ -254,7 +254,7 @@ else
 	<form class="form-inline" role="form" method="post" onSubmit='return check_add_offer();' id='form_add_offer'>
 		<input type=hidden name='ajax_act' value='add_offer'>
                 <input type="hidden" name="csrfkey" value="<?php echo CSRF_KEY;?>">
-		<input type=hidden name='category_id' value='<? echo _e($category_id);?>'>
+		<input type=hidden name='category_id' value='<?php echo _e($category_id);?>'>
 
 		  <div class="form-group col-xs-3">
 			    <input type="text" class="form-control" name='link_name' id="new_link_name" placeholder="Название ссылки">

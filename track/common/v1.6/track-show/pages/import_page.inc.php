@@ -1,4 +1,4 @@
-<? if (!$include_flag){exit();} 
+<?php if (!$include_flag){exit();} 
 	$mode = (isset($_POST['leadsType']) and $_POST['leadsType'] == 'lead') ? 'lead' : 'sale';
 	
 ?>
@@ -45,11 +45,11 @@
 <form role="form" method='post' onSubmit='return check_import();'>
 	<div class="form-group">
 		<div class="btn-group" data-toggle="buttons">
-			<label class="btn btn-default <?if($mode == 'sale') { ?>active<? } ?>" onclick="$('#leadsType').val('sale'); $('#sale_amount').show(); $('#amount_value').attr('required', true);">
+			<label class="btn btn-default <?php if($mode == 'sale') { ?>active<?php } ?>" onclick="$('#leadsType').val('sale'); $('#sale_amount').show(); $('#amount_value').attr('required', true);">
 				<input type="radio" name="options" id="option1"> Продажа
 			</label>
 
-			<label class="btn btn-default <?if($mode == 'lead') { ?>active<? } ?>" onclick="$('#leadsType').val('lead'); $('#sale_amount').hide(); $('#amount_value').removeAttr('required');">
+			<label class="btn btn-default <?php if($mode == 'lead') { ?>active<?php } ?>" onclick="$('#leadsType').val('lead'); $('#sale_amount').hide(); $('#amount_value').removeAttr('required');">
 				<input type="radio" name="options" id="option2"> Лид
 			</label>
 		</div>
@@ -88,9 +88,9 @@
   	<input type='hidden' id='currency_code' name='currency_code' value='rub'>
 	<input type='hidden' id='leadsType' name='leadsType' value='sale'>
 		
-	<? if($mode == 'lead') { ?>
+	<?php if($mode == 'lead') { ?>
 		<script>
 			$('#leadsType').val('lead'); $('#sale_amount').hide(); $('#amount_value').removeAttr('required');
 		</script>
-	<? } ?>
+	<?php } ?>
 </form>

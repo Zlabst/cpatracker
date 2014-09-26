@@ -3,14 +3,14 @@ require_once _TRACK_LIB_PATH.'/class/common.php';
 require_once _TRACK_LIB_PATH.'/class/custom.php';
 $custom = new custom();
 ?>
-<link href="<?=_HTML_LIB_PATH;?>/select2/select2.css" rel="stylesheet"/>
+<link href="<?php echo _HTML_LIB_PATH;?>/select2/select2.css" rel="stylesheet"/>
 
-<script src="<?=_HTML_LIB_PATH;?>/mustache/mustache.js"></script>
-<script src="<?=_HTML_LIB_PATH;?>/select2/select2.js"></script>
-<script src="<?=_HTML_LIB_PATH;?>/clipboard/ZeroClipboard.min.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/mustache/mustache.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/select2/select2.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/clipboard/ZeroClipboard.min.js"></script>
 
 <script type="text/javascript">
-    var base_custom = "<?=$custom->get_pixel_link();?>";
+    var base_custom = "<?php echo $custom->get_pixel_link();?>";
     $(document).ready(function(){
         $('#master-form input[type=checkbox]').change(function(){
             var cur_url = base_custom;
@@ -55,7 +55,7 @@ $custom = new custom();
             <span class="input-group-btn">
                 <button id="copy-button" class="btn btn-default clpbrd-copy" id="custom-link" data-clipboard-target='custom-link-val' title="Скопировать в буфер" type="button"><i class='fa fa-copy' id='clipboard_copy_icon'></i></button>
             </span>
-            <input type="text" style="width:100%;" class="form-control" id="custom-link-val" value="<img src='<?=$custom->get_pixel_link();?>' width='1' height='1'>" ><br>
+            <input type="text" style="width:100%;" class="form-control" id="custom-link-val" value="<img src='<?php echo $custom->get_pixel_link();?>' width='1' height='1'>" ><br>
         </div><br>
         Выберите какие параметры отслеживать (помимо параметров из таблицы трекер хранит все параметры начинающиеся с префикса pbsave_):<br>
         

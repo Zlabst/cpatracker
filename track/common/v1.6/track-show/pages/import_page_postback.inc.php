@@ -17,20 +17,20 @@ while ($file = $networks->read()) {
 asort($available_nets);
 $custom = new custom();
 ?>
-<link href="<?=_HTML_LIB_PATH;?>/select2/select2.css" rel="stylesheet"/>
+<link href="<?php echo _HTML_LIB_PATH;?>/select2/select2.css" rel="stylesheet"/>
 
-<script src="<?=_HTML_LIB_PATH;?>/mustache/mustache.js"></script>
-<script src="<?=_HTML_LIB_PATH;?>/select2/select2.js"></script>
-<script src="<?=_HTML_LIB_PATH;?>/clipboard/ZeroClipboard.min.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/mustache/mustache.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/select2/select2.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/clipboard/ZeroClipboard.min.js"></script>
 
 <script type="text/javascript">
     var links;
-    var base_custom = "<?= $custom->get_links(); ?>";
+    var base_custom = "<?php echo  $custom->get_links(); ?>";
     $(document).ready(function()
     {
         // init ZeroClipboard
         var clip = new ZeroClipboard(document.getElementById("copy-button"), {
-            moviePath: "<?=_HTML_LIB_PATH;?>/clipboard/ZeroClipboard.swf"
+            moviePath: "<?php echo _HTML_LIB_PATH;?>/clipboard/ZeroClipboard.swf"
         });
 
         $('.net-btn').click(function() {
@@ -42,7 +42,7 @@ $custom = new custom();
                     'index.php?ajax_act=postback_info',
                     {
                         net: $(this).attr('net'),
-                        csrfkey: '<?= CSRF_KEY ?>'
+                        csrfkey: '<?php echo  CSRF_KEY ?>'
                     },
             function(data) {
                 if (data.status == 'OK') {
@@ -64,7 +64,7 @@ $custom = new custom();
                     {
                         var cur_id = $(this).attr('id');
                         var clip = new ZeroClipboard(this, {
-                            moviePath: "<?=_HTML_LIB_PATH;?>/clipboard/ZeroClipboard.swf"
+                            moviePath: "<?php echo _HTML_LIB_PATH;?>/clipboard/ZeroClipboard.swf"
                         });
 
                         clip.on('mouseout', function(client, args) {
@@ -165,14 +165,14 @@ $custom = new custom();
 <div class="row" id="net-row">
     <div class="col-md-12">
         <div class="btn-group">
-            <? $i = 0; ?>
+            <?php $i = 0; ?>
             <?php foreach ($available_nets as $net => $name) : ?>
-                <button class="btn btn-default net-btn" net="<?= $net ?>"><?= $name; ?></button>
-                <? $i++; ?>
-                <? if ($i % 7 == 0): ?>
+                <button class="btn btn-default net-btn" net="<?php echo  $net ?>"><?php echo  $name; ?></button>
+                <?php $i++; ?>
+                <?php if ($i % 7 == 0): ?>
                 </div>
                 <div class="btn-group">
-                <? endif; ?>
+                <?php endif; ?>
             <?php endforeach; ?>
         </div>
         <button class="btn btn-default net-btn" id="custom-master-start">Универсальная ссылка</button>
@@ -206,7 +206,7 @@ $custom = new custom();
             <span class="input-group-btn">
                 <button id="copy-button" class="btn btn-default clpbrd-copy" id="custom-link" data-clipboard-target='custom-link-val' title="Скопировать в буфер" type="button"><i class='fa fa-copy' id='clipboard_copy_icon'></i></button>
             </span>
-            <input type="text" style="width:100%;" class="form-control" id="custom-link-val" value="<?= $custom->get_links(); ?>" ><br>
+            <input type="text" style="width:100%;" class="form-control" id="custom-link-val" value="<?php echo  $custom->get_links(); ?>" ><br>
         </div><br>
         Выберите какие параметры отслеживать (помимо параметров из таблицы трекер хранит все параметры начинающиеся с префикса pbsave_):<br>
 

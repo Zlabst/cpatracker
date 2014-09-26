@@ -1,10 +1,10 @@
-<? if (!$include_flag){exit();} ?>
-<link href="<?=_HTML_LIB_PATH;?>/select2/select2.css" rel="stylesheet"/>
-<script src="<?=_HTML_LIB_PATH;?>/select2/select2.js"></script>
+<?php if (!$include_flag){exit();} ?>
+<link href="<?php echo _HTML_LIB_PATH;?>/select2/select2.css" rel="stylesheet"/>
+<script src="<?php echo _HTML_LIB_PATH;?>/select2/select2.js"></script>
 
-<link href="<?=_HTML_LIB_PATH;?>/daterangepicker/daterangepicker-bs3.css" rel="stylesheet"/>
-<script src="<?=_HTML_LIB_PATH;?>/daterangepicker/moment.min.js"></script>
-<script src="<?=_HTML_LIB_PATH;?>/daterangepicker/daterangepicker.js"></script>
+<link href="<?php echo _HTML_LIB_PATH;?>/daterangepicker/daterangepicker-bs3.css" rel="stylesheet"/>
+<script src="<?php echo _HTML_LIB_PATH;?>/daterangepicker/moment.min.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/daterangepicker/daterangepicker.js"></script>
 
 <script>
 	function add_costs()

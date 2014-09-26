@@ -1,4 +1,4 @@
-<? if (!$include_flag){exit();} ?>
+<?php if (!$include_flag){exit();} ?>
 <script>
   $(document).ready(function() 
   {
@@ -9,7 +9,7 @@
 <div class="row">
     <div class="col-sm-6 col-md-4 col-md-offset-4">
         <div class="account-wall">
-            <img class="profile-img" src="<?=_HTML_TEMPLATE_PATH;?>/img/icons/photo.png">
+            <img class="profile-img" src="<?php echo _HTML_TEMPLATE_PATH;?>/img/icons/photo.png">
             <form class="form-signin" action='' method="POST">
               <input type=hidden name='page' value='login'>
               <input type=hidden name='act' value='login'>

@@ -1,4 +1,4 @@
-<? if (!$include_flag){exit();} ?>
+<?php if (!$include_flag){exit();} ?>
 <p>Введите информацию о подключении к базе данных. Если вы в ней не уверены, свяжитесь со службой поддержки вашего хостинга.</p>
 
 <div id="info_message" class="alert alert-warning" role="alert">
@@ -44,11 +44,11 @@
 		   			<tr><th>IP адрес</th><th>Тип сервера</th></tr></thead>
 		   		<tbody>
 					<tr>
-						<td><?=$_SERVER['REMOTE_ADDR'];?></td>
+						<td><?php echo $_SERVER['REMOTE_ADDR'];?></td>
 						<td>Apache</td>
 					</tr>
 					<tr>
-						<td><?=$_SERVER['HTTP_X_FORWARDED_FOR'];?></td>
+						<td><?php echo $_SERVER['HTTP_X_FORWARDED_FOR'];?></td>
 						<td>Nginx</td>
 					</tr>
 		   		</tbody>

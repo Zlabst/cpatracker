@@ -1,9 +1,9 @@
-<link href="<?=_HTML_LIB_PATH;?>/select2/select2.css" rel="stylesheet"/>
-<link href="<?=_HTML_LIB_PATH;?>/select2/select2-bootstrap.css" rel="stylesheet"/>
+<link href="<?php echo _HTML_LIB_PATH;?>/select2/select2.css" rel="stylesheet"/>
+<link href="<?php echo _HTML_LIB_PATH;?>/select2/select2-bootstrap.css" rel="stylesheet"/>
 
-<script src="<?=_HTML_LIB_PATH;?>/mustache/mustache.js"></script>
-<script src="<?=_HTML_LIB_PATH;?>/select2/select2.js"></script>
-<script src="<?=_HTML_LIB_PATH;?>/clipboard/ZeroClipboard.min.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/mustache/mustache.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/select2/select2.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/clipboard/ZeroClipboard.min.js"></script>
 
 <script>
     var last_removed = 0;
@@ -27,7 +27,7 @@
             {
                 var cur_id = $(this).attr('id');
                 var clip = new ZeroClipboard(document.getElementById(cur_id), {
-                    moviePath: "<?=_HTML_LIB_PATH;?>/clipboard/ZeroClipboard.swf"
+                    moviePath: "<?php echo _HTML_LIB_PATH;?>/clipboard/ZeroClipboard.swf"
                 });
 
                 clip.on('mouseout', function(client, args) {
@@ -266,7 +266,7 @@
             
             // Fill values for destination links
             var dictionary_links = [];
-            dictionary_links.push(<?= $js_offers_data; ?>);
+            dictionary_links.push(<?php echo  $js_offers_data; ?>);
             
             $('input.select-link').each(function()
             {
@@ -276,7 +276,7 @@
 
             var dictionary_countries = [];
            
-            dictionary_countries.push(<?= $js_countries_data; ?>); 
+            dictionary_countries.push(<?php echo  $js_countries_data; ?>); 
              
             $('input.select-geo_country').each(function()
             {
@@ -286,7 +286,7 @@
             
             dictionary_langs = [];
             dictionary_langs.push({text:"", children:[{id:"en", text:"Английский, en"},{id:"ru", text:"Русский, ru"},{id:"uk", text:"Украинский, uk"}]});
-            dictionary_langs.push(<?= $js_langs_data; ?>);
+            dictionary_langs.push(<?php echo  $js_langs_data; ?>);
             
             $('input.select-lang').each(function()
             {
@@ -787,7 +787,7 @@
         &nbsp;→&nbsp;
         <div class="form-group">
             <label class="sr-only">Ссылка</label>
-            <input type="hidden" placeholder="Ссылка" name='out_id' class='select-link toSave' data-selected-value='<?=$js_last_offer_id;?>'>
+            <input type="hidden" placeholder="Ссылка" name='out_id' class='select-link toSave' data-selected-value='<?php echo $js_last_offer_id;?>'>
         </div>
         <button type="submit" class="btn btn-default" onclick="">Добавить</button>
         <input type="hidden" name="ajax_act" value="add_rule">

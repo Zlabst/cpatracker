@@ -57,7 +57,7 @@ function modufy_links() {
 		var cookie_time=exp.getTime() + (365*10*24*60*60*1000);
 		document.cookie = "cpa_subid="+subid+";path=/;domain=."+domain_name+";expires="+cookie_time;
 		
-		var host = '<?=$_SERVER['HTTP_HOST']?>';
+		var host = '<?php echo $_SERVER['HTTP_HOST']?>';
 		var node = document.getElementsByTagName("body")[0];
 		var els = node.getElementsByTagName("a");
 

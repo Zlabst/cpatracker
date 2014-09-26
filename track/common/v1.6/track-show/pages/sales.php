@@ -1,4 +1,4 @@
-<? if (!$include_flag){exit();} ?>
+<?php if (!$include_flag){exit();} ?>
 <?php
 	$filter_by=trim($_REQUEST['filter_by']);
 	$arr_sales=get_last_sales($filter_by);
@@ -10,7 +10,7 @@
 		<input type='hidden' name='sales' value='sales'>
 
 		<div class="form-group col-xs-4">
-			<input type="text" class="form-control" name="filter_by" placeholder="Поиск по SubID" value="<?=_e($_REQUEST['filter_by']);?>">
+			<input type="text" class="form-control" name="filter_by" placeholder="Поиск по SubID" value="<?php echo _e($_REQUEST['filter_by']);?>">
 		</div>
 
 		<button type="submit" class="btn btn-default">Найти</button>

@@ -1,4 +1,4 @@
-<? if (!$include_flag){exit();} ?>
+<?php if (!$include_flag){exit();} ?>
 <?php
 
 	$main_type=$subtype;
@@ -178,7 +178,7 @@ $(document).ready(function() {
 		},
     	"aoColumns": [
             null,
-            <?=str_repeat('{ "asSorting": [ "desc", "asc"], "sType": "click-data" },', count($arr_dates))?>
+            <?php echo str_repeat('{ "asSorting": [ "desc", "asc"], "sType": "click-data" },', count($arr_dates))?>
 			{ "asSorting": [ "desc", "asc" ], "sType": "click-data" },            
         ],
 		"bPaginate": false,
@@ -197,8 +197,8 @@ $(document).ready(function() {
 			foreach ($arr_sparkline as $i=>$val)
 			{
 		?>
-		$("#sparkline_<?=$i?>").sparkline(
-			[<?=implode (',', $arr_sparkline[$i]);?>], 
+		$("#sparkline_<?php echo $i?>").sparkline(
+			[<?php echo implode (',', $arr_sparkline[$i]);?>], 
 			{
 		    	type: 'bar',
 			    zeroAxis: false, 

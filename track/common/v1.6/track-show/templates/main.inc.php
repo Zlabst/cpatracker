@@ -23,7 +23,7 @@
 
                         if ($bHideLeftSidebar!==true){$main_container_class='col-sm-9';} else{$main_container_class='col-sm-12';}
                     ?>
-                    <div class="<?=$main_container_class?>">
+                    <div class="<?php echo $main_container_class?>">
                         <?php
                             if (in_array($page_content, $page_content_allowed))
                             {

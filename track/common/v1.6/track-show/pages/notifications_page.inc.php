@@ -29,14 +29,14 @@
 		  <div class="panel panel-default">
 		    <div class="panel-heading">
 		      <h4 class="panel-title">
-		        <a data-toggle="collapse" data-parent="#accordion" href="#collapse<?=$i;?>">
-		          <?=$title;?>
+		        <a data-toggle="collapse" data-parent="#accordion" href="#collapse<?php echo $i;?>">
+		          <?php echo $title;?>
 		        </a>
 		      </h4>
 		    </div>
-		    <div id="collapse<?=$i;?>" class="panel-collapse collapse <?if ($i==1){echo "in";}?>">
+		    <div id="collapse<?php echo $i;?>" class="panel-collapse collapse <?php f ($i==1){echo "in";}?>">
 		      <div class="panel-body">
-		      	<?=$description;?>
+		      	<?php echo $description;?>
 		      </div>
 		    </div>
 		  </div>

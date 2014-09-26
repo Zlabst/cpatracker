@@ -1,5 +1,5 @@
-<? if (!$include_flag){exit();} ?>
-<script src="<?=_HTML_TEMPLATE_PATH;?>/js/report_toolbar.js"></script>
+<?php if (!$include_flag){exit();} ?>
+<script src="<?php echo _HTML_TEMPLATE_PATH;?>/js/report_toolbar.js"></script>
 <?php
 // Create dates array for reports
 $date1 = date('Y-m-d', strtotime('-6 days', strtotime(date('Y-m-d'))));
@@ -148,16 +148,16 @@ switch ($_REQUEST['type']) {
 }
 ?>
 
-<link href="<?=_HTML_LIB_PATH;?>/datatables/css/jquery.dataTables.css" rel="stylesheet">
-<link href="<?=_HTML_LIB_PATH;?>/datatables/css/dt_bootstrap.css" rel="stylesheet">
-<script src="<?=_HTML_LIB_PATH;?>/datatables/js/jquery.dataTables.min.js" charset="utf-8" type="text/javascript"></script>
-<script src="<?=_HTML_LIB_PATH;?>/datatables/js/dt_bootstrap.js" charset="utf-8" type="text/javascript"></script>
-<script src="<?=_HTML_LIB_PATH;?>/sparkline/jquery.sparkline.min.js"></script>
-<link href="<?=_HTML_LIB_PATH;?>/daterangepicker/daterangepicker-bs3.css" rel="stylesheet"/>
-<script src="<?=_HTML_LIB_PATH;?>/daterangepicker/moment.min.js"></script>
-<script src="<?=_HTML_LIB_PATH;?>/daterangepicker/daterangepicker.js"></script>
-<link href="<?=_HTML_LIB_PATH;?>/datepicker/css/datepicker.css" rel="stylesheet"/>
-<script type="text/javascript" src="<?=_HTML_LIB_PATH;?>/datepicker/js/bootstrap-datepicker.js"></script>
+<link href="<?php echo _HTML_LIB_PATH;?>/datatables/css/jquery.dataTables.css" rel="stylesheet">
+<link href="<?php echo _HTML_LIB_PATH;?>/datatables/css/dt_bootstrap.css" rel="stylesheet">
+<script src="<?php echo _HTML_LIB_PATH;?>/datatables/js/jquery.dataTables.min.js" charset="utf-8" type="text/javascript"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/datatables/js/dt_bootstrap.js" charset="utf-8" type="text/javascript"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/sparkline/jquery.sparkline.min.js"></script>
+<link href="<?php echo _HTML_LIB_PATH;?>/daterangepicker/daterangepicker-bs3.css" rel="stylesheet"/>
+<script src="<?php echo _HTML_LIB_PATH;?>/daterangepicker/moment.min.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/daterangepicker/daterangepicker.js"></script>
+<link href="<?php echo _HTML_LIB_PATH;?>/datepicker/css/datepicker.css" rel="stylesheet"/>
+<script type="text/javascript" src="<?php echo _HTML_LIB_PATH;?>/datepicker/js/bootstrap-datepicker.js"></script>
 
 <script>
     $('#dpMonthsF').datepicker();
@@ -173,8 +173,8 @@ switch ($_REQUEST['type']) {
     
     $('#per_day_range').daterangepicker(
             {
-                startDate: '<?=_e($from)?>',
-                endDate: '<?=_e($to)?>',
+                startDate: '<?php echo _e($from)?>',
+                endDate: '<?php echo _e($to)?>',
                 format: 'DD.MM.YYYY',
                 locale: {
                     applyLabel: "Выбрать",
@@ -232,7 +232,7 @@ switch ($_REQUEST['type']) {
         return ((x < y) ? 1 : ((x > y) ? -1 : 0));
     };
 </script>
-<? if($_REQUEST['type'] != 'targetreport') { ?>
+<?php if($_REQUEST['type'] != 'targetreport') { ?>
 <div class="row" id='report_toolbar'>
     <div class="col-md-12">
         <div class="form-group">
@@ -258,7 +258,7 @@ switch ($_REQUEST['type']) {
         </div>
     </div> <!-- ./col-md-12 -->
 </div> <!-- ./row -->
-<? } ?>
+<?php } ?>
 <input type='hidden' id='usd_selected' value='1'>
 <input type='hidden' id='type_selected' value='clicks'>
 <input type='hidden' id='sales_selected' value='1'>

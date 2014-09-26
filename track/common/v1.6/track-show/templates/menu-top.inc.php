@@ -60,7 +60,7 @@
 
           <ul class="nav navbar-nav navbar-right">
             <li class="dropdown">
-              <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class='fa fa-clock-o color-white'></i>&nbsp;<?=_e($arr_timezone_selected_name);?> <b class="caret"></b></a>
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class='fa fa-clock-o color-white'></i>&nbsp;<?php echo _e($arr_timezone_selected_name);?> <b class="caret"></b></a>
               <ul class="dropdown-menu">
                <?
                     foreach ($arr_timezone_settings as $cur)

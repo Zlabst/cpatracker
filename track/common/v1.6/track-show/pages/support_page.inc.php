@@ -1,4 +1,4 @@
-<? if (!$include_flag){exit();} ?>
+<?php if (!$include_flag){exit();} ?>
 <script>
 function send_support_message()
 {
@@ -65,7 +65,7 @@ $(function()
 		</div>
 		<form class="form form-validation form-contact" method="post" novalidate="novalidate" id='support_form' onSubmit='return send_support_message();'>
 			<input type=hidden name='ajax_act' value='send_support_message'>
-			<input type="hidden" name="user_email" id='user_email' value="<?=$auth_info[1];?>">
+			<input type="hidden" name="user_email" id='user_email' value="<?php echo $auth_info[1];?>">
         	<input type="hidden" name="csrfkey" value="<?php echo CSRF_KEY;?>">
 				<div class="row">
 					<div class="col-sm-12">
@@ -91,6 +91,6 @@ $(function()
 <br />
 <!--
 	<div class="row">
-		<a href="http://www.cpatracker.ru/support/<?=_e($installation_guid);?>" target='_blank' class='btn btn-link' style='color:gray;'><i class="icon-comment"></i> Посмотреть историю переписки</a>
+		<a href="http://www.cpatracker.ru/support/<?php echo _e($installation_guid);?>" target='_blank' class='btn btn-link' style='color:gray;'><i class="icon-comment"></i> Посмотреть историю переписки</a>
 	</div>
 -->

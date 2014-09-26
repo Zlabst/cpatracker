@@ -1,4 +1,4 @@
-<? if (!$include_flag){exit();} ?>
+<?php if (!$include_flag){exit();} ?>
 <?
 	$arr_timezone_settings=get_timezone_settings();
 ?>
@@ -61,7 +61,7 @@
 </script>
 <h3>Настройка часовых поясов</h3>
 
-<p><b>Сейчас на сервере:</b> <span id="servertime"><? echo date("d.m.Y H:i:s"); ?></span><br /></p>
+<p><b>Сейчас на сервере:</b> <span id="servertime"><?php echo date("d.m.Y H:i:s"); ?></span><br /></p>
 <br />
 <div class="row">
 <div class='col-md-10' style='margin-left:0px;'>
@@ -142,7 +142,7 @@
 </div>
 </div> <!-- ./row -->
 <script type="text/javascript">
-	var currenttime = '<? print date("F d, Y H:i:s", time())?>';
+	var currenttime = '<?php print date("F d, Y H:i:s", time())?>';
 
 	var montharray=new Array("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
 	var serverdate=new Date(currenttime);
