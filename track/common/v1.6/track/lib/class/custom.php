@@ -49,7 +49,7 @@ class custom {
         $sale = '';
         if (isset($data['s'])) {
             $data['a'] = convert_to_usd($data['c'], $data['a']);
-            $r = mysql_query('SELECT `id` FROM `tbl_clicks` WHERE `subid` = "'.$data['s'].'"');
+            $r = mysql_query('SELECT `id` FROM `tbl_clicks` WHERE `subid` = "'.mysql_real_escape_string($data['s']).'"');
             if (mysql_num_rows($r) > 0) {
                 $f = mysql_fetch_assoc($r);
                 switch ($data['t']) {
@@ -61,20 +61,20 @@ class custom {
                         break;
                 }
                 if (($sale != '' || $lead != '') && isset($d['a'])) {
-                    mysql_query('UPDATE `tbl_clicks` SET `conversion_price_main` = '.$data['a'].' '.$lead.$sale.' WHERE `id` = '.$f['id']); 
+                    mysql_query('UPDATE `tbl_clicks` SET `conversion_price_main` = "'.mysql_real_escape_string($data['a']).'" '.$lead.$sale.' WHERE `id` = '.$f['id']); 
                 }
             }
-            $r = mysql_query('SELECT `id` FROM `tbl_conversions` WHERE `subid` = "'.$data['s'].'"');
+            $r = mysql_query('SELECT `id` FROM `tbl_conversions` WHERE `subid` = "'.mysql_real_escape_string($data['s']).'"');
             if (mysql_num_rows($r) > 0) {
                 $f = mysql_fetch_assoc($r);
                 
                 if (isset($data['a'])) {
-                    mysql_query('UPDATE `tbl_conversions` SET `profit` = '.$data['a'].' WHERE `id` = '.$f['id']); 
+                    mysql_query('UPDATE `tbl_conversions` SET `profit` = "'.mysql_real_escape_string($data['a']).'" WHERE `id` = '.$f['id']); 
                 }
             }
             else {
                 mysql_query('INSERT INTO `tbl_conversions` (`network`, `profit`, `subid`, `status`, `t20`, `date_add`) '
-                        . 'VALUES ("custom", "'.$data['a'].'", "'.$data['s'].'", 1, "'.$data['c'].'", NOW())') or die(mysql_error());
+                        . 'VALUES ("custom", "'.mysql_real_escape_string($data['a']).'", "'.mysql_real_escape_string($data['s']).'", 1, "'.mysql_real_escape_string($data['c']).'", NOW())') or die(mysql_error());
             }
         }
     }

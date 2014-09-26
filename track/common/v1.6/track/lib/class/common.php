@@ -37,49 +37,49 @@ class common {
         
         if (isset($data['subid']) && $data['subid'] != '') {
             //Проверяем есть ли клик с этим SibID
-            $r = mysql_query('SELECT `id` FROM `tbl_clicks` WHERE `subid` = "'.$data['subid'].'"') or die(mysql_error());
+            $r = mysql_query('SELECT `id` FROM `tbl_clicks` WHERE `subid` = "'.mysql_real_escape_string($data['subid']).'"') or die(mysql_error());
             
             if (mysql_num_rows($r) > 0) {
                 $f = mysql_fetch_assoc($r);
-                mysql_query('UPDATE `tbl_clicks` SET `is_sale` = 1, `is_lead` = '.$is_lead.', `conversion_price_main` = '.$data['profit'].' WHERE `id` = '.$f['id']) or die(mysql_error());
+                mysql_query('UPDATE `tbl_clicks` SET `is_sale` = 1, `is_lead` = '.intval($is_lead).', `conversion_price_main` = "'.mysql_real_escape_string($data['profit']).'" WHERE `id` = '.$f['id']) or die(mysql_error());
             }
 
 
             // Проверяем, есть ли уже конверсия с таким SubID
-            $r = mysql_query('SELECT * FROM `tbl_conversions` WHERE `subid` = "'.$data['subid'].'" LIMIT 1') or die(mysql_error());
+            $r = mysql_query('SELECT * FROM `tbl_conversions` WHERE `subid` = "'.mysql_real_escape_string($data['subid']).'" LIMIT 1') or die(mysql_error());
             if (mysql_num_rows($r) > 0) {
                 $f = mysql_fetch_assoc($r);
                 
                 $update = '';
                 foreach ($data as $name => $value) {
                     if (array_key_exists($name, $this->params)) {
-                        $update .= ', `'.$name.'` = "'.$value.'"';
+                        $update .= ', `'.$name.'` = "'.mysql_real_escape_string($value).'"';
                         unset($data[$name]);
                     }
                 }
                 
                 if (isset($data['date_add'])) {
-                    $update .= ', `date_add` = "'.$data['date_add'].'"';
+                    $update .= ', `date_add` = "'.mysql_real_escape_string($data['date_add']).'"';
                     unset($data['date_add']);
                 }
                 
                 if (isset($data['txt_status'])) {
-                    $update .= ', `txt_status` = "'.$data['txt_status'].'"';
+                    $update .= ', `txt_status` = "'.mysql_real_escape_string($data['txt_status']).'"';
                     unset($data['txt_status']);
                 }
                 
                 if (isset($data['status'])) {
-                    $update .= ', `status` = "'.$data['status'].'"';
+                    $update .= ', `status` = "'.mysql_real_escape_string($data['status']).'"';
                     unset($data['status']);
                 }
 
-                mysql_query('UPDATE `tbl_conversions` SET `network` = "'.$data['network'].'"'.$update.' WHERE `id` = '.$f['id']) or die(mysql_error());
+                mysql_query('UPDATE `tbl_conversions` SET `network` = "'.mysql_real_escape_string($data['network']).'"'.$update.' WHERE `id` = '.$f['id']) or die(mysql_error());
                 unset($data['network']);
                 mysql_query('DELETE FROM `tbl_postback_params` WHERE `conv_id` = '.$f['id']) or die(mysql_error());
                 
                 foreach ($data as $name => $value) {
                     mysql_query('INSERT INTO `tbl_postback_params` (`conv_id`, `name`, `value`)'
-                            . 'VALUES ('.$f['id'].', "'.$name.'", "'.$value.'")') or die(mysql_error());
+                            . 'VALUES ('.$f['id'].', "'.mysql_real_escape_string($name).'", "'.mysql_real_escape_string($value).'")') or die(mysql_error());
                 }
                 
                 return;
@@ -90,7 +90,7 @@ class common {
         foreach ($data as $name => $value) {
             if (array_key_exists($name, $this->params)) {
                 $params .= ',`'.$name.'`';
-                $vals .= ',"'.$value.'"';
+                $vals .= ',"'.mysql_real_escape_string($value).'"';
                 unset($data[$name]);
             }
         }
@@ -99,30 +99,30 @@ class common {
         
         if (isset($data['date_add'])) {
             $add_names .= ', `date_add`';
-            $add_vals .= ' "'.$data['date_add'].'"';
+            $add_vals .= ' "'.mysql_real_escape_string($data['date_add']).'"';
             unset($data['date_add']);
         }
 
         if (isset($data['txt_status'])) {
             $add_names .= ', `txt_status`';
-            $add_vals .= ' "'.$data['txt_status'].'"';
+            $add_vals .= ' "'.mysql_real_escape_string($data['txt_status']).'"';
             unset($data['txt_status']);
         }
 
         if (isset($data['status'])) {
             $add_names .= ', `status`';
-            $add_vals .= ' "'.$data['status'].'"';
+            $add_vals .= ' "'.mysql_real_escape_string($data['status']).'"';
             unset($data['status']);
         }
         
-        mysql_query('INSERT INTO `tbl_conversions` (`network`  '.$params.') VALUES ("'.$data['network'].'" '.$vals.')') or die(mysql_error());
+        mysql_query('INSERT INTO `tbl_conversions` (`network`  '.$params.') VALUES ("'.mysql_real_escape_string($data['network']).'" '.$vals.')') or die(mysql_error());
         $conv_id = mysql_insert_id();
         unset($data['network']);
         foreach ($data as $name => $value) {
             if (strpos($name, 'bsave_') > 0) {
                 $name = str_replace('pbsave_', '', $name);
                 mysql_query('INSERT INTO `tbl_postback_params` (`conv_id`, `name`, `value`)'
-                        . 'VALUES ('.$conv_id.', "'.$name.'", "'.$value.'")') or die(mysql_error());
+                        . 'VALUES ('.$conv_id.', "'.mysql_real_escape_string($name).'", "'.mysql_real_escape_string($value).'")') or die(mysql_error());
             }
         }
     }
