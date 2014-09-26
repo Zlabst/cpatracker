@@ -1,6 +1,5 @@
 <?php if (!$include_flag){exit();} 
-	$mode = (isset($_POST['leadsType']) and $_POST['leadsType'] == 'lead') ? 'lead' : 'sale';
-	
+	$mode = (isset($_POST['leadsType']) and $_POST['leadsType'] == 'lead') ? 'lead' : 'sale';	
 ?>
 <script type="text/javascript">
 	function check_import()
@@ -91,6 +90,11 @@
 	<?php if($mode == 'lead') { ?>
 		<script>
 			$('#leadsType').val('lead'); $('#sale_amount').hide(); $('#amount_value').removeAttr('required');
+		</script>
+	<?php } ?>
+	<?php if(!empty($_REQUEST['currency_code'])) { ?>
+		<script>
+			change_currency('<?php echo $_REQUEST['currency_code'];?>');
 		</script>
 	<?php } ?>
 </form>

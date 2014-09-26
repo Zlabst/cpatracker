@@ -139,6 +139,26 @@
 	mysql_select_db($_DB_NAME);
 	mysql_query('SET NAMES utf8');
 
+	if ($_REQUEST['ajax_act']=='a_load_flow') {
+		$filter='';
+		if ($_REQUEST['filter_by']!='') {
+			switch ($_REQUEST['filter_by']) {
+				case 'hour':
+					$filter=array(filter_by=>$_REQUEST['filter_by'], source_name=>$_REQUEST['source_name'], date=>$_REQUEST['date'], hour=>$_REQUEST['hour']);
+				break;
+
+    			default: 
+            		$filter=array(filter_by=>$_REQUEST['filter_by'], filter_value=>$_REQUEST['value']);   			
+    			break;
+			}
+		} 
+		list($total, $arr_data) = get_visitors_flow_data ($filter, rq('offset', 2), 100, $_REQUEST['date']);
+		foreach ($arr_data as $row)	{
+			include _HTML_TEMPLATE_PATH . '/../pages/stats-flow-row.php';
+		}
+		exit();
+	}
+
 	// Authentification
 	if ($_REQUEST['page']!='login')
 	{
@@ -880,7 +900,7 @@
 	        			}
 	        		}
 
-	            	$arr_data=get_visitors_flow_data ($filter, 0, $_REQUEST['date']);
+	            	list($total, $arr_data) = get_visitors_flow_data ($filter, 0, 20, $_REQUEST['date']);
 
 	            	$page_sidebar='sidebar-left-reports.inc.php';
 	            	$page_content="stats-flow.php";

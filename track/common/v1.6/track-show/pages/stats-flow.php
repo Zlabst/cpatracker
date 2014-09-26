@@ -126,8 +126,8 @@ echo "</div> <!-- ./row -->";
 			</div>
 
 			<div class="btn-group invisible" id='rt_currency_section' data-toggle="buttons">
-				<label class="btn btn-default active" onclick='update_stats("currency_rub");'><input type="radio" name="option_currency">руб.</label>
-				<label class="btn btn-default" onclick='update_stats("currency_usd");'><input type="radio" name="option_currency">$</label>	
+				<label class="btn btn-default" onclick='update_stats("currency_rub");'><input type="radio" name="option_currency">руб.</label>
+				<label class="btn btn-default active" onclick='update_stats("currency_usd");'><input type="radio" name="option_currency">$</label>	
 			</div>
 
 			<div class="btn-group pull-right">
@@ -147,80 +147,31 @@ echo "</div> <!-- ./row -->";
 
 	echo "<h4>Лента переходов за ".sdate($_REQUEST['date'])."<span style='float:right;'><a title='Экспорт в Excel' href='?csrfkey="._e(CSRF_KEY)."&ajax_act=excel_export&date="._e($date)."'><img src='"._HTML_TEMPLATE_PATH."/img/icons/table-excel.png'></a></span><span style='float:right; margin-right:16px;'><a title='Экспорт в TSV' href='?csrfkey="._e(CSRF_KEY)."&ajax_act=tsv_export&date="._e($date)."'><img src='"._HTML_TEMPLATE_PATH."/img/icons/table-tsv.png'></a></span></h4>";
 	
-	echo "<table class='table table-striped'>";
+	//echo _HTML_TEMPLATE_PATH . '../pages/stats-flow-row.php';
+	
+	echo "<table class='table table-striped' id='stats-flow'>";
 	echo "<tbody>";
 	foreach ($arr_data as $row)
 	{
-		echo "<tr style='cursor:pointer;' onclick='$(this).next().toggle();'>";
-			if ($row['country']==''){$country_title='';$country_icon='question.png';}else{$country_title="{$row['country']}"; 
-			$country_icon=strtolower($row['country']).'.png';}
-			echo "
-			<td nowrap><img title='"._e($country_title)."' src='"._HTML_TEMPLATE_PATH."/img/countries/"._e($country_icon)."'> <i title='"._e($row['user_os'])." "._e($row['user_os_version'])."' class='b-favicon-os "._e(get_class_by_os($row['user_os']))."'></i> 
-			<i title='"._e($row['user_platform'].' '.$row['user_platform_info'].' '.$row['user_platform_info_extra'])."' class='b-favicon-os "._e(get_class_by_platform($row['user_platform']))."'></i></td>
-			<td nowrap title='"._e($row['dt'])."'>"._e($row['td'])."</td>
-			<td><a href='?filter_by=rule_id&value={$row['rule_id']}'>".get_rule_description($row['rule_id'])."</a>&nbsp;&nbsp;&rarr;&nbsp;&nbsp;<a href='?filter_by=out_id&value={$row['out_id']}'>"._e(current(get_out_description($row['out_id'])))."</a></td>
-			<td><a href='?filter_by=source_name&value="._e($row['source_name'])."'>"._e($row['source_name'])."</td>
-			<td>"._e($row['campaign_name'].' '.$row['ads_name'])."</td>";
-			
-			$cur_referrer=str_replace (array('http://www.', 'www.'),'',$row['referer']);
-			if (strpos($cur_referrer, 'http://')===0){$cur_referrer=substr($cur_referrer, strlen('http://'));}
-			
-			if (strlen($cur_referrer)>35)
-			{
-				$cur_referrer=substr($cur_referrer,0, 29).'…';
-			}
-			$wrapped_referrer=$cur_referrer;
-
-			// Merge cells if we don't have additional params
-			if ($row['campaign_param1'].$row['campaign_param2'].$row['campaign_param3'].$row['campaign_param4'].$row['campaign_param5']=='')
-			{
-				echo "<td colspan=6  title='"._e($row['referer'])."'>"._e($wrapped_referrer)."</td>";			
-			}
-			else
-			{
-				echo "<td title='"._e($row['referer'])."'>"._e($wrapped_referrer)."</td>";			
-				echo "<td>"._e($row['campaign_param1'])."</td>
-				<td>"._e($row['campaign_param2'])."</td>
-				<td>"._e($row['campaign_param3'])."</td>
-				<td>"._e($row['campaign_param4'])."</td>
-				<td>"._e($row['campaign_param5'])."</td>";
-			}
-
-			echo "<td>";
-				if ($row['conversion_price_main']>0)
-				{
-					echo "<span class='label label-success' style='font-weight:normal'>"._e($row['conversion_price_main'])."</span>";
-				}
-			echo "</td>";
-		echo "</tr>";	
-		echo "<tr style='display:none;'><td colspan=12 style='background:#f9f9f9; padding:0;'>
-		<div style='padding:10px 15px 15px 15px; width:100%; line-height:26px;'>
-		";
-
-		$arr_locations=array();
-		if ($row['country']!=''){$arr_locations[]=$row['country'];}
-		if ($row['state']!=''){$arr_locations[]=$row['state'];}
-		if ($row['city']!=''){$arr_locations[]=$row['city'];}				
-		$str_location=implode (', ', $arr_locations);
-		if ($str_location!='')
-		{
-			echo "<i class='icon-ip'></i> "._e($str_location);
-		}
-		echo "<span class='badge' style='float:right; font-weight:normal; margin-right:25px;'>"._e($row['user_ip'])."</span><br />";
-		if ($row['referer']!='')
-		{
-			echo _e($row['referer'])."<br />";
-		}
-		echo _e("{$row['user_os']} {$row['user_os_version']}")."<br />
-			"._e("{$row['user_platform']} {$row['user_platform_info']} {$row['user_platform_info_extra']}")."<br />
-			"._e("{$row['user_browser']} {$row['user_browser_version']}");
-
-		echo '<p>'._e($row['user_agent']).'</p>';
-		echo '<p>'._e($row['subid']).'</p>';
-		echo "</div>"; 		
-		echo "<div style='width:100%; background:white; height:10px; margin:0; padding:0;'></div>";
-
-		echo "</td></tr>";            
+		include _HTML_TEMPLATE_PATH . '/../pages/stats-flow-row.php';
 	}
 	echo "</tbody></table>";            
+	echo '<a href="#" onclick="return load_flow()" class="center-block text-center">Показать больше</a>';
 ?>
+<script type="text/javascript">
+	function load_flow() {
+		$.post(
+            'index.php?ajax_act=a_load_flow', {
+                offset: $('#stats-flow tbody').children().length / 2 ,
+                date: '<?php echo _str($_REQUEST['date']) ?>',
+                filter_by: '<?php echo _str($_REQUEST['filter_by']) ?>',
+                value: '<?php echo _str($_REQUEST['value']) ?>'
+            }
+        ).done(
+        	function(data) {
+            	$('#stats-flow tbody').children().last().after(data);
+            }
+        ); 
+		return false;
+	}
+</script>

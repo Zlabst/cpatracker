@@ -1390,4 +1390,10 @@ function show_country_select($selected='')
 		}
 		return false;
 	}
+/*
+ * $a = func()[0] construction
+ */	
+	function ap($arr, $n = 0) {
+		return $arr[$n];
+	} 
 ?>

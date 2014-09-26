@@ -187,8 +187,6 @@ $(document).ready(function() {
 	};
 	
 	jQuery.fn.dataTableExt.oSort['click-data-asc'] = function(a, b) {
-		console.log(a);
-		console.log(b);
         x = a.split('%', 1);
         y = b.split('%', 1);
 

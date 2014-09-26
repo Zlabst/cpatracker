@@ -201,35 +201,31 @@ switch ($_REQUEST['type']) {
         $('#range_form').submit();
     }
     );
+    function cnv2(m) {
+    	n = $('.clicks', $('<div>' + m + '</div>')).text();
+        if(n != '') {
+        	n = n.split(':')
+	        if(n.length == 2) {
+	        	n0 = n[0]; n1 = n[1];
+	        } else if(n.length == 1) {
+	        	n0 = 0; n1 = n[0];
+	        } else {
+	        	n0 = 0; n1 = 0;
+	        }
+        } else {
+        	n0 = 0; n1 = 0;
+        }
+        return [parseFloat(n0), parseFloat(n1)];
+    }
     jQuery.fn.dataTableExt.oSort['click-data-asc'] = function(a, b) {
-        x = $('.clicks', $('<div>' + a + '</div>')).text().split(':', 1);
-        y = $('.clicks', $('<div>' + b + '</div>')).text().split(':', 1);
-
-        if (x == '') {
-            x = 0;
-        }
-        if (y == '') {
-            y = 0;
-        }
-        x = parseFloat(x);
-        y = parseFloat(y);
-
-        return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+		x = cnv2(a);
+    	y = cnv2(b);
+        return ((x[0] < y[0]) ? -1 : ((x[0] > y[0]) ? 1 : ((x[1] < y[1]) ? -1 : ((x[1] > y[1]) ? 1 : 0))));
     };
-
-    jQuery.fn.dataTableExt.oSort['click-data-desc'] = function(a, b)
-    {
-        x = $('.clicks', $('<div>' + a + '</div>')).text().split(':', 1);
-        y = $('.clicks', $('<div>' + b + '</div>')).text().split(':', 1);
-        if (x == '') {
-            x = 0;
-        }
-        if (y == '') {
-            y = 0;
-        }
-        x = parseFloat(x);
-        y = parseFloat(y);
-        return ((x < y) ? 1 : ((x > y) ? -1 : 0));
+    jQuery.fn.dataTableExt.oSort['click-data-desc'] = function(a, b) {
+    	x = cnv2(a);
+    	y = cnv2(b);
+        return ((x[0] < y[0]) ? 1 : ((x[0] > y[0]) ? -1 : ((x[1] < y[1]) ? 1 : ((x[1] > y[1]) ? -1 : 0))));
     };
 </script>
 <?php if($_REQUEST['type'] != 'targetreport') { ?>
@@ -252,8 +248,8 @@ switch ($_REQUEST['type']) {
             </div>
 
             <div class="btn-group invisible" id='rt_currency_section' data-toggle="buttons">
-                <label class="btn btn-default active" onclick='update_stats("currency_rub");'><input type="radio" name="option_currency">руб.</label>
-                <label class="btn btn-default" onclick='update_stats("currency_usd");'><input type="radio" name="option_currency">$</label>	
+                <label class="btn btn-default" onclick='update_stats("currency_rub");'><input type="radio" name="option_currency">руб.</label>
+                <label class="btn btn-default active" onclick='update_stats("currency_usd");'><input type="radio" name="option_currency">$</label>	
             </div>
         </div>
     </div> <!-- ./col-md-12 -->
