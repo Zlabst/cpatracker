@@ -140,8 +140,8 @@ switch ($_REQUEST['type']) {
     
     case 'targetreport':
     	
-    	$from = empty($_POST['from']) ? date('Y-m-d', time() - 3600*24*6) : date('Y-m-d', strtotime($_POST['from']));
-    	$to = empty($_POST['to']) ? date('Y-m-d') :  date('Y-m-d', strtotime($_POST['to']));
+    	$from = empty($_REQUEST['from']) ? date('Y-m-d', time() - 3600*24*6) : date('Y-m-d', strtotime($_REQUEST['from']));
+    	$to =   empty($_REQUEST['to']) ? date('Y-m-d') :  date('Y-m-d', strtotime($_REQUEST['to']));
     	
     	include _TRACK_SHOW_PATH."/pages/targetreport.php";
    	break;

@@ -880,7 +880,7 @@
 	        			}
 	        		}
 
-	            	$arr_data=get_visitors_flow_data ($filter);
+	            	$arr_data=get_visitors_flow_data ($filter, 0, $_REQUEST['date']);
 
 	            	$page_sidebar='sidebar-left-reports.inc.php';
 	            	$page_content="stats-flow.php";

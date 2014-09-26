@@ -1,26 +1,27 @@
 <?php
-	function get_visitors_flow_data($filter='')
+	function get_visitors_flow_data($filter='', $offset = 0, $from = 0)
 	{
 		$timezone_shift=get_current_timezone_shift();
-
 		$filter_str='';
 		if ($filter!='')
 		{
 			switch ($filter['filter_by'])
 			{
 				case 'hour': 
-					$filter_str="where source_name='".mysql_real_escape_string($filter['source_name'])."' AND CONVERT_TZ(date_add, '+00:00', '".mysql_real_escape_string($timezone_shift)."') BETWEEN '".mysql_real_escape_string($filter['date'])." ".mysql_real_escape_string($filter['hour']).":00:00' AND '".mysql_real_escape_string($filter['date'])." ".mysql_real_escape_string($filter['hour']).":59:59' ";				
+					$filter_str="and source_name='".mysql_real_escape_string($filter['source_name'])."' AND CONVERT_TZ(date_add, '+00:00', '".mysql_real_escape_string($timezone_shift)."') BETWEEN '".mysql_real_escape_string($filter['date'])." ".mysql_real_escape_string($filter['hour']).":00:00' AND '".mysql_real_escape_string($filter['date'])." ".mysql_real_escape_string($filter['hour']).":59:59' ";				
 				break;
 				
 				default:
-					$filter_str="where ".mysql_real_escape_string ($filter['filter_by'])."='".$filter['filter_value']."'";
+					$filter_str="and ".mysql_real_escape_string ($filter['filter_by'])."='".$filter['filter_value']."'";
 				break;
 			}
 		}
 		
 		$sql="select *, date_format(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '".mysql_real_escape_string($timezone_shift)."'), '%d.%m.%Y %H:%i') as dt, timediff(NOW(), CONVERT_TZ(tbl_clicks.date_add, '+00:00', '".mysql_real_escape_string($timezone_shift)."')) as td from tbl_clicks 
+		where 1
 		{$filter_str}
-		order by date_add desc limit 20";
+		".($from ? "and date_format(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '".mysql_real_escape_string($timezone_shift)."'), '%Y-%m-%d %H:%i:%s') < '".$from." 23:59:59'" : '' )."
+		order by date_add desc limit $offset, 20";
 
 		$result=mysql_query($sql);
 		$arr_data=array();
@@ -31,6 +32,31 @@
 		}
 
 		return $arr_data;
+	}
+	
+	function sdate($d, $today = true) {
+		$d = strtotime($d);
+		if((empty($d) and $today) or date('Y-m-d') == date('Y-m-d', $d)) {
+			return 'сегодня';
+		} elseif(date('Y-m-d') == date('Y-m-d', $d + 86400)) {
+			return 'вчера';
+		} else {
+			$months = array(
+				'01' =>	"января",
+				'02' =>	"февраля",
+				'03' =>	"марта",
+				'04' =>	"апреля",
+				'05' =>	"мая",
+				'06' =>	"июня",
+				'07' =>	"июля",
+				'08' =>	"августа",
+				'09' =>	"сентября",
+				'10' =>	"октября",
+				'11' =>	"ноября",
+				'12' =>	"декабря",
+			);
+			return date('j', $d) . ' ' . $months[date('m', $d)] . ' ' . date('Y', $d);
+		}
 	}
 	
 	function get_clicks_report_grouped ($main_column, $group_by, $limited_to='', $report_type='daily', $from='', $to='')
