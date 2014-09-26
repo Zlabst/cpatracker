@@ -1,31 +1,6 @@
 <?php if (!$include_flag){exit();} ?>
-<script>
-$(document).ready(function() {
-    $('.dataTableT').dataTable
-    ({    	
-    	"aoColumns": [
-            null,
-            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
-            { "asSorting": [ "desc", "asc"], "sType": "click-data" },
-            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
-            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
-            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
-            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
-            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
-			{ "asSorting": [ "desc", "asc" ], "sType": "click-data" },            
-        ],
-		"bPaginate": true,
-	    "bLengthChange": false,
-	    "bFilter": false,
-	    "bSort": true,
-	    "bInfo": false,
-    "bAutoWidth": false
-	})
-} );
-</script>
-
-<?php	
-        $from=$_REQUEST['from'];
+<?php
+    $from=$_REQUEST['from'];
 	$to=$_REQUEST['to'];
 
 	// Set default range values for this report
@@ -211,6 +186,32 @@ $(document).ready(function() {
 
 </div> <!-- ./col-md-12 -->
 </div> <!-- ./row -->
+
+<script>
+$(document).ready(function() {
+    $('.dataTableT').dataTable
+    ({    	
+    	"aoColumns": [
+            null,
+            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
+            { "asSorting": [ "desc", "asc"], "sType": "click-data" },
+            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
+            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
+            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
+            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
+            { "asSorting": [ "desc", "asc" ], "sType": "click-data" },
+			{ "asSorting": [ "desc", "asc" ], "sType": "click-data" },            
+        ],
+		"bPaginate": <?php echo (count($arr_report_data) > 10) ? 'true' : 'false'; ?>,
+	    "bLengthChange": false,
+	    "bFilter": false,
+	    "bSort": true,
+	    "bInfo": false,
+        "bAutoWidth": false
+	})
+} );
+</script>
+
 <div class="row">&nbsp;</div>
 <?php
 		echo "<div class='row'>";

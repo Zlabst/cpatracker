@@ -205,7 +205,7 @@ $(document).ready(function() {
              <?php echo str_repeat('{ "asSorting": [ "desc", "asc"], "sType": "click-data" },', count($arr_months))?>
 			{ "asSorting": [ "desc", "asc" ], "sType": "click-data" },            
         ],
-		"bPaginate": false,
+		"bPaginate": <?php echo (count($arr_report_data) > 10) ? 'true' : 'false'; ?>,
 	    "bLengthChange": false,
 	    "bFilter": false,
 	    "bSort": true,

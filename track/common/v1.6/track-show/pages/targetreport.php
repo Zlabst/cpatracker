@@ -234,7 +234,7 @@ $(document).ready(function() {
             { "asSorting": [ "desc", "asc" ], "sType": "numeric" },
             { "asSorting": [ "desc", "asc" ], "sType": "click-data" }
         ],
-		"bPaginate": true,
+		"bPaginate": <?php echo (count($data) > 10) ? 'true' : 'false'; ?>,
 	    "bLengthChange": false,
 	    "bFilter": false,
 	    "bSort": true,
