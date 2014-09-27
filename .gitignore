@@ -1,2 +1,6 @@
-track/cache/*
-track/common/v1.6/track/cache/*
+track/cache/clicks/*
+track/cache/outs/*
+track/cache/postback/*
+track/cache/rules/*
+track/cache/wurfl-persistence/*
+track/cache/settings.php
