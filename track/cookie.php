@@ -1,3 +1,27 @@
+function cpatracker_add_sale() {
+	var api_key = "ec63b5ea28";
+	var cookie = " " + document.cookie;
+	var search = "cpa_subid=";
+	var setStr = null;
+	var offset = 0;
+	var end = 0;
+	if (cookie.length > 0) {
+		offset = cookie.indexOf(search);
+		if (offset != -1) {
+			offset += search.length;
+			end = cookie.indexOf(";", offset)
+			if (end == -1) {
+				end = cookie.length;
+			}
+			setStr = unescape(cookie.substring(offset, end));
+		}
+	}
+	if(setStr) {
+		var img= document.createElement('img');
+	    img.src = 'http://dev1.cpatracker.yyzz.ru/track/p.php?n=custom&ak=' + api_key + '&subid=' + encodeURIComponent(setStr);
+	}
+}
+
 function modufy_links() {
 	var subid = '';
 	var vars = [], hash;
