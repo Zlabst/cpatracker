@@ -29,38 +29,6 @@
 	}
 
 	$arr_dates=getDatesBetween($from, $to);
-        $group_types=array('out_id'=>'Ссылка', 
-						'campaign_name'=>'Кампания',
-						'ads_name'=>'Объявление',
-						'referer'=>'Площадка',					
-						'user_os'=>'ОС',
-						'user_platform'=>'Платформа', 
-						'user_browser'=>'Браузер', 
-						'country'=>'Страна', 
-						'state'=>'Регион', 
-						'city'=>'Город', 
-						'isp'=>'Провайдер', 
-						'campaign_param1'=>'Параметр ссылки #1', 
-						'campaign_param2'=>'Параметр ссылки #2', 
-						'campaign_param3'=>'Параметр ссылки #3', 
-						'campaign_param4'=>'Параметр ссылки #4', 
-						'campaign_param5'=>'Параметр ссылки #5', 
-						'click_param_value1'=>'Параметр перехода #1', 
-						'click_param_value2'=>'Параметр перехода #2', 
-						'click_param_value3'=>'Параметр перехода #3', 
-						'click_param_value4'=>'Параметр перехода #4', 
-						'click_param_value5'=>'Параметр перехода #5', 
-						'click_param_value6'=>'Параметр перехода #6', 
-						'click_param_value7'=>'Параметр перехода #7', 
-						'click_param_value8'=>'Параметр перехода #8', 
-						'click_param_value9'=>'Параметр перехода #9', 
-						'click_param_value10'=>'Параметр перехода #10', 
-						'click_param_value11'=>'Параметр перехода #11', 
-						'click_param_value12'=>'Параметр перехода #12', 
-						'click_param_value13'=>'Параметр перехода #13', 
-						'click_param_value14'=>'Параметр перехода #14', 
-						'click_param_value15'=>'Параметр перехода #15'	
-	);
 
 	$main_type=$_REQUEST['subtype'];
 	$group_by=$_REQUEST['group_by'];
@@ -219,7 +187,7 @@ $(document).ready(function() {
 		echo "<table class='table table-condensed table-striped table-bordered dataTableT'>";	
 		echo "<thead>";
 			echo "<tr>";
-				echo "<th>"._e($group_types[$group_by])."</th>";		
+				echo "<th>"._e($group_types[$group_by][0])."</th>";		
 				foreach ($arr_dates as $cur_date)
 				{
 					$d=date('d.m', strtotime($cur_date));

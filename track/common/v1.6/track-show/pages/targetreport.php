@@ -4,29 +4,28 @@ if (!$include_flag) {
 }
 $days = getDatesBetween($from, $to);
 
-$group_by = rq('group_by', 0, 'out_id');
+$group_by   = rq('group_by', 0, 'out_id');
+$limited_to = rq('limited_to', 2);
 
+// При некоторых группировках необходимо искать значения в других таблицах
 $group_join = array(
-	'out_id' => array('offer_name', 'tbl_offers', 'out_id', 'id')
+	'out_id' => array('offer_name', 'tbl_offers', 'out_id', 'id') // например, название ссылки
 );
 
-$limited_to = empty($_REQUEST['limited_to']) ? 0 : intval($_REQUEST['limited_to']);
-
-$rows = array();
+$rows          = array(); // все клики за период
+$data          = array(); // сгруппированные данные
+$parent_clicks = array(); // массив для единичного зачёта дочерних кликов (иначе у нас LP CTR больше 100% может быть)
 
 $q="SELECT " . (empty($group_join[$group_by]) ? mysql_real_escape_string($group_by) : 't2.' . $group_join[$group_by][0]) . " as `name`, t1.*
 	FROM `tbl_clicks` t1
 	" . (empty($group_join[$group_by]) ? '' : "LEFT JOIN `".$group_join[$group_by][1]."` t2 ON ".$group_join[$group_by][2]." = t2." . $group_join[$group_by][3]) . "
 	WHERE t1.`date_add_day` BETWEEN '" . $from . "' AND '" . $to . "'";
 $rs = mysql_query($q) or die(mysql_error());
-$data = array();
 while($r = mysql_fetch_assoc($rs)) {
 	$rows[$r['id']] = $r;
 }
 
-$data = array();
-$landings = array();
-$parent_clicks = array();
+
 
 foreach($rows as $id => &$r) {
 	// Если группировка по рефереру - обрезаем до домена
@@ -76,8 +75,8 @@ foreach($rows as $id => &$r) {
 }
 
 
-$fromF=date ('d.m.Y', strtotime($from));
-$toF=date ('d.m.Y', strtotime($to));
+$fromF = date ('d.m.Y', strtotime($from));
+$toF   = date ('d.m.Y', strtotime($to));
 $value_date_range = "$fromF - $toF";
 
 if($limited_to) {
@@ -100,7 +99,7 @@ echo '<form method="post"  name="datachangeform" id="range_form">
         <div><'.$report_name_tag.'>'._e($report_name).'</'.$report_name_tag.'></div>
       </form>';
 
-// Группировки
+// Группировки aka разрезы
 if($limited_to) {
 ?>
 <div class="row">&nbsp;</div>

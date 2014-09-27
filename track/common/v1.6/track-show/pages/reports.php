@@ -6,23 +6,82 @@ $date1 = date('Y-m-d', strtotime('-6 days', strtotime(date('Y-m-d'))));
 $date2 = date('Y-m-d');
 $arr_dates = getDatesBetween($date1, $date2);
 
+
+// Кнопки типов статистики
+$type_buttons = array(
+	'all_stats' => 'Общая статистика',
+	'daily_stats' => 'По дням',
+	'monthly_stats' => 'По месяцам',
+);
+
+$type = rq('type', 0, 'daily_stats');
+$subtype = rq('subtype'); // XSS ОПАСНО!!!
+
+// Определяем названия отчётов
+switch ($subtype) {
+    case 'out_id':
+        $report_name = "Переходы по ссылкам за ";
+        $report_main_column_name = "Ссылка";
+        $empty_name = "Без ссылки";
+        break;
+
+    case 'source_name':
+        $report_name = "Переходы по источникам за ";
+        $report_main_column_name = "Источник";
+        $empty_name = "Без источника";
+        break;
+}
+
+// Литералы для группировок
+$group_types = array(
+	'out_id'          => array('Ссылка', 'Без ссылки'), 
+	'campaign_name'   => array('Кампания', 'Без кампании'),
+	'source_name'     => array('Источник', 'Без источника'),
+	'ads_name'        => array('Объявление', 'Без объявления'),
+	'referer'         => array('Площадка', 'Без площадки'),
+	'user_os'         => array('ОС', 'Без ОС'),
+	'user_platform'   => array('Платформа', 'Без платформы'),
+	'user_browser'    => array('Браузер', 'Без браузера'),
+	'country'         => array('Страна', 'Без страны'),
+	'state'           => array('Регион', 'Без региона'),
+	'city'            => array('Город', 'Без города'),
+	'isp'             => array('Провайдер', 'Без провайдера'),
+	'campaign_param1' => array('Параметр ссылки #1', 'Без параметра'),
+	'campaign_param2' => array('Параметр ссылки #2', 'Без параметра'),
+	'campaign_param3' => array('Параметр ссылки #3', 'Без параметра'),
+	'campaign_param4' => array('Параметр ссылки #4', 'Без параметра'),
+	'campaign_param5' => array('Параметр ссылки #5', 'Без параметра'),
+	'click_param_value1'  => array('Параметр перехода #1', 'Без параметра'),
+	'click_param_value2'  => array('Параметр перехода #2', 'Без параметра'),
+	'click_param_value3'  => array('Параметр перехода #3', 'Без параметра'),
+	'click_param_value4'  => array('Параметр перехода #4', 'Без параметра'),
+	'click_param_value5'  => array('Параметр перехода #5', 'Без параметра'),
+	'click_param_value6'  => array('Параметр перехода #6', 'Без параметра'),
+	'click_param_value7'  => array('Параметр перехода #7', 'Без параметра'),
+	'click_param_value8'  => array('Параметр перехода #8', 'Без параметра'),
+	'click_param_value9'  => array('Параметр перехода #9', 'Без параметра'),
+	'click_param_value10' => array('Параметр перехода #10', 'Без параметра'),
+	'click_param_value11' => array('Параметр перехода #11', 'Без параметра'),
+	'click_param_value12' => array('Параметр перехода #12', 'Без параметра'),
+	'click_param_value13' => array('Параметр перехода #13', 'Без параметра'),
+	'click_param_value14' => array('Параметр перехода #14', 'Без параметра'),
+	'click_param_value15' => array('Параметр перехода #15', 'Без параметра'),
+);
+
+
+// Функция вывода кнопок статистики в интерфейс
+function type_subpanel() {
+	global $type_buttons, $type;
+	$out = '<div class="btn-group">';
+    foreach($type_buttons as $k => $v) {
+    	$out .= '<a href="?act=reports&type='.$k.'&subtype='.$_GET['subtype'].'" type="button" class="btn btn-default '.($type==$k ? 'active' : '').'">'.$v.'</a>';
+    }
+    $out .= '</div>';
+    return $out;
+}
+
 switch ($_REQUEST['type']) {
     case 'daily_stats':
-        // Show report name
-        $subtype = $_REQUEST['subtype'];
-        switch ($subtype) {
-            case 'out_id':
-                $report_name = "Переходы по ссылкам за ";
-                $report_main_column_name = "Ссылка";
-                $empty_name = "Без ссылки";
-                break;
-
-            case 'source_name':
-                $report_name = "Переходы по источникам за ";
-                $report_main_column_name = "Источник";
-                $empty_name = "Без источника";
-                break;
-        }
 
         $from = $_REQUEST['from'];
         $to = $_REQUEST['to'];
@@ -44,14 +103,8 @@ switch ($_REQUEST['type']) {
         $fromF = date('d.m.Y', strtotime($from));
         $toF = date('d.m.Y', strtotime($to));
         $value_date_range = "$fromF - $toF";
-        $days_active = '';
-        $month_active = '';
-        if($_GET['type']=='monthly_stats'){$month_active = 'active';}else{$days_active='active';}
-        echo '<div class="btn-group">
-          <a href="?act=reports&type=daily_stats&subtype='.$_GET['subtype'].'" type="button" class="btn btn-default '.$days_active.'">По дням</a>
-          <a href="?act=reports&type=monthly_stats&subtype='.$_GET['subtype'].'" type="button" class="btn btn-default '.$month_active.'">По месяцам</a>
-        </div>';
         
+        echo type_subpanel();
         
         echo '<form method="post"  name="datachangeform" id="range_form">
                 <div id="per_day_range" class="pull-right" style="margin-top:0px; margin-bottom:10px;">
@@ -69,21 +122,6 @@ switch ($_REQUEST['type']) {
 
         break;
      case 'monthly_stats':
-            // Show report name
-            $subtype = $_REQUEST['subtype'];
-            switch ($subtype) {
-                case 'out_id':
-                    $report_name = "Переходы по ссылкам за ";
-                    $report_main_column_name = "Ссылка";
-                    $empty_name = "Без ссылки";
-                    break;
-
-                case 'source_name':
-                    $report_name = "Переходы по источникам за ";
-                    $report_main_column_name = "Источник";
-                    $empty_name = "Без источника";
-                    break;
-            }
 
             $from = $_REQUEST['from'];
             $to = $_REQUEST['to'];
@@ -99,7 +137,7 @@ switch ($_REQUEST['type']) {
                     $to = date('d.m.Y', strtotime('+6 months', strtotime($from)));
                 } else {
                      $from=date ('Y-m-d',  strtotime('13.'.$from));
-                         $to=date ('Y-m-d', strtotime('13.'.$to));
+                     $to=date ('Y-m-d', strtotime('13.'.$to));
                 }
             }
             $from=date ('Y-m-01',  strtotime($from));
@@ -107,13 +145,8 @@ switch ($_REQUEST['type']) {
             $fromF = date('m.Y', strtotime($from));
             $toF = date('m.Y', strtotime($to));
                 
-            $days_active = '';
-            $month_active = '';
-            if($_GET['type']=='monthly_stats'){$month_active = 'active';}else{$days_active='active';}
-            echo '<div class="btn-group">
-              <a href="?act=reports&type=daily_stats&subtype='.$_GET['subtype'].'" type="button" class="btn btn-default '.$days_active.'">По дням</a>
-              <a href="?act=reports&type=monthly_stats&subtype='.$_GET['subtype'].'" type="button" class="btn btn-default '.$month_active.'">По месяцам</a>
-            </div>';
+            echo type_subpanel();
+
             echo '<form method="post"  name="datachangeform">
              
                     <div style=" width: 240px; float: right;position: relative;top: -5px;">
@@ -136,6 +169,45 @@ switch ($_REQUEST['type']) {
     case 'daily_grouped':
         // Show report data
         include _TRACK_SHOW_PATH."/pages/report_daily_grouped.inc.php";
+    break;
+    
+    case 'all_stats':
+    	
+    	$from = $_REQUEST['from'];
+        $to = $_REQUEST['to'];
+        if ($from == '') {
+            if ($to == '') {
+                $from = get_current_day('-6 days');
+                $to = get_current_day();
+            } else {
+                $from = date('d.m.Y', strtotime('-6 days', strtotime($to)));
+            }
+        } else {
+            if ($to == '') {
+                $to = date('d.m.Y', strtotime('+6 days', strtotime($from)));
+            } else {
+                // Will use existing values
+            }
+        }
+    	
+    	$fromF = date('d.m.Y', strtotime($from));
+        $toF = date('d.m.Y', strtotime($to));
+        $value_date_range = "$fromF - $toF";
+        
+        echo type_subpanel();
+        
+        echo '<form method="post"  name="datachangeform" id="range_form">
+                <div id="per_day_range" class="pull-right" style="margin-top:0px; margin-bottom:10px;">
+                    <span class="glyphicon glyphicon-calendar"></span>
+                    <span id="cur_day_range">'.date('d.m.Y', strtotime($from)).' - '. date('d.m.Y', strtotime($to)).'</span> <b class="caret"></b>
+                    <input type="hidden" name="from" id="sStart" value="">
+                    <input type="hidden" name="to" id="sEnd" value="">
+                </div>
+                
+                <div><h3>' . $report_name . '</h3></div>
+              </form>';
+    	
+    	include _TRACK_SHOW_PATH."/pages/report_all.inc.php";
     break;
     
     case 'targetreport':
@@ -228,7 +300,7 @@ switch ($_REQUEST['type']) {
         return ((x[0] < y[0]) ? 1 : ((x[0] > y[0]) ? -1 : ((x[1] < y[1]) ? 1 : ((x[1] > y[1]) ? -1 : 0))));
     };
 </script>
-<?php if($_REQUEST['type'] != 'targetreport') { ?>
+<?php if($type != 'targetreport' and $type != 'all_stats') { ?>
 <div class="row" id='report_toolbar'>
     <div class="col-md-12">
         <div class="form-group">

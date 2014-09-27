@@ -494,4 +494,19 @@
 			}
 			return $arr_dates;
 		}
+		
+		/*
+		 * Готовит к выводу параметры перехода
+		 */
+		function params_list($row, $name) {
+			$i = 1;
+			$out = array();
+			while(isset($row[$name.$i])) {
+				if($row[$name.$i] != '') {
+					$out[] = $i.': '.$row[$name.$i];
+				}
+				$i++;
+			}
+			return $out;
+		}
 ?>

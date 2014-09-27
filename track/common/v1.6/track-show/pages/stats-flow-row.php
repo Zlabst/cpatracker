@@ -72,6 +72,18 @@
 
 		echo '<p>'._e($row['user_agent']).'</p>';
 		echo '<p>'._e($row['subid']).'</p>';
+		
+		$campaign_params = params_list($row, 'campaign_param');
+		if(!empty($campaign_params)) {
+			echo '<p>Параметры перехода: '._e(join('; ', $campaign_params)).'</p>';
+		}
+		
+		$click_params = params_list($row, 'click_param_value');
+		if(!empty($click_params)) {
+			echo '<p>Параметры ссылки: '._e(join('; ', $click_params)).'</p>';
+		}
+		
+		//echo '<p>'.print_r($row, true).'</p>';
 		echo "</div>"; 		
 		echo "<div style='width:100%; background:white; height:10px; margin:0; padding:0;'></div>";
 

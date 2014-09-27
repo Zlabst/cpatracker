@@ -14,6 +14,9 @@
 
     // Define flag to allow templates inclusion, security measure
 	$include_flag=true;
+	
+	if (isset($_GET['debug']))
+		ini_set('display_errors', 1);
 
 	// Set allowed for inclusion files list, security measure
 	$page_sidebar_allowed=array('sidebar-left-links.inc.php', 'sidebar-left-reports.inc.php');
