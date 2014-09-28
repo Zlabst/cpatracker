@@ -155,8 +155,10 @@ echo "</div> <!-- ./row -->";
 	{
 		include _HTML_TEMPLATE_PATH . '/../pages/stats-flow-row.php';
 	}
-	echo "</tbody></table>";            
-	echo '<a href="#" onclick="return load_flow()" class="center-block text-center">Показать больше</a>';
+	echo "</tbody></table>";
+	if(count($arr_data) > 20) {
+		echo '<a href="#" onclick="return load_flow()" class="center-block text-center">Показать больше</a>';
+	}
 ?>
 <script type="text/javascript">
 	function load_flow() {

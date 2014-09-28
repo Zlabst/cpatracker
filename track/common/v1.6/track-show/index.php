@@ -154,7 +154,7 @@
             		$filter=array(filter_by=>$_REQUEST['filter_by'], filter_value=>$_REQUEST['value']);   			
     			break;
 			}
-		} 
+		}
 		list($total, $arr_data) = get_visitors_flow_data ($filter, rq('offset', 2), 100, $_REQUEST['date']);
 		foreach ($arr_data as $row)	{
 			include _HTML_TEMPLATE_PATH . '/../pages/stats-flow-row.php';

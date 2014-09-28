@@ -1,6 +1,10 @@
 <?php
-	function get_visitors_flow_data($filter='', $offset = 0, $limit = 20, $from = 0)
-	{	
+	function get_visitors_flow_data($filter='', $offset = 0, $limit = 20, $date = 0)
+	{			
+		if(empty($date) or !preg_match('/^\d{4}-\d{2}-\d{2}$/',$date)) {
+			$date = date('Y-m-d');
+		}
+		
 		$timezone_shift=get_current_timezone_shift();
 		$filter_str='';
 		if ($filter!='')
@@ -8,11 +12,10 @@
 			switch ($filter['filter_by'])
 			{
 				case 'hour': 
-					$filter_str="and source_name='".mysql_real_escape_string($filter['source_name'])."' AND CONVERT_TZ(date_add, '+00:00', '".mysql_real_escape_string($timezone_shift)."') BETWEEN '".mysql_real_escape_string($filter['date'])." ".mysql_real_escape_string($filter['hour']).":00:00' AND '".mysql_real_escape_string($filter['date'])." ".mysql_real_escape_string($filter['hour']).":59:59' ";				
+					$filter_str .= " and source_name='".mysql_real_escape_string($filter['source_name'])."' AND CONVERT_TZ(date_add, '+00:00', '".mysql_real_escape_string($timezone_shift)."') BETWEEN '".mysql_real_escape_string($filter['date'])." ".mysql_real_escape_string($filter['hour']).":00:00' AND '".mysql_real_escape_string($filter['date'])." ".mysql_real_escape_string($filter['hour']).":59:59' ";				
 				break;
-				
 				default:
-					$filter_str="and ".mysql_real_escape_string ($filter['filter_by'])."='".mysql_real_escape_string ($filter['filter_value'])."'";
+					$filter_str .= " and ".mysql_real_escape_string ($filter['filter_by'])."='".mysql_real_escape_string ($filter['filter_value'])."'";
 				break;
 			}
 		}
@@ -20,7 +23,7 @@
 		$sql="select SQL_CALC_FOUND_ROWS *, date_format(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '".mysql_real_escape_string($timezone_shift)."'), '%d.%m.%Y %H:%i') as dt, timediff(NOW(), CONVERT_TZ(tbl_clicks.date_add, '+00:00', '".mysql_real_escape_string($timezone_shift)."')) as td from tbl_clicks 
 		where 1
 		{$filter_str}
-		".($from ? "and date_format(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '".mysql_real_escape_string($timezone_shift)."'), '%Y-%m-%d %H:%i:%s') < '".$from." 23:59:59'" : '' )."
+		".($date ? "and date_format(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '".mysql_real_escape_string($timezone_shift)."'), '%Y-%m-%d %H:%i:%s') between '".$date." 00:00:00' and '".$date." 23:59:59'" : '' )."
 		order by date_add desc limit $offset, $limit";
 
 		$result=mysql_query($sql);
