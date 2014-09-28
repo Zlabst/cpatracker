@@ -1,19 +1,19 @@
 <?php if (!$include_flag){exit();} ?>
 <script src="<?php echo _HTML_TEMPLATE_PATH;?>/js/report_toolbar.js"></script>
 <?php
-	$date=($_REQUEST['date']?$_REQUEST['date']:get_current_day());
+	$date = rq('date', 4, get_current_day());
 	$prev_date=date('Y-m-d', strtotime('-1 days', strtotime($date)));
 	$next_date=date('Y-m-d', strtotime('+1 days', strtotime($date)));
 
-	$main_type=($_REQUEST['report_type'])?$_REQUEST['report_type']:'source_name';
-	$group_by=$main_type;
-	$limited_to='';
-	$report_type='hourly';
-	$from=$date;
-	$to=$date;
-	$arr_report_data=get_clicks_report_grouped($main_type, $group_by, $limited_to, $report_type, $from, $to);
+	$main_type   = rq('report_type', 0, 'source_name');
+	$group_by    = $main_type;
+	$limited_to  = '';
+	$report_type = 'hourly';
+	$from        = $date;
+	$to          = $date;
+	$arr_report_data = get_clicks_report_grouped($main_type, $group_by, $limited_to, $report_type, $from, $to);
 	
-	$arr_hourly=array();
+	$arr_hourly = array();
 
 	foreach ($arr_report_data as $row_name=>$row_data)
 	{
@@ -31,7 +31,7 @@
 	echo "<div class='row'>";
 	echo "<div class='col-md-12'>";
 	echo "<p align=center>";
-	if ($date!=get_current_day())
+	if ($date != get_current_day())
 	{
 		echo "<a style='float:right;' href='?date={$next_date}&report_type={$main_type}'>".mysqldate2string($next_date)." &rarr;</a>";
 	}
@@ -145,7 +145,7 @@ echo "</div> <!-- ./row -->";
 <?php
 // ********************************************************
 
-	echo "<h4>Лента переходов за ".sdate($_REQUEST['date'])."<span style='float:right;'><a title='Экспорт в Excel' href='?csrfkey="._e(CSRF_KEY)."&ajax_act=excel_export&date="._e($date)."'><img src='"._HTML_TEMPLATE_PATH."/img/icons/table-excel.png'></a></span><span style='float:right; margin-right:16px;'><a title='Экспорт в TSV' href='?csrfkey="._e(CSRF_KEY)."&ajax_act=tsv_export&date="._e($date)."'><img src='"._HTML_TEMPLATE_PATH."/img/icons/table-tsv.png'></a></span></h4>";
+	echo "<h4>Лента переходов за ".sdate($date).'<span style="float:right;">'."<a title='Экспорт в Excel' href='?csrfkey="._e(CSRF_KEY)."&ajax_act=excel_export&date="._e($date)."'><img src='"._HTML_TEMPLATE_PATH."/img/icons/table-excel.png'></a></span><span style='float:right; margin-right:16px;'><a title='Экспорт в TSV' href='?csrfkey="._e(CSRF_KEY)."&ajax_act=tsv_export&date="._e($date)."'><img src='"._HTML_TEMPLATE_PATH."/img/icons/table-tsv.png'></a></span>".'<div class="col-xs-4" style="float: right; margin-bottom: 7px;"><form action="" method="get"><input type="hidden" name="filter_by" value="search"/><input type="hidden" name="date" value="'.$date.'"/><input name="search" class="form-control" " type="text" value="'._e($search).'" placeholder="поиск" /></form></div>'."</h4>";
 	
 	//echo _HTML_TEMPLATE_PATH . '../pages/stats-flow-row.php';
 	
@@ -156,7 +156,7 @@ echo "</div> <!-- ./row -->";
 		include _HTML_TEMPLATE_PATH . '/../pages/stats-flow-row.php';
 	}
 	echo "</tbody></table>";
-	if(count($arr_data) > 20) {
+	if($total > 20) {
 		echo '<a href="#" onclick="return load_flow()" class="center-block text-center">Показать больше</a>';
 	}
 ?>
@@ -165,7 +165,7 @@ echo "</div> <!-- ./row -->";
 		$.post(
             'index.php?ajax_act=a_load_flow', {
                 offset: $('#stats-flow tbody').children().length / 2 ,
-                date: '<?php echo _str($_REQUEST['date']) ?>',
+                date: '<?php echo _str($date) ?>',
                 filter_by: '<?php echo _str($_REQUEST['filter_by']) ?>',
                 value: '<?php echo _str($_REQUEST['value']) ?>'
             }

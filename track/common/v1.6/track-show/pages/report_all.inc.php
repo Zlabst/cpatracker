@@ -6,6 +6,7 @@ $days = getDatesBetween($from, $to);
 
 $group_by   = rq('group_by', 0, 'source_name');
 $limited_to = rq('limited_to', 2);
+$main_type  = $subtype;
 
 // При некоторых группировках необходимо искать значения в других таблицах
 $group_join = array(

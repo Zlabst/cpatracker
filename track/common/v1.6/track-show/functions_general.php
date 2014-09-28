@@ -1363,7 +1363,7 @@ function show_country_select($selected='')
  *
  * @param string $name - имя переменной
  * @param string $type - p|g|r откуда получаем
- * @param int $num - ожидаемый тип данных: 0 - строка, 1 - целое число, 2 - целое положительное, 3 - json
+ * @param int $num - ожидаемый тип данных: 0 - строка, 1 - целое число, 2 - целое положительное, 3 - json, 4 - date YYYY-MM-DD
  * @param mixed $df - значение по умолчанию
  * @return mised
  */
@@ -1385,6 +1385,9 @@ function show_country_select($selected='')
 			$def = ($df == null ? 0 : $df);
 			$out = array_key_exists($name, $d) ? intval($d[$name]) : $def;
 			return $num == 2 ? abs($out) : $out;
+		} elseif($num == 4) {
+			$def = ($df == null ? date('Y-m-d') : $df);
+			return (array_key_exists($name, $d) and preg_match('/^\d{4}-\d{2}-\d{2}$/', $d[$name])) ? $d[$name] : $def;
 		} else {
 			return array_key_exists($name, $d) ? json_decode($d[$name], true) : array();
 		}

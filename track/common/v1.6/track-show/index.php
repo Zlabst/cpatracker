@@ -888,13 +888,27 @@
                 break;
 
 	        	default:
+	        		$search = $_REQUEST['search'];
 	            	$filter='';
 	        		if ($_REQUEST['filter_by']!='')
 	        		{
 	        			switch ($_REQUEST['filter_by'])
 	        			{
+	        				case 'search':
+	        					$filter = array(
+	        						'filter_by'   => $_REQUEST['filter_by'], 
+	        						'filter_value'=> $_REQUEST['search'], 
+	        						'date'        => $_REQUEST['date'], 
+	        					);
+	        				break;
+	        				
 	        				case 'hour':
-	        					$filter=array(filter_by=>$_REQUEST['filter_by'], source_name=>$_REQUEST['source_name'], date=>$_REQUEST['date'], hour=>$_REQUEST['hour']);
+	        					$filter = array(
+	        						'filter_by'   => $_REQUEST['filter_by'], 
+	        						'source_name' => $_REQUEST['source_name'], 
+	        						'date'        => $_REQUEST['date'], 
+	        						'hour'        => $_REQUEST['hour']
+	        					);
 	        				break;
 
 	            			default: 
