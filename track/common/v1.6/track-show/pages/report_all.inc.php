@@ -5,8 +5,23 @@ if (!$include_flag) {
 $days = getDatesBetween($from, $to);
 
 $group_by   = rq('group_by', 0, 'source_name');
-$limited_to = rq('limited_to', 2);
+$limited_to = rq('limited_to');
 $main_type  = $subtype;
+$where      = '';
+
+
+if(empty($limited_to)) {
+	$group_by = $subtype;
+} else {
+	$where = " and `"._str($subtype)."` = '"._str($limited_to)."'";
+}
+
+
+if($subtype == 'out_id') {
+	$id_fld = 'out_id';
+} else {
+	$id_fld = 'name';
+}
 
 // При некоторых группировках необходимо искать значения в других таблицах
 $group_join = array(
@@ -20,7 +35,7 @@ $parent_clicks = array(); // массив для единичного зачёт
 $q="SELECT " . (empty($group_join[$group_by]) ? mysql_real_escape_string($group_by) : 't2.' . $group_join[$group_by][0]) . " as `name`, t1.*
 	FROM `tbl_clicks` t1
 	" . (empty($group_join[$group_by]) ? '' : "LEFT JOIN `".$group_join[$group_by][1]."` t2 ON ".$group_join[$group_by][2]." = t2." . $group_join[$group_by][3]) . "
-	WHERE t1.`date_add_day` BETWEEN '" . $from . "' AND '" . $to . "'";
+	WHERE t1.`date_add_day` BETWEEN '" . $from . "' AND '" . $to . "'" . $where;
 $rs = mysql_query($q) or die(mysql_error());
 while($r = mysql_fetch_assoc($rs)) {
 	$rows[$r['id']] = $r;
@@ -45,9 +60,6 @@ foreach($rows as $id => &$r) {
 		$r['cnt'] = 0;
 	}
 	
-	// Если запрошен отчет по конкретной ссылке - отсеиваем остальные
-	if($limited_to and $r['out_id'] != $limited_to) continue;
-	
 	if($group_by == 'referer' and $r[$group_by] != '') {
 		$url = parse_url($r[$group_by]);
 		$k = $r['name'] = $url['host'];
@@ -55,7 +67,7 @@ foreach($rows as $id => &$r) {
 	
 	if(!isset($data[$k])) {
 		$data[$k] = array(
-			'id' => $r['out_id'],
+			'id' => $r[$id_fld],
 			'name' => $r['name'],
 			'price' => 0,
 			'unique' => 0,
@@ -67,13 +79,13 @@ foreach($rows as $id => &$r) {
 		);
 	}
 	
-	$data[$k]['lead'] += $r['is_lead'];
-	$data[$k]['cnt'] += $r['cnt'];
-	$data[$k]['price'] += $r['click_price'];
+	$data[$k]['lead']   += $r['is_lead'];
+	$data[$k]['cnt']    += $r['cnt'];
+	$data[$k]['price']  += $r['click_price'];
 	$data[$k]['unique'] += $r['is_unique'];
 	$data[$k]['income'] += $r['conversion_price_main'];
-	$data[$k]['sale'] += $r['is_sale'];
-	$data[$k]['out'] += $r['out'];
+	$data[$k]['sale']   += $r['is_sale'];
+	$data[$k]['out']    += $r['out'];
 }
 
 
@@ -276,7 +288,7 @@ $(document).ready(function() {
 						if($repeated < 0) $repeated = 0;
 						$repeated = round($repeated / $r['cnt']  * 100, 1);
 						
-						echo '<tr><td nowrap=""><a href="?act=reports&type='._e($type).'&subtype=source_name&limited_to='.$r['id'].'&group_by=campaign_name">'.(empty($r['name']) ? $group_types[$group_by][1] : $r['name']).'</a></td><td>'.$r['cnt'].'</td><td>'.$conversion.'%</td><td>'.$roi.'%</td><td>'.$epc.'</td><td>'.$r['sale'].'</td><td>'.$r['price'].'</td><td>'.$profit.'</td><td>'.$srch.'</td><td>'.$r['lead'].'</td><td>'.$conversion_l.'%</td><td>'.$cps.'</td><td>'.$cpa.'</td><td>'.$r['unique'].'</td></tr>';
+						echo '<tr><td nowrap=""><a href="?act=reports&type='._e($type).'&subtype='._e($main_type).'&limited_to='.$r['id'].'&group_by=campaign_name">'.(empty($r['name']) ? $group_types[$group_by][1] : $r['name']).'</a></td><td>'.$r['cnt'].'</td><td>'.$conversion.'%</td><td>'.$roi.'%</td><td>'.$epc.'</td><td>'.$r['sale'].'</td><td>'.$r['price'].'</td><td>'.$profit.'</td><td>'.$srch.'</td><td>'.$r['lead'].'</td><td>'.$conversion_l.'%</td><td>'.$cps.'</td><td>'.$cpa.'</td><td>'.$r['unique'].'</td></tr>';
 					}
 				?>
 			</tbody>

@@ -1,7 +1,9 @@
 <?php if (!$include_flag){exit();} ?>
 <?php
-    $from=$_REQUEST['from'];
-	$to=$_REQUEST['to'];
+    $from = $_REQUEST['from'];
+	$to   = $_REQUEST['to'];
+	$type = $_REQUEST['type'];
+	$subtype = $_REQUEST['subtype'];
 
 	// Set default range values for this report
 	if ($from=='')
@@ -36,17 +38,22 @@
 	$source_name = $_REQUEST['limited_to'];
 	$report_type='daily';
 	$arr_report_data=get_clicks_report_grouped($main_type, $group_by, $limited_to, $report_type,$from,$to);
-
+	
+	/*echo '<pre>';
+	print_r($arr_report_data);*/
+	
+	$arr_dates = strip_empty_dates($arr_dates, $arr_report_data, 'group');
+	
 	switch ($main_type)
 	{
 		case 'out_id': 
-			$report_name="Отчет по ссылке";
+			$report_name="Все ссылки";
 			$report_main_column_name="Ссылка";
 			$empty_name="Без ссылки";
 		break;	
 	
 		case 'source_name': 
-			$report_name="Отчет по источнику";
+			$report_name="Все источники";
 			$report_main_column_name="Источник";		
 			$empty_name="Без источника";		
 		break;
@@ -78,7 +85,7 @@
                     <input type="hidden" name="to" id="sEnd" value="">
                 </div>
                 
-                <div><h5>'._e($report_name)." "._e($source_name).'</h5></div>
+                <div><ol class="breadcrumb"><li><a href="?act=reports&type='._e($type).'&subtype='._e($subtype).'">'._e($report_name).'</a></li><li class="active">'._e($source_name).'</li></ol></div>
               </form>';
         
         foreach ($arr_report_data as $source_name=>$data)
@@ -187,7 +194,7 @@ $(document).ready(function() {
 		echo "<table class='table table-condensed table-striped table-bordered dataTableT'>";	
 		echo "<thead>";
 			echo "<tr>";
-				echo "<th>"._e($group_types[$group_by][0])."</th>";		
+				echo "<th>"._e($group_types[$group_by][0])."</th>";
 				foreach ($arr_dates as $cur_date)
 				{
 					$d=date('d.m', strtotime($cur_date));
@@ -201,11 +208,21 @@ $(document).ready(function() {
 		$column_total_data=array();		
 		foreach ($data as $key=>$inner_data)
 		{
-			if ($key=='{empty}'){$key='Не определен';}		
+			if ($key=='{empty}' or trim($key) == ''){
+				$key = $group_types[$group_by][1];
+			}
 			echo "<tr>";
 			switch ($group_by){
 				case 'out_id': 
 					$key=current(get_out_description($key));
+				break;
+				
+				case 'referer': 
+					$key = str_replace('https://', '', $key);
+					$key = str_replace('http://', '', $key);
+					
+					if(substr($key, -1) == '/')
+						$key = substr($key, 0, strlen($key)-1);
 				break;
 				
 				default: 

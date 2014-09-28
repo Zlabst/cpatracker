@@ -445,7 +445,7 @@
 						<span class='sdata leads leads_conversion'>{$conversion_leads}</span> 
 						<span class='sdata leads leads_price usd'>{$lead_price}</span>
 						<span class='sdata leads leads_price rub'>{$lead_price_rub}</span>
-						<b><span class='sdata clicks'>{$clicks_count}:{$sales_count}</span><span class='sdata conversion'>{$conversion}</span><span class='sdata sales usd'>{$profit_amount}</span><span class='sdata sales rub'>{$profit_amount_rub}</span><span class='sdata epc usd'>\${$epc}</span><span class='sdata epc rub'>{$epc_rub} р.</span><span class='sdata roi'>{$roi}</span></b></td>";				
+						<b><span class='sdata clicks'>{$clicks_count}:{$sales_count}</span><span class='sdata conversion'>{$conversion}</span><span class='sdata sales usd'>{$profit_amount}</span><span class='sdata sales rub'>{$profit_amount_rub}</span><span class='sdata epc usd'>\${$epc}</span><span class='sdata epc rub'>{$epc_rub} р.</span><span class='sdata roi'>{$roi}</span></b>";				
 			}
 			else
 			{
@@ -496,16 +496,26 @@
             return $return;
         }
         
-        function strip_empty_dates($arr_dates, $arr_report_data, $month = false) {
+        /*
+         * Убираем даты, за которые нет данных
+         */
+        function strip_empty_dates($arr_dates, $arr_report_data, $mode = 'date') {
 			$dates = array();
+			$begin = false;
+			if($mode == 'group') {
+				$arr_report_data = current($arr_report_data);
+			}
+			
 			foreach ($arr_report_data as $source_name => $data) {
 				foreach($data as $k => $v) {
-					if($month) $k = date ('m.Y', strtotime($k)); 
+					if($mode == 'month') $k = date('m.Y', strtotime($k));
 					$dates[$k] = 1;
 				}
 			}
+			
 			foreach($arr_dates as $k => $v) {
-				if(!isset($dates[$v])) unset($arr_dates[$k]);
+				if(!isset($dates[$v]) and !$begin) unset($arr_dates[$k]);
+				else $begin  = true;
 			}
 			return $arr_dates;
 		}

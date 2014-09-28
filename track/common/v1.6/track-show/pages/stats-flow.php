@@ -2,6 +2,7 @@
 <script src="<?php echo _HTML_TEMPLATE_PATH;?>/js/report_toolbar.js"></script>
 <?php
 	$date = rq('date', 4, get_current_day());
+	$hour = rq('hour', 2);
 	$prev_date=date('Y-m-d', strtotime('-1 days', strtotime($date)));
 	$next_date=date('Y-m-d', strtotime('+1 days', strtotime($date)));
 
@@ -78,12 +79,12 @@
 				{
 					case 'out_id': 
 						$source_name=get_out_description($source_name);
-						if ($source_name=='' || $source_name=='{empty}'){$source_name='Без ссылки';}
+						if ($source_name=='' || $source_name=='{empty}'){$source_name_show='Без ссылки';}
 						echo "<td>"._e($source_name[0])."</td>";	
 					break;
 					
 					default: 
-						if ($source_name=='' || $source_name=='{empty}'){$source_name='Без источника';}
+						if ($source_name=='' || $source_name=='{empty}') { $source_name = 'Без&nbsp;источника'; $source_name_lnk = ''; } else { $source_name_lnk = $source_name;}
 						echo "<td>"._e($source_name)."</td>";	
 					break;
 				}
@@ -91,7 +92,7 @@
 				{
 					if ($data[$i]!='')
 					{
-						echo "<td><a style='text-decoration:none; color:black;' href='?filter_by=hour&source_name="._e($source_name)."&date=$date&hour=$i'>{$data[$i]}</a></td>";	
+						echo "<td><a style='text-decoration:none; color:black;' href='?filter_by=hour&source_name="._e($source_name_lnk)."&date=$date&hour=$i'>{$data[$i]}</a></td>";	
 					}
 					else
 					{
@@ -145,6 +146,8 @@ echo "</div> <!-- ./row -->";
 <?php
 // ********************************************************
 
+if(!empty($arr_data)) {
+
 	echo "<h4>Лента переходов за ".sdate($date).'<span style="float:right;">'."<a title='Экспорт в Excel' href='?csrfkey="._e(CSRF_KEY)."&ajax_act=excel_export&date="._e($date)."'><img src='"._HTML_TEMPLATE_PATH."/img/icons/table-excel.png'></a></span><span style='float:right; margin-right:16px;'><a title='Экспорт в TSV' href='?csrfkey="._e(CSRF_KEY)."&ajax_act=tsv_export&date="._e($date)."'><img src='"._HTML_TEMPLATE_PATH."/img/icons/table-tsv.png'></a></span>".'<div class="col-xs-4" style="float: right; margin-bottom: 7px;"><form action="" method="get"><input type="hidden" name="filter_by" value="search"/><input type="hidden" name="date" value="'.$date.'"/><input name="search" class="form-control" " type="text" value="'._e($search).'" placeholder="поиск" /></form></div>'."</h4>";
 	
 	//echo _HTML_TEMPLATE_PATH . '../pages/stats-flow-row.php';
@@ -158,16 +161,18 @@ echo "</div> <!-- ./row -->";
 	echo "</tbody></table>";
 	if($total > 20) {
 		echo '<a href="#" onclick="return load_flow()" class="center-block text-center">Показать больше</a>';
-	}
-?>
+		
+		?>
 <script type="text/javascript">
 	function load_flow() {
 		$.post(
             'index.php?ajax_act=a_load_flow', {
                 offset: $('#stats-flow tbody').children().length / 2 ,
                 date: '<?php echo _str($date) ?>',
+                hour: '<?php echo _str($hour) ?>',
                 filter_by: '<?php echo _str($_REQUEST['filter_by']) ?>',
-                value: '<?php echo _str($_REQUEST['value']) ?>'
+                value: '<?php echo _str($_REQUEST['value']) ?>',
+                source_name: '<?php echo _str($_REQUEST['source_name']) ?>'
             }
         ).done(
         	function(data) {
@@ -176,4 +181,7 @@ echo "</div> <!-- ./row -->";
         ); 
 		return false;
 	}
-</script>
+</script><?php 
+	}
+}
+?>

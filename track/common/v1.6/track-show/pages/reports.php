@@ -9,7 +9,7 @@ $arr_dates = getDatesBetween($date1, $date2);
 
 // Кнопки типов статистики
 $type_buttons = array(
-	'all_stats' => 'Общая статистика',
+	'all_stats' => 'Все посетители',
 	'daily_stats' => 'По дням',
 	'monthly_stats' => 'По месяцам',
 );
@@ -20,13 +20,13 @@ $subtype = rq('subtype'); // XSS ОПАСНО!!!
 // Определяем названия отчётов
 switch ($subtype) {
     case 'out_id':
-        $report_name = "Переходы по ссылкам за ";
+        $report_name = "Переходы по ссылкам";
         $report_main_column_name = "Ссылка";
         $empty_name = "Без ссылки";
         break;
 
     case 'source_name':
-        $report_name = "Переходы по источникам за ";
+        $report_name = "Переходы по источникам";
         $report_main_column_name = "Источник";
         $empty_name = "Без источника";
         break;
@@ -35,37 +35,37 @@ switch ($subtype) {
 // Литералы для группировок
 $group_types = array(
 	'out_id'          => array('Ссылка', 'Без ссылки'), 
-	'campaign_name'   => array('Кампания', 'Без кампании'),
-	'source_name'     => array('Источник', 'Без источника'),
+	'campaign_name'   => array('Кампания', 'Не определена'),
+	'source_name'     => array('Источник', 'Не определён'),
 	'ads_name'        => array('Объявление', 'Без объявления'),
-	'referer'         => array('Площадка', 'Без площадки'),
-	'user_os'         => array('ОС', 'Без ОС'),
-	'user_platform'   => array('Платформа', 'Без платформы'),
-	'user_browser'    => array('Браузер', 'Без браузера'),
-	'country'         => array('Страна', 'Без страны'),
-	'state'           => array('Регион', 'Без региона'),
-	'city'            => array('Город', 'Без города'),
-	'isp'             => array('Провайдер', 'Без провайдера'),
-	'campaign_param1' => array('Параметр ссылки #1', 'Без параметра'),
-	'campaign_param2' => array('Параметр ссылки #2', 'Без параметра'),
-	'campaign_param3' => array('Параметр ссылки #3', 'Без параметра'),
-	'campaign_param4' => array('Параметр ссылки #4', 'Без параметра'),
-	'campaign_param5' => array('Параметр ссылки #5', 'Без параметра'),
-	'click_param_value1'  => array('Параметр перехода #1', 'Без параметра'),
-	'click_param_value2'  => array('Параметр перехода #2', 'Без параметра'),
-	'click_param_value3'  => array('Параметр перехода #3', 'Без параметра'),
-	'click_param_value4'  => array('Параметр перехода #4', 'Без параметра'),
-	'click_param_value5'  => array('Параметр перехода #5', 'Без параметра'),
-	'click_param_value6'  => array('Параметр перехода #6', 'Без параметра'),
-	'click_param_value7'  => array('Параметр перехода #7', 'Без параметра'),
-	'click_param_value8'  => array('Параметр перехода #8', 'Без параметра'),
-	'click_param_value9'  => array('Параметр перехода #9', 'Без параметра'),
-	'click_param_value10' => array('Параметр перехода #10', 'Без параметра'),
-	'click_param_value11' => array('Параметр перехода #11', 'Без параметра'),
-	'click_param_value12' => array('Параметр перехода #12', 'Без параметра'),
-	'click_param_value13' => array('Параметр перехода #13', 'Без параметра'),
-	'click_param_value14' => array('Параметр перехода #14', 'Без параметра'),
-	'click_param_value15' => array('Параметр перехода #15', 'Без параметра'),
+	'referer'         => array('Площадка', 'Не определена'),
+	'user_os'         => array('ОС', 'Не определена'),
+	'user_platform'   => array('Платформа', 'Не определена'),
+	'user_browser'    => array('Браузер', 'Не определен'),
+	'country'         => array('Страна', 'Не определена'),
+	'state'           => array('Регион', 'Не определен'),
+	'city'            => array('Город', 'Не определен'),
+	'isp'             => array('Провайдер', 'Не определен'),
+	'campaign_param1' => array('Параметр ссылки #1', 'Не определен'),
+	'campaign_param2' => array('Параметр ссылки #2', 'Не определен'),
+	'campaign_param3' => array('Параметр ссылки #3', 'Не определен'),
+	'campaign_param4' => array('Параметр ссылки #4', 'Не определен'),
+	'campaign_param5' => array('Параметр ссылки #5', 'Не определен'),
+	'click_param_value1'  => array('Параметр перехода #1', 'Не определен'),
+	'click_param_value2'  => array('Параметр перехода #2', 'Не определен'),
+	'click_param_value3'  => array('Параметр перехода #3', 'Не определен'),
+	'click_param_value4'  => array('Параметр перехода #4', 'Не определен'),
+	'click_param_value5'  => array('Параметр перехода #5', 'Не определен'),
+	'click_param_value6'  => array('Параметр перехода #6', 'Не определен'),
+	'click_param_value7'  => array('Параметр перехода #7', 'Не определен'),
+	'click_param_value8'  => array('Параметр перехода #8', 'Не определен'),
+	'click_param_value9'  => array('Параметр перехода #9', 'Не определен'),
+	'click_param_value10' => array('Параметр перехода #10', 'Не определен'),
+	'click_param_value11' => array('Параметр перехода #11', 'Не определен'),
+	'click_param_value12' => array('Параметр перехода #12', 'Не определен'),
+	'click_param_value13' => array('Параметр перехода #13', 'Не определен'),
+	'click_param_value14' => array('Параметр перехода #14', 'Не определен'),
+	'click_param_value15' => array('Параметр перехода #15', 'Не определен'),
 );
 
 
@@ -104,18 +104,16 @@ switch ($_REQUEST['type']) {
         $toF = date('d.m.Y', strtotime($to));
         $value_date_range = "$fromF - $toF";
         
-        echo type_subpanel();
-        
-        echo '<form method="post"  name="datachangeform" id="range_form">
-                <div id="per_day_range" class="pull-right" style="margin-top:0px; margin-bottom:10px;">
-                    <span class="glyphicon glyphicon-calendar"></span>
+        echo '<form method="post" name="datachangeform" id="range_form">
+                <div class="pull-left"><h3>' . $report_name . '</h3></div>
+                <div id="per_day_range" class="pull-left" style="">
                     <span id="cur_day_range">'.date('d.m.Y', strtotime($from)).' - '. date('d.m.Y', strtotime($to)).'</span> <b class="caret"></b>
                     <input type="hidden" name="from" id="sStart" value="">
                     <input type="hidden" name="to" id="sEnd" value="">
                 </div>
-                
-                <div><h3>' . $report_name . '</h3></div>
-              </form>';
+                <div class="pull-right" style="margin-top:18px;">' . type_subpanel() . '</div>
+              </form>
+        	<div class="row"></div>';
 
             // Show report data
             include _TRACK_SHOW_PATH."/pages/report_daily.inc.php";
@@ -144,12 +142,10 @@ switch ($_REQUEST['type']) {
             $to=date ('Y-m-t',  strtotime($to));
             $fromF = date('m.Y', strtotime($from));
             $toF = date('m.Y', strtotime($to));
-                
-            echo type_subpanel();
 
             echo '<form method="post"  name="datachangeform">
-             
-                    <div style=" width: 240px; float: right;position: relative;top: -5px;">
+             		<div class="pull-left"><h3>' . $report_name . '</h3></div>
+                    <div style="width: 240px; float: left; margin-top: 18px; margin-left: 5px;">
                         <div class="input-group">                          
                               <div class="input-group-addon "><i class="fa fa-calendar"></i></div>
                       
@@ -160,8 +156,9 @@ switch ($_REQUEST['type']) {
 
 				 
                     </div>
-                    <div><h3>' . $report_name . '</h3></div>
-                  </form>';
+                    <div class="pull-right" style="margin-top:18px;">' . type_subpanel() . '</div>
+                  </form>
+                    <div class="row"></div>';
 
             // Show report data
             include _TRACK_SHOW_PATH."/pages/report_monthly.inc.php";
@@ -194,17 +191,14 @@ switch ($_REQUEST['type']) {
         $toF = date('d.m.Y', strtotime($to));
         $value_date_range = "$fromF - $toF";
         
-        echo type_subpanel();
-        
         echo '<form method="post"  name="datachangeform" id="range_form">
-                <div id="per_day_range" class="pull-right" style="margin-top:0px; margin-bottom:10px;">
-                    <span class="glyphicon glyphicon-calendar"></span>
+                <div class="pull-left"><h3>' . $report_name . '</h3></div>
+                <div id="per_day_range" class="pull-left" style="">
                     <span id="cur_day_range">'.date('d.m.Y', strtotime($from)).' - '. date('d.m.Y', strtotime($to)).'</span> <b class="caret"></b>
                     <input type="hidden" name="from" id="sStart" value="">
                     <input type="hidden" name="to" id="sEnd" value="">
                 </div>
-                
-                <div><h3>' . $report_name . '</h3></div>
+                <div class="pull-right" style="margin-top:18px;">' . type_subpanel() . '</div>
               </form>';
     	
     	include _TRACK_SHOW_PATH."/pages/report_all.inc.php";
