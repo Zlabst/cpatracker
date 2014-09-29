@@ -33,9 +33,9 @@
 		}
 	}
 
-	$arr_dates=getDatesBetween($from, $to);
+	$arr_dates = getDatesBetween($from, $to);
 
-	$arr_report_data=get_clicks_report_grouped($main_type, $group_by, $limited_to, $report_type, $from, $to);
+	$arr_report_data = get_clicks_report_grouped($main_type, $group_by, $limited_to, $report_type, $from, $to);
 	
 	$arr_dates = strip_empty_dates($arr_dates, $arr_report_data);
 	
@@ -96,7 +96,7 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 			
 			$leads_data=$data[$cur_date]['lead'];
 			$sales_data=$data[$cur_date]['sale'];
-			$saleleads_data=$data[$cur_date]['sale_lead'];		
+			$saleleads_data=$data[$cur_date]['sale_lead'];
 
 			$row_total_data['clicks']['cnt']+=$clicks_data['cnt'];
 			$row_total_data['clicks']['cost']+=$clicks_data['cost'];

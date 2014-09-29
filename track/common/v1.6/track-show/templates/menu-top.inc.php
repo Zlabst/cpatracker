@@ -1,4 +1,4 @@
-<? 
+<?php
     if (!$include_flag){exit();} 
 
     $arr_timezone_settings=get_timezone_settings();
@@ -44,16 +44,16 @@
       </button>
       <a class="navbar-brand" href="?act=">CPA Tracker</a>
     </div>
-    <?
+    <?php
     if ($bHideTopMenu!==true)
     {
     ?>    
         <div class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
-            <li <? if ($_REQUEST['page']==''){echo 'class="active"';}?>><a href="?act=">Отчеты</a></li>
-            <li <? if ($_REQUEST['page']=='links'){echo 'class="active"';}?>><a href="?page=links">Ссылки</a></li>
-            <li <? if ($_REQUEST['page']=='rules'){echo 'class="active"';}?>><a href="?page=rules">Правила</a></li>
-            <li <? if (in_array($_REQUEST['page'], array('import', 'costs', 'postback'))){echo 'class="active"';}?>><a href="?page=import">Инструменты</a></li>
+            <li <?php if ($_REQUEST['page']==''){echo 'class="active"';}?>><a href="?act=">Отчеты</a></li>
+            <li <?php if ($_REQUEST['page']=='links'){echo 'class="active"';}?>><a href="?page=links">Ссылки</a></li>
+            <li <?php if ($_REQUEST['page']=='rules'){echo 'class="active"';}?>><a href="?page=rules">Правила</a></li>
+            <li <?php if (in_array($_REQUEST['page'], array('import', 'costs', 'postback'))){echo 'class="active"';}?>><a href="?page=import">Инструменты</a></li>
           </ul>
 
 
@@ -62,7 +62,7 @@
             <li class="dropdown">
               <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class='fa fa-clock-o color-white'></i>&nbsp;<?php echo _e($arr_timezone_selected_name);?> <b class="caret"></b></a>
               <ul class="dropdown-menu">
-               <?
+               <?php
                     foreach ($arr_timezone_settings as $cur)
                     {
                         if ($cur['is_active']!=1)
@@ -94,7 +94,7 @@
 
         </div><!--/.nav-collapse -->
 
-    <?
+    <?php
     }
     ?>
 

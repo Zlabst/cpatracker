@@ -1,34 +1,38 @@
 <?php if (!$include_flag){exit();} ?>
 <script src="<?php echo _HTML_TEMPLATE_PATH;?>/js/report_toolbar.js"></script>
 <?php
+
 // Create dates array for reports
-$date1 = date('Y-m-d', strtotime('-6 days', strtotime(date('Y-m-d'))));
-$date2 = date('Y-m-d');
-$arr_dates = getDatesBetween($date1, $date2);
+$date1      = date('Y-m-d', strtotime('-6 days', strtotime(date('Y-m-d'))));
+$date2      = date('Y-m-d');
+$arr_dates  = getDatesBetween($date1, $date2);
 
+$type       = rq('type', 0, 'daily_stats');
+$subtype    = rq('subtype'); // XSS ОПАСНО!!!
+$limited_to = rq('limited_to');
+$group_by   = rq('group_by', 0, $subtype);
 
-// Кнопки типов статистики
-$type_buttons = array(
-	'all_stats' => 'Все посетители',
-	'daily_stats' => 'По дням',
-	'monthly_stats' => 'По месяцам',
-);
-
-$type = rq('type', 0, 'daily_stats');
-$subtype = rq('subtype'); // XSS ОПАСНО!!!
+$from       = rq('from', 4, '');
+$to         = rq('to', 4, '');
 
 // Определяем названия отчётов
 switch ($subtype) {
     case 'out_id':
         $report_name = "Переходы по ссылкам";
+    	$parent_link = "Все ссылки";
+        /*
         $report_main_column_name = "Ссылка";
         $empty_name = "Без ссылки";
+        */
         break;
 
     case 'source_name':
         $report_name = "Переходы по источникам";
+    	$parent_link = "Все источники";
+        /*
         $report_main_column_name = "Источник";
         $empty_name = "Без источника";
+        */
         break;
 }
 
@@ -68,101 +72,91 @@ $group_types = array(
 	'click_param_value15' => array('Параметр перехода #15', 'Не определен'),
 );
 
-
-// Функция вывода кнопок статистики в интерфейс
-function type_subpanel() {
-	global $type_buttons, $type;
-	$out = '<div class="btn-group">';
-    foreach($type_buttons as $k => $v) {
-    	$out .= '<a href="?act=reports&type='.$k.'&subtype='.$_GET['subtype'].'" type="button" class="btn btn-default '.($type==$k ? 'active' : '').'">'.$v.'</a>';
-    }
-    $out .= '</div>';
-    return $out;
-}
-
 switch ($_REQUEST['type']) {
     case 'daily_stats':
+	case 'monthly_stats':
+		
+	// Хлебные крошки
+	if(!empty($limited_to)) {
+		// Для ссылок преобразуем ID в название
+		
+		if($subtype == 'out_id') {
+			$source_name = current(get_out_description($limited_to));
+		} else {
+			$source_name = $limited_to;
+		}
+		echo '<div><ol class="breadcrumb"><li><a href="?act=reports&type=all_stats&subtype='._e($subtype).'">'.$parent_link.'</a></li><li class="active">'._e($source_name).'</li></ol></div>';
+	}
 
-        $from = $_REQUEST['from'];
-        $to = $_REQUEST['to'];
-        if ($from == '') {
-            if ($to == '') {
-                $from = get_current_day('-6 days');
-                $to = get_current_day();
-            } else {
-                $from = date('d.m.Y', strtotime('-6 days', strtotime($to)));
-            }
-        } else {
-            if ($to == '') {
-                $to = date('d.m.Y', strtotime('+6 days', strtotime($from)));
-            } else {
-                // Will use existing values
-            }
-        }
+	// Заголовок отчёта и временной период
 
-        $fromF = date('d.m.Y', strtotime($from));
-        $toF = date('d.m.Y', strtotime($to));
-        $value_date_range = "$fromF - $toF";
-        
-        echo '<form method="post" name="datachangeform" id="range_form">
-                <div class="pull-left"><h3>' . $report_name . '</h3></div>
-                <div id="per_day_range" class="pull-left" style="">
-                    <span id="cur_day_range">'.date('d.m.Y', strtotime($from)).' - '. date('d.m.Y', strtotime($to)).'</span> <b class="caret"></b>
-                    <input type="hidden" name="from" id="sStart" value="">
-                    <input type="hidden" name="to" id="sEnd" value="">
-                </div>
-                <div class="pull-right" style="margin-top:18px;">' . type_subpanel() . '</div>
-              </form>
-        	<div class="row"></div>';
+	if($type == 'monthly_stats') {
+		
+		// Временной период по умолчанию
+		if(empty($from)) {
+			$from = get_current_day('-6 months');
+	        $to = get_current_day();
+		}
+		
+		// Преобразование во временные рамки месяца
+		$from  = date ('Y-m-01',  strtotime($from));
+	    $to    = date ('Y-m-t',  strtotime($to));
+		
+		$timestep = 'monthly';
+	} else {
+		
+		// Временной период по умолчанию
+		if(empty($from)) {
+			$from = get_current_day('-6 days');
+	        $to   = get_current_day();
+		}
+		$timestep = 'daily';
+	}
 
-            // Show report data
-            include _TRACK_SHOW_PATH."/pages/report_daily.inc.php";
+	// Даты отчёта
+	if($timestep == 'monthly') {
+		$arr_dates = getMonthsBetween($from, $to);
+	} else {
+		$arr_dates = getDatesBetween($from, $to);
+	}
 
-        break;
-     case 'monthly_stats':
+	// Подгружаем данные
+	$arr_report_data = get_clicks_report_grouped($subtype, $group_by, $limited_to, $timestep, $from, $to);
 
-            $from = $_REQUEST['from'];
-            $to = $_REQUEST['to'];
-            if ($from == '') {
-                if ($to == '') {
-                    $from = get_current_day('-6 months');
-                    $to = get_current_day();
-                } else {
-                    $from = date('d.m.Y', strtotime('-6 months', strtotime($to)));
-                }
-            } else {
-                if ($to == '') {
-                    $to = date('d.m.Y', strtotime('+6 months', strtotime($from)));
-                } else {
-                     $from=date ('Y-m-d',  strtotime('13.'.$from));
-                     $to=date ('Y-m-d', strtotime('13.'.$to));
-                }
-            }
-            $from=date ('Y-m-01',  strtotime($from));
-            $to=date ('Y-m-t',  strtotime($to));
-            $fromF = date('m.Y', strtotime($from));
-            $toF = date('m.Y', strtotime($to));
+	// Совместимость со старым форматом
+	if($group_by != $subtype) {
+		$arr_report_data = current($arr_report_data);
+	}
 
-            echo '<form method="post"  name="datachangeform">
-             		<div class="pull-left"><h3>' . $report_name . '</h3></div>
-                    <div style="width: 240px; float: left; margin-top: 18px; margin-left: 5px;">
-                        <div class="input-group">                          
-                              <div class="input-group-addon "><i class="fa fa-calendar"></i></div>
-                      
-                              <input style="display: inline; float:left; width: 80px;   border-right: 0;" id="dpMonthsF"   type="text"  data-date="102/2012" data-date-format="mm.yyyy" data-date-viewmode="years" data-date-minviewmode="months"  class="form-control"  name="from" value="' . $fromF . '">
-                              <input style="display: inline; float:left; width: 80px;  border-right: 0;  border-top-right-radius: 0; border-bottom-right-radius: 0;" id="dpMonthsT"   type="text"  data-date="102/2012" data-date-format="mm.yyyy" data-date-viewmode="years" data-date-minviewmode="months" type="text" class="form-control"   name="to" value="' . $toF . '">
-                              <button type="button" style="width:40px;" class="btn btn-default form-control" onclick="$(\'[name = datachangeform]\').submit();"><i class="glyphicon glyphicon-search"></i></button>  
-                        </div>
+	//dmp($arr_report_data);
 
-				 
-                    </div>
-                    <div class="pull-right" style="margin-top:18px;">' . type_subpanel() . '</div>
-                  </form>
-                    <div class="row"></div>';
+	// Оставляем даты, за которые есть данные
+	$arr_dates = strip_empty_dates($arr_dates, $arr_report_data);
 
-            // Show report data
-            include _TRACK_SHOW_PATH."/pages/report_monthly.inc.php";
-            break;
+	// Собираем переменные в шаблон
+	$assign = array(
+		'report_name' => $report_name,
+		'type' => $type,
+		'subtype' => $subtype,
+		'from' => $from,
+		'to' => $to,
+		'timestep' => $timestep,
+		'arr_dates' => $arr_dates,
+		'arr_report_data' => $arr_report_data,
+		'group_by' => $group_by,
+		'limited_to' => $limited_to
+	);
+
+	// Заголовок отчета
+	echo tpx('report_name', $assign);
+
+	// Фильтры
+	echo tpx('report_groups', $assign);
+
+	// Таблица отчета
+	echo tpx('report_daily', $assign);
+	break;
+
     case 'daily_grouped':
         // Show report data
         include _TRACK_SHOW_PATH."/pages/report_daily_grouped.inc.php";
@@ -170,8 +164,6 @@ switch ($_REQUEST['type']) {
     
     case 'all_stats':
     	
-    	$from = $_REQUEST['from'];
-        $to = $_REQUEST['to'];
         if ($from == '') {
             if ($to == '') {
                 $from = get_current_day('-6 days');
@@ -228,9 +220,6 @@ switch ($_REQUEST['type']) {
 <script>
     $('#dpMonthsF').datepicker();
     $('#dpMonthsT').datepicker();
-//    $('#putdate_range').daterangepicker({format: 'DD.MM.YYYY', locale: {applyLabel: "Выбрать", cancelLabel: "<i class='fa fa-times' style='color:gray'></i>", fromLabel: "От", toLabel: "До", customRangeLabel: 'Свой интервал', daysOfWeek: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
-//        }});
-    
     
     <?php
     	$from = empty($_POST['from']) ? date('d.m.Y', time() - 3600*24*6) : date('d.m.Y', strtotime($_POST['from']));
@@ -298,7 +287,6 @@ switch ($_REQUEST['type']) {
 <div class="row" id='report_toolbar'>
     <div class="col-md-12">
         <div class="form-group">
-
             <div class="btn-group" id='rt_type_section' data-toggle="buttons">
                 <label id="rt_clicks_button" class="btn btn-default active" onclick='update_stats("clicks");'><input type="radio" name="option_report_type">Клики</label>
                 <label id="rt_conversion_button" class="btn btn-default" onclick='update_stats("conversion");'><input type="radio" name="option_report_type">Конверсия</label>	

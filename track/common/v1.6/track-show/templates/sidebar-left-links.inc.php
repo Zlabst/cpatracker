@@ -1,4 +1,4 @@
-<? if (!$include_flag){exit();} ?>
+<?php if (!$include_flag){exit();} ?>
 <script>
 	function add_new_category()
 	{
@@ -48,7 +48,7 @@
 <div class="col-md-3" id="categories_left_menu">
 	<div class="bs-sidebar hidden-print affix-top">
 		<ul class="nav bs-sidenav" id='categories_left_menu_list'>
-			<?
+			<?php
 			    $result=get_links_categories_list();
 			    $arr_categories=$result['categories'];
 			    $arr_categories_count=$result['categories_count'];

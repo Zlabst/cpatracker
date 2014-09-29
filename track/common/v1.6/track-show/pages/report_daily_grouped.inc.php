@@ -52,7 +52,7 @@
 			$empty_name="Без ссылки";
 		break;	
 	
-		case 'source_name': 
+		case 'source_name':
 			$report_name="Все источники";
 			$report_main_column_name="Источник";		
 			$empty_name="Без источника";		
@@ -84,7 +84,6 @@
                     <input type="hidden" name="from" id="sStart" value="">
                     <input type="hidden" name="to" id="sEnd" value="">
                 </div>
-                
                 <div><ol class="breadcrumb"><li><a href="?act=reports&type='._e($type).'&subtype='._e($subtype).'">'._e($report_name).'</a></li><li class="active">'._e($source_name).'</li></ol></div>
               </form>';
         
@@ -186,8 +185,6 @@ $(document).ready(function() {
 	})
 } );
 </script>
-
-<div class="row">&nbsp;</div>
 <?php
 		echo "<div class='row'>";
 		echo "<div class='col-md-12'>";

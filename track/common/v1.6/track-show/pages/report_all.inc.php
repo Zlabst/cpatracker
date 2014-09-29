@@ -88,7 +88,6 @@ foreach($rows as $id => &$r) {
 	$data[$k]['out']    += $r['out'];
 }
 
-
 $fromF = date ('d.m.Y', strtotime($from));
 $toF   = date ('d.m.Y', strtotime($to));
 $value_date_range = "$fromF - $toF";

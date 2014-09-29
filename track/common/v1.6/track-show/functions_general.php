@@ -1386,8 +1386,19 @@ function show_country_select($selected='')
 			$out = array_key_exists($name, $d) ? intval($d[$name]) : $def;
 			return $num == 2 ? abs($out) : $out;
 		} elseif($num == 4) {
-			$def = ($df == null ? date('Y-m-d') : $df);
-			return (array_key_exists($name, $d) and preg_match('/^\d{4}-\d{2}-\d{2}$/', $d[$name])) ? $d[$name] : $def;
+			$def = ($df === null ? date('Y-m-d') : $df);
+			if(array_key_exists($name, $d)) { 
+				if(preg_match('/^\d{4}-\d{2}-\d{2}$/', $d[$name])) {
+					return $d[$name];
+				} elseif(preg_match('/^\d{2}\.\d{4}$/', $d[$name])) {
+					$tmp = explode('.', $d[$name]);
+					return date('Y-m-d', mktime(0, 0, 0, $tmp[0], 1, $tmp[1]));
+				} else {
+					return $def;
+				}
+			} else {
+				return $def;
+			}
 		} else {
 			return array_key_exists($name, $d) ? json_decode($d[$name], true) : array();
 		}
@@ -1399,4 +1410,32 @@ function show_country_select($selected='')
 	function ap($arr, $n = 0) {
 		return $arr[$n];
 	} 
+
+/**
+ * Подключение шаблона
+ * page - имя шаблона
+ * var - массив с переменными
+ */	
+	function tpx($page, $var = null) {
+		$include_flag = true;
+		ob_start();
+		require _TRACK_SHOW_PATH . '/templates/' . $page . '.inc.php';
+		if (isset($vars)) {
+			foreach ($vars as $k => $v) {
+				if (!isset($var[$k])) {
+					die('Ошибка в шаблоне <b>' . $page . '</b>, не определена переменная <b>' . $k . '</b>');
+				}
+			}
+		}
+		$html = ob_get_contents();
+		ob_end_clean();
+		return $html;
+	}
+	
+/**
+ * Отладочная информация
+ */	
+ 	function dmp(&$v) {
+ 		echo '<pre>'.print_r($v, true).'</pre>';
+ 	}
 ?>

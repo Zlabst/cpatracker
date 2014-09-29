@@ -3,7 +3,7 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-        <? include (_TRACK_SHOW_PATH.'/templates/head.inc.php'); ?>
+        <?php include (_TRACK_SHOW_PATH.'/templates/head.inc.php'); ?>
     </head>
 
     <body>
@@ -21,7 +21,7 @@
                             include (_TRACK_SHOW_PATH.'/templates/sidebar-left.inc.php');
                         }
 
-                        if ($bHideLeftSidebar!==true){$main_container_class='col-sm-9';} else{$main_container_class='col-sm-12';}
+                        if ($bHideLeftSidebar!==true){$main_container_class='col-sm-9';} else {$main_container_class='col-sm-12';}
                     ?>
                     <div class="<?php echo $main_container_class?>">
                         <?php

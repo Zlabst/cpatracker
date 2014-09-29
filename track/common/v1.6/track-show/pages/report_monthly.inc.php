@@ -42,12 +42,11 @@
 
 	$arr_report_data=get_clicks_report_grouped($main_type, $group_by, $limited_to, $report_type, $from, $to);
 	
-	
 	$arr_months = strip_empty_dates($arr_months, $arr_report_data, 'month');
                                 
-echo "<div class='row'>";
-echo "<div class='col-md-12'>";
-echo "<table class='table table-condensed table-striped table-bordered dataTableT' style='margin-bottom:15px !important;'>";
+	echo "<div class='row'>";
+	echo "<div class='col-md-12'>";
+	echo "<table class='table table-condensed table-striped table-bordered dataTableT' style='margin-bottom:15px !important;'>";
 	echo "<thead>";
 		echo "<tr>";
 		echo "<th>"._e($report_main_column_name)."</th>";		
@@ -60,32 +59,30 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 		echo "</tr>";
 	echo "</thead>";
 	echo "<tbody>";
-	$table_total_data=array();
-	$column_total_data=array();
-	$arr_sparkline=array();
+
+	$column_total_data = array();
+	$table_total_data = array();
+	$arr_sparkline = array();
+	$reports = array();
 	$i=0; 
-        $reports = array();
-                    
-        foreach ($arr_report_data as $source_name=>$data)
-        {   
-            foreach ($data as $date=>$info){
-                                
-                $this_date = date ('m.Y', strtotime($date));        
-                    if(!isset($reports[$source_name][$this_date]['click'])){
-                        $reports[$source_name][$this_date]['click']['cnt'] =0;
-                        $reports[$source_name][$this_date]['click']['cost']=0;
-                        $reports[$source_name][$this_date]['click']['earnings']=0;
-                        $reports[$source_name][$this_date]['click']['is_parent_cnt']=0;
-                    } 
-                $reports[$source_name][$this_date]['click']['cnt'] += $info['click']['cnt'];
-                $reports[$source_name][$this_date]['click']['cost']+= $info['click']['cost'];
-                $reports[$source_name][$this_date]['click']['earnings']+= $info['click']['earnings'];
-                $reports[$source_name][$this_date]['click']['is_parent_cnt']+= $info['click']['is_parent_cnt'];
-            }
+                
+    foreach ($arr_report_data as $source_name=>$data) {   
+        foreach ($data as $date=>$info) {
+            $this_date = date ('m.Y', strtotime($date));        
+            if(!isset($reports[$source_name][$this_date]['click'])){
+                $reports[$source_name][$this_date]['click']['cnt'] =0;
+                $reports[$source_name][$this_date]['click']['cost']=0;
+                $reports[$source_name][$this_date]['click']['earnings']=0;
+                $reports[$source_name][$this_date]['click']['is_parent_cnt']=0;
+            } 
+            $reports[$source_name][$this_date]['click']['cnt'] += $info['click']['cnt'];
+            $reports[$source_name][$this_date]['click']['cost']+= $info['click']['cost'];
+            $reports[$source_name][$this_date]['click']['earnings']+= $info['click']['earnings'];
+            $reports[$source_name][$this_date]['click']['is_parent_cnt']+= $info['click']['is_parent_cnt'];
         }
-        $arr_report_data = $reports;    
-	foreach ($arr_report_data as $source_name=>$data)
-	{
+    }
+    $arr_report_data = $reports;    
+	foreach ($arr_report_data as $source_name=>$data) {
 		$i++;
 		echo "<tr>";
 		if ($source_name=='{empty}'){$source_name_full="{$empty_name}";}else

@@ -78,6 +78,51 @@
 		}
 	}
 	
+	
+	/**
+	 * Подготовка данных для отчётов:
+	 * subtype - колонка, по которой группируем данные (то же, что и group_by, если не задан limited_to)
+	 * limited_to - фильтр по subtype
+	 * group_by - группировка второго уровня, если задан limited_to
+	 * type - hourly, daily, monthly с каким шагом собираем статистику
+	 * from, to - временные рамки, за которые нужна статистика, обязательно в формате Y-m-d H:i:s
+	 */
+	
+	function get_clicks_report_grouped2 ($params) {
+		
+		// Смещение часового пояса
+		$timezone_shift = get_current_timezone_shift();
+		
+		// Группировки
+		if(empty($limited_to)) {
+			$group_by = $params['subtype'];
+		} else {
+			$group_by = $params['group_by'];
+			$where = " and `" . _str($params['subtype']) . "` = '" . _str($params['limited_to']) . "'";
+		}
+		
+		// При некоторых группировках необходимо искать значения в других таблицах
+		$group_join = array(
+			'out_id' => array('offer_name', 'tbl_offers', 'out_id', 'id') // например, название ссылки
+		);
+		
+		$rows = array(); // все клики за период
+		$data = array(); // сгруппированные данные
+		
+		// Выбираем все переходы за период
+		$q="SELECT " . (empty($group_join[$group_by]) ? mysql_real_escape_string($group_by) : 't2.' . $group_join[$group_by][0]) . " as `name`, t1.*
+			FROM `tbl_clicks` t1
+			" . (empty($group_join[$group_by]) ? '' : "LEFT JOIN `".$group_join[$group_by][1]."` t2 ON ".$group_join[$group_by][2]." = t2." . $group_join[$group_by][3]) . "
+			WHERE CONVERT_TZ(t1.`date_add_day`, '+00:00', '"._str($timezone_shift)."') BETWEEN '" . $from . "' AND '" . $to . "'" . 
+				$where;
+		
+		$rs = mysql_query($q) or die(mysql_error());
+		while($r = mysql_fetch_assoc($rs)) {
+			$rows[$r['id']] = $r;
+		}
+	} 
+	
+	
 	function get_clicks_report_grouped ($main_column, $group_by, $limited_to='', $report_type='daily', $from='', $to='')
 	{
 		$timezone_shift=get_current_timezone_shift();
@@ -344,11 +389,19 @@
 
 			if ($main_column==$group_by)
 			{
-				$arr_report_data[$row[$main_column]][$row[$time_column_alias]][$click_type]=array('cnt'=>$row['cnt'], 'cost'=>$row['clicks_price'], 'earnings'=>$row['conversions_sum'], 'is_parent_cnt'=>$row['parent_count']);
+				if($report_type == 'monthly') {
+					$arr_report_data[$row[$main_column]][date('m.Y', strtotime($row[$time_column_alias]))][$click_type]=array('cnt'=>$row['cnt'], 'cost'=>$row['clicks_price'], 'earnings'=>$row['conversions_sum'], 'is_parent_cnt'=>$row['parent_count']);
+				} else {
+					$arr_report_data[$row[$main_column]][$row[$time_column_alias]][$click_type]=array('cnt'=>$row['cnt'], 'cost'=>$row['clicks_price'], 'earnings'=>$row['conversions_sum'], 'is_parent_cnt'=>$row['parent_count']);
+				}
 			}
 			else
 			{
-				$arr_report_data[$row[$main_column]][$group_by_value][$row[$time_column_alias]][$click_type]=array('cnt'=>$row['cnt'], 'cost'=>$row['clicks_price'], 'earnings'=>$row['conversions_sum'], 'is_parent_cnt'=>$row['parent_count']);
+				if($report_type == 'monthly') {
+					$arr_report_data[$row[$main_column]][$group_by_value][date('m.Y', strtotime($row[$time_column_alias]))][$click_type]=array('cnt'=>$row['cnt'], 'cost'=>$row['clicks_price'], 'earnings'=>$row['conversions_sum'], 'is_parent_cnt'=>$row['parent_count']);
+				} else { 
+					$arr_report_data[$row[$main_column]][$group_by_value][$row[$time_column_alias]][$click_type]=array('cnt'=>$row['cnt'], 'cost'=>$row['clicks_price'], 'earnings'=>$row['conversions_sum'], 'is_parent_cnt'=>$row['parent_count']);
+				}
 			}
 		}
 
@@ -533,5 +586,26 @@
 				$i++;
 			}
 			return $out;
+		}
+		
+		/*
+		* Функция вывода кнопок статистики в интерфейс
+		*/
+		function type_subpanel() {
+			global $type;
+
+			// Кнопки типов статистики
+			$type_buttons = array(
+				'all_stats' => 'Все',
+				'daily_stats' => 'По дням',
+				'monthly_stats' => 'По месяцам',
+			);
+			
+			$out = '<div class="btn-group">';
+		    foreach($type_buttons as $k => $v) {
+		    	$out .= '<a href="?act=reports&type='.$k.'&subtype='.$_GET['subtype'].'" type="button" class="btn btn-default '.($type==$k ? 'active' : '').'">'.$v.'</a>';
+		    }
+		    $out .= '</div>';
+		    return $out;
 		}
 ?>

@@ -1,4 +1,4 @@
-<? if (!$include_flag){exit();} ?>
+<?php if (!$include_flag){exit();} ?>
 <meta charset="utf-8">
 <title>CPA Tracker</title>    
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noodp, noydir">
