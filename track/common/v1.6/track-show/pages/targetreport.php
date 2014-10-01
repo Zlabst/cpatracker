@@ -256,7 +256,7 @@ $(document).ready(function() {
 						
 						$profit = $r['income'] - $r['price'];
 						$roi = round($profit / $r['price'] * 100, 1);
-						$conversion = round($r['sale'] / $r['cnt'] * 100, 1);
+						$conversion = round2($r['sale'] / $r['cnt'] * 100);
 						$follow = round($r['out'] / $r['cnt'] * 100, 1);
 						$repeated = $r['cnt'] - $r['unique'];
 						if($repeated < 0) $repeated = 0;

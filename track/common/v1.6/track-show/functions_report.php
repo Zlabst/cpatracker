@@ -17,14 +17,18 @@
 				
 				// поиск по названию кампании, объявления, рефереру, SubID, источнику, IP адресу 
 				case 'search':
-					$filter_str .= " and (
-						`subid` LIKE '" . mysql_real_escape_string($filter['filter_value']) . "' OR
-						`user_ip` LIKE '". mysql_real_escape_string($filter['filter_value']) ."' OR
-						`campaign_name` LIKE '%". mysql_real_escape_string($filter['filter_value']) ."%' OR
-						`source_name` LIKE '%". mysql_real_escape_string($filter['filter_value']) ."%' OR
-						`referer` LIKE '%". mysql_real_escape_string($filter['filter_value']) ."%'
-					)";
-					break;
+					if(is_subid($filter['filter_value'])) {
+						$filter_str .= " and `subid` LIKE '" . mysql_real_escape_string($filter['filter_value']) . "'";
+						$date = false; // ищем за всё время
+					} else {
+						$filter_str .= " and (
+							`user_ip` LIKE '". mysql_real_escape_string($filter['filter_value']) ."' OR
+							`campaign_name` LIKE '%". mysql_real_escape_string($filter['filter_value']) ."%' OR
+							`source_name` LIKE '%". mysql_real_escape_string($filter['filter_value']) ."%' OR
+							`referer` LIKE '%". mysql_real_escape_string($filter['filter_value']) ."%'
+						)";
+					}
+				break;
 				
 				default:
 					$filter_str .= " and ".mysql_real_escape_string ($filter['filter_by'])."='".mysql_real_escape_string ($filter['filter_value'])."'";

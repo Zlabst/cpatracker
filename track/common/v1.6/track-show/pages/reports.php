@@ -20,19 +20,11 @@ switch ($subtype) {
     case 'out_id':
         $report_name = "Переходы по ссылкам";
     	$parent_link = "Все ссылки";
-        /*
-        $report_main_column_name = "Ссылка";
-        $empty_name = "Без ссылки";
-        */
         break;
 
     case 'source_name':
         $report_name = "Переходы по источникам";
     	$parent_link = "Все источники";
-        /*
-        $report_main_column_name = "Источник";
-        $empty_name = "Без источника";
-        */
         break;
 }
 
@@ -75,6 +67,7 @@ $group_types = array(
 switch ($_REQUEST['type']) {
     case 'daily_stats':
 	case 'monthly_stats':
+	case 'all_stats':
 		
 	// Хлебные крошки
 	if(!empty($limited_to)) {
@@ -87,6 +80,25 @@ switch ($_REQUEST['type']) {
 		}
 		echo '<div><ol class="breadcrumb"><li><a href="?act=reports&type=all_stats&subtype='._e($subtype).'">'.$parent_link.'</a></li><li class="active">'._e($source_name).'</li></ol></div>';
 	}
+	break;
+}
+
+switch ($_REQUEST['type']) {
+    case 'daily_stats':
+	case 'monthly_stats':
+	
+		/*
+	// Хлебные крошки
+	if(!empty($limited_to)) {
+		// Для ссылок преобразуем ID в название
+		
+		if($subtype == 'out_id') {
+			$source_name = current(get_out_description($limited_to));
+		} else {
+			$source_name = $limited_to;
+		}
+		echo '<div><ol class="breadcrumb"><li><a href="?act=reports&type=all_stats&subtype='._e($subtype).'">'.$parent_link.'</a></li><li class="active">'._e($source_name).'</li></ol></div>';
+	}*/
 
 	// Заголовок отчёта и временной период
 
@@ -227,34 +239,34 @@ switch ($_REQUEST['type']) {
     ?>
     
     $('#per_day_range').daterangepicker(
-            {
-                startDate: '<?php echo _e($from)?>',
-                endDate: '<?php echo _e($to)?>',
-                format: 'DD.MM.YYYY',
-                locale: {
-                    applyLabel: "Выбрать",
-                    cancelLabel: "<i class='fa fa-times' style='color:gray'></i>",
-                    fromLabel: "От",
-                    toLabel: "До",
-                    customRangeLabel: 'Свой интервал',
-                    daysOfWeek: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
-                },
-                ranges: {
-                    'Сегодня': [moment(), moment()],
-                    'Вчера': [moment().subtract('days', 1), moment().subtract('days', 1)],
-                    'Последние 7 дней': [moment().subtract('days', 6), moment()],
-                    'Последние 30 дней': [moment().subtract('days', 29), moment()],
-                    'Текущий месяц': [moment().startOf('month'), moment().endOf('month')],
-                    'Прошлый месяц': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')]
-                    
-                }
+        {
+            startDate: '<?php echo _e($from)?>',
+            endDate: '<?php echo _e($to)?>',
+            format: 'DD.MM.YYYY',
+            locale: {
+                applyLabel: "Выбрать",
+                cancelLabel: "<i class='fa fa-times' style='color:gray'></i>",
+                fromLabel: "От",
+                toLabel: "До",
+                customRangeLabel: 'Свой интервал',
+                daysOfWeek: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
             },
-    function(start, end) {
-        $('#cur_day_range').text(start.format('DD.MM.YYYY') + ' - ' + end.format('DD.MM.YYYY'));
-        $('#sStart').val(start.format('YYYY-MM-DD'));
-        $('#sEnd').val(end.format('YYYY-MM-DD'));
-        $('#range_form').submit();
-    }
+            ranges: {
+                'Сегодня': [moment(), moment()],
+                'Вчера': [moment().subtract('days', 1), moment().subtract('days', 1)],
+                'Последние 7 дней': [moment().subtract('days', 6), moment()],
+                'Последние 30 дней': [moment().subtract('days', 29), moment()],
+                'Текущий месяц': [moment().startOf('month'), moment().endOf('month')],
+                'Прошлый месяц': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')]
+                
+            }
+        },
+	    function(start, end) {
+	        $('#cur_day_range').text(start.format('DD.MM.YYYY') + ' - ' + end.format('DD.MM.YYYY'));
+	        $('#sStart').val(start.format('YYYY-MM-DD'));
+	        $('#sEnd').val(end.format('YYYY-MM-DD'));
+	        $('#range_form').submit();
+	    }
     );
     function cnv2(m) {
     	n = $('.clicks', $('<div>' + m + '</div>')).text();

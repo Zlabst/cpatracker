@@ -1438,4 +1438,26 @@ function show_country_select($selected='')
  	function dmp(&$v) {
  		echo '<pre>'.print_r($v, true).'</pre>';
  	}
+ 	
+/*
+	Умное округление в зависимости от величины
+*/ 	
+ 	function round2($v) {
+ 		$v = abs($v);
+ 		if($v < 1) {
+ 			$size = 4;
+ 		} elseif($v < 10) {
+ 			$size = 3;
+ 		} else {
+ 			$size = 2;
+ 		}
+ 		return round($v, $size);
+ 	}
+/*
+	Это - SubID. Стопудова!
+*/
+
+	function is_subid($v) {
+		return preg_match('/^\d{14}x\d{5}$/', $v); 
+	}
 ?>

@@ -6,8 +6,18 @@ extract($var);
 
 ?><div class='row report_grouped_menu'>
 <div class='col-md-12'>
-
 	<div class="btn-group">
+		<?php if(!empty($limited_to)) { ?>
+		<?php if($subtype == 'out_id') { 
+			if ($group_by=='source_name'){$class="active";}else{$class='';}
+			?>
+			<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=source_name&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>" >Источник</a>
+		<? } ?>
+		<?php if($subtype == 'source_name') {
+			if ($group_by=='out_id'){$class="active";}else{$class='';}
+			?>
+			<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=out_id&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>" >Ссылка</a>
+		<? } } ?>
 		<?php if ($group_by=='campaign_name'){$class="active";}else{$class='';} ?>
 		<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=campaign_name&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>" >Кампания</a>
 
@@ -18,7 +28,7 @@ extract($var);
 		<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=referer&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>">Площадка</a>
 
 		<?php if ($group_by=='out_id'){$class="active";}else{$class='';} ?>
-		<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo $subtype;?>&group_by=out_id&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>">Ссылка</a>
+		<!--<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo $subtype;?>&group_by=out_id&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>">Ссылка</a>-->
 
 		<div class="btn-group">
 			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">

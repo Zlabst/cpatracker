@@ -54,7 +54,8 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 		
 		// Если limited не определён - делаем такую возможность через ссылку
 		if(empty($var['limited_to'])) {
-			$source_name_full = '<a href="?act=reports&type='._e($var['type']).'&subtype='._e($var['subtype']).'&group_by=campaign_name&limited_to='._e($source_name).'">' . _e($source_name_full) . '</a>';
+			$group_link = $var['subtype'] == 'out_id' ? 'source_name' : 'out_id';
+			$source_name_full = '<a href="?act=reports&type='._e($var['type']).'&subtype='._e($var['subtype']).'&group_by='.$group_link.'&limited_to='._e($source_name).'">' . _e($source_name_full) . '</a>';
 		} else {
 			$source_name_full = _e($source_name_full);
 		}
