@@ -15,7 +15,7 @@
             type: "POST",
             url: "index.php",
             data: 'csrfkey=<?php echo CSRF_KEY;?>&ajax_act=get_rules_json'
-        }).done(function(msg) {  
+        }).done(function(msg) {
             var template = $('#rulesTemplate').html();
             var template_data = $.parseJSON(msg);
 
@@ -92,7 +92,11 @@
                     data: 'csrfkey=<?php echo CSRF_KEY;?>&ajax_act=update_rule_name&rule_id=' + id + '&rule_name=' + name + '&old_rule_name=' + old_name
                 })
             }
-            function prepareTextInput(tr,name,title){                
+            function users_label(obj) {
+            	obj.parent().find('.users_label').text('Остальные посетители');
+            }
+            function prepareTextInput(tr,name,title){ 
+            	users_label(tr);
                 tr.find('.label-default').text(title);
                 tr.find('input.select-item').attr('placeholder',title);
                 tr.find('input.select-item').attr('itemtype',name);
@@ -105,6 +109,7 @@
                 var template = $('#countryTemplate').html();
                 var rule_id = $(this).parent().parent().attr('id');
                 var rule_table = $('#rule' + rule_id + ' tbody');
+                users_label(rule_table);
                 rule_table.prepend(template);
                 rule_table.find('input.select-geo_country').select2({data: {results: dictionary_countries}, width: '250px', containerCssClass: 'form-control select2 noborder-select2'});
                 rule_table.find('input.select-link').select2({data: {results: dictionary_links}, width: 'copy', containerCssClass: 'form-control select2'});               
@@ -115,6 +120,7 @@
                 var template = $('#langTemplate').html();
                 var rule_id = $(this).parent().parent().attr('id');
                 var rule_table = $('#rule' + rule_id + ' tbody');
+                users_label(rule_table);
                 rule_table.prepend(template);
                 rule_table.find('input.select-lang').select2({data: {results: dictionary_langs}, width: '250px', containerCssClass: 'form-control select2 noborder-select2'});
                 rule_table.find('input.select-link').select2({data: {results: dictionary_links}, width: 'copy', containerCssClass: 'form-control select2'});               
@@ -125,6 +131,7 @@
                 var template = $('#referTemplate').html();
                 var rule_id = $(this).parent().parent().attr('id');
                 var rule_table = $('#rule' + rule_id + ' tbody');
+                users_label(rule_table);
                 rule_table.prepend(template);
                 rule_table.find('input.select-link').select2({data: {results: dictionary_links}, width: 'copy', containerCssClass: 'form-control select2'});               
                 rule_table.find('input.select-link').first().select2('val',$('#rule'+rule_id).find('[name = default_out_id]').val()) ;           
@@ -214,6 +221,7 @@
                 var template = $('#getTemplate').html();
                 var rule_id = $(this).parent().parent().attr('id');
                 var rule_table =  $('#rule' + rule_id + ' tbody');
+                users_label(rule_table);
                 rule_table.prepend(template);       
                 
                 rule_table.find('input.select-link').select2({data: {results: dictionary_links}, width: 'copy', containerCssClass: 'form-control select2'});
@@ -241,7 +249,7 @@
                           flag = false;  
                         }                     
                 });
-                if(!flag){ alert("В полях ввода для правила GET можно использовать только цифры и буквы латинского алфавита.");  return false;}
+                if(!flag){ alert("В полях ввода для ссылки GET можно использовать только цифры и буквы латинского алфавита.");  return false;}
                 $(rule_table).find('input.select-link').each(function() {                                      
                        $(this).addClass('toSave');                      
                 });
@@ -378,7 +386,7 @@
                 }
                 values = values + '&rule_value[]=' + $(this).val();
             } else {
-                error = 'Выберите ссылку';
+                error = 'Выберите оффер';
             }
         });
         if (error) {
@@ -394,7 +402,7 @@
             }).done(function(msg)
             {
                 if (links.length > 1) {
-                    var badge = '<span class="badge">' + (links.length) + ' ' + declination((links.length), 'ссылка', 'ссылки', 'ссылок') + '</span>';
+                    var badge = '<span class="badge">' + (links.length) + ' ' + declination((links.length), 'оффер', 'оффера', 'офферов') + '</span>';
                     $(rule_table).parent().find('.rule-destination-title').html(badge);
                 }
             });
@@ -566,7 +574,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-        <h4 class="modal-title" id="myModalLabel">Удаление правила</h4>
+        <h4 class="modal-title" id="myModalLabel">Удаление ссылки</h4>
       </div>
         <input type="hidden" id="hideid">
       <div class="modal-body">
@@ -722,7 +730,7 @@
                             <button class='btn btn-default'><i class="fa fa-trash-o text-muted"></i></button>
                         </div>    
                         <div class="form-group">
-                            <span class="label label-primary">Все посетители</span>
+                            <span class="label label-primary users_label">{{other_users}}</span>
                         </div>
                         <div class="form-group">
                             <button class='btn btn-default' style='border:none; visibility:hidden'><i class="fa fa-caret-down text-muted"></i></button>
@@ -737,9 +745,9 @@
                             <div class="btn-group">
                                 <button class='btn btn-default dropdown-toggle btn-rule-settings' data-toggle="dropdown"><i class="fa fa-bars text-muted"></i></button>
                                 <ul class="dropdown-menu" role="menu">
-                                    <li><a class="rname" id="{{id}}"  href="#">Переименовать правило</a></li>
+                                    <li><a class="rname" id="{{id}}"  href="#">Переименовать ссылку</a></li>
                                     <li class="divider"></li>
-                                    <li><a class="delbut" id="{{id}}" href="#">Удалить правило</a></li>
+                                    <li><a class="delbut" id="{{id}}" href="#">Удалить ссылку</a></li>
                                 </ul>
                             </div>                        
                               <div class="btn-group">
@@ -777,12 +785,12 @@
 <div class="row">
     <div class="col-sm-9">
         <div class="alert alert-danger" style="display:none;" id="incorrect_name_alert">
-            Неверное название правила, используйте только латинские буквы, цифры и знаки _ и -.
+            Неверное название ссылки, используйте только латинские буквы, цифры и знаки _ и -.
         </div>
         <form class="form-inline" method="post" onsubmit="return validate_add_rule();" id="form_add_rule" role="form" style="margin-bottom:30px">
         <div class="form-group">
-            <label class="sr-only">Название правила</label>
-            <input type="text" class="form-control" placeholder="Название правила" id="rule_name_id" name="rule_name">
+            <label class="sr-only">Название ссылки</label>
+            <input type="text" class="form-control" placeholder="Название ссылки" id="rule_name_id" name="rule_name">
         </div>
         &nbsp;→&nbsp;
         <div class="form-group">
@@ -799,7 +807,7 @@
 <div class="row">
     <div class="col-md-9">
         <div class="alert alert-info" style="display: none;" id="restore_alert">
-            <strong>Внимание!</strong> Правило <span id="rule_name"></span> было удалено, Вы можете его <strong><u><a href="javascript:void(0);" onClick="restore_rule();">восстановить</a></u></strong>
+            <strong>Внимание!</strong> Ссылка <span id="rule_name"></span> была удалена, Вы можете её <strong><u><a href="javascript:void(0);" onClick="restore_rule();">восстановить</a></u></strong>
         </div>
     </div>
 </div>

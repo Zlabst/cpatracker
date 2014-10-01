@@ -16,7 +16,7 @@ extract($var);
 		<?php if($subtype == 'source_name') {
 			if ($group_by=='out_id'){$class="active";}else{$class='';}
 			?>
-			<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=out_id&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>" >Ссылка</a>
+			<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=out_id&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>" >Оффер</a>
 		<? } } ?>
 		<?php if ($group_by=='campaign_name'){$class="active";}else{$class='';} ?>
 		<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=campaign_name&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>" >Кампания</a>

@@ -52,7 +52,7 @@
 				switch ($main_type)
 				{
 					case 'out_id': 
-						echo "<button class='btn btn-link dropdown-toggle' data-toggle='dropdown' style='padding:0; color:black; font-weight: bold;'>Ссылка <span class='caret'></span></button>
+						echo "<button class='btn btn-link dropdown-toggle' data-toggle='dropdown' style='padding:0; color:black; font-weight: bold;'>Оффер <span class='caret'></span></button>
 							  <ul class='dropdown-menu'>
 							    <li><a href='?date={$date}&report_type=source_name'>Источник</a></li>
 							  </ul>";
@@ -61,7 +61,7 @@
 					default: 
 						echo "<button class='btn btn-link dropdown-toggle' data-toggle='dropdown' style='padding:0; color:black; font-weight: bold;'>Источник <span class='caret'></span></button>
 							  <ul class='dropdown-menu'>
-							    <li><a href='?date={$date}&report_type=out_id'>Ссылка</a></li>
+							    <li><a href='?date={$date}&report_type=out_id'>Оффер</a></li>
 							  </ul>";
 					break;
 				}
@@ -79,7 +79,7 @@
 				{
 					case 'out_id': 
 						$source_name=get_out_description($source_name);
-						if ($source_name=='' || $source_name=='{empty}'){$source_name_show='Без ссылки';}
+						if ($source_name=='' || $source_name=='{empty}'){$source_name_show='Без оффера';}
 						echo "<td>"._e($source_name[0])."</td>";	
 					break;
 					

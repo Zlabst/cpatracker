@@ -248,7 +248,7 @@ else
 {
 ?>
 
-<p><strong>Новая ссылка</strong> <a href="#" data-toggle="tooltip" data-placement="bottom" title="" onclick="return false;" style="cursor:default; color:gray;" id="link_add_tooltip" data-original-title="Для использования SubID добавьте [SUBID] в URL" class='no-hover'><i class="fa fa-question-circle"></i></a></p>
+<p><strong>Новый оффер</strong> <a href="#" data-toggle="tooltip" data-placement="bottom" title="" onclick="return false;" style="cursor:default; color:gray;" id="link_add_tooltip" data-original-title="Для использования SubID добавьте [SUBID] в URL" class='no-hover'><i class="fa fa-question-circle"></i></a></p>
 
 <div class="row">
 	<form class="form-inline" role="form" method="post" onSubmit='return check_add_offer();' id='form_add_offer'>
@@ -257,7 +257,7 @@ else
 		<input type=hidden name='category_id' value='<?php echo _e($category_id);?>'>
 
 		  <div class="form-group col-xs-3">
-			    <input type="text" class="form-control" name='link_name' id="new_link_name" placeholder="Название ссылки">
+			    <input type="text" class="form-control" name='link_name' id="new_link_name" placeholder="Название оффера">
 		  </div>
 
 		  <div class="form-group  col-xs-5">
@@ -277,7 +277,7 @@ if (count($arr_offers)>0)
 	echo "<div class='row'>";
 	echo "<div class='col-md-12'>";
         echo '<div class="alert alert-info" style="display:none;" id="remove_alert"><button type="button" class="close" data-dismiss="alert">&times;</button>'
-                . '<strong>Внимание!</strong> Ссылка <strong id="link_name_alert"></strong> была удалена, Вы можете ее <b><u><a href="javascript:void(0);" onClick="restore_link();">восстановить</a></u></b>.'
+                . '<strong>Внимание!</strong> Оффер <strong id="link_name_alert"></strong> был удален, Вы можете его <b><u><a href="javascript:void(0);" onClick="restore_link();">восстановить</a></u></b>.'
                 . '</div>';
 	echo "<table class='table table-striped table-condensed table-bordered'>";
 	echo "<tr>";
@@ -320,7 +320,7 @@ if (count($arr_offers)>0)
 						}
 		                echo '<li class="divider"></li>';
 					}
-					echo "<li><a href='#' style='color:red;' onclick='return delete_link(this, \""._e($cur['offer_id'])."\")'>Удалить ссылку</a></li>";
+					echo "<li><a href='#' style='color:red;' onclick='return delete_link(this, \""._e($cur['offer_id'])."\")'>Удалить оффер</a></li>";
 					?>
                 </ul>
               </div>

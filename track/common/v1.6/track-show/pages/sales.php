@@ -22,7 +22,7 @@
 	echo "<div class='col-md-12'>";
 	echo "<table class='table table-striped table-bordered table-condensed' style='width:600px;'>";
 		echo "<thead>";
-		echo '<tr><th>Дата</th><th>Ссылка</th><th>Сумма, $</th><th>Сеть</th><th>Страна</th><th>Источник</th><th>Кампания</th><th>Реферер</th><th>SubID</th></tr>';
+		echo '<tr><th>Дата</th><th>Оффер</th><th>Сумма, $</th><th>Сеть</th><th>Страна</th><th>Источник</th><th>Кампания</th><th>Реферер</th><th>SubID</th></tr>';
 		echo "</thead>";
 		echo "<tbody>";	
 			foreach ($arr_sales as $cur)

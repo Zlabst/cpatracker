@@ -246,7 +246,7 @@ $(document).ready(function() {
 	<div class="col-md-12">
 		<table class="table table-striped table-bordered table-condensed dataTableT" style="width:600px;">
 			<thead>
-				<tr><th>Ссылка</th><th>Переходы</th><?php if($limited_to > 0) {?><th>Повторные</th><?php } ?><th>LP&nbsp;CTR</th><th>Ушло на офферы</th><th>Продаж</th><th>Конверсия</th><th>Доход</th><th>Затраты</th><th>Прибыль</th><th>ROI</th>
+				<tr><th>Страница</th><th>Переходы</th><?php if($limited_to > 0) {?><th>Повторные</th><?php } ?><th>LP&nbsp;CTR</th><th>Ушло на офферы</th><th>Продаж</th><th>Конверсия</th><th>Доход</th><th>Затраты</th><th>Прибыль</th><th>ROI</th>
 				</tr>
 			</thead>
 			<tbody>

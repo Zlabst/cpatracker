@@ -198,11 +198,14 @@
 		switch ($_REQUEST['ajax_act'])
 		{
 			case 'get_rules_json':
+				
 				$arr_offers=get_rules_offers();
 				$condition_types=array('geo_country'=>'Страна','lang'=>'Язык','referer'=>'Реферер','city'=>'Город','region'=>'Регион' ,'provider'=>'Провайдер','ip'=>'IP адрес','os'=>'ОС','platform'=>'Платформа','browser'=>'Браузер', 'agent'=>'User-agent','get'=>'GET');                        
 				$arr_rules=get_rules_list($arr_offers);
 				$arr=array();
 				$i=0;
+				
+				//dmp($arr_rules);
 
 				foreach($arr_rules as $cur)
 				{
@@ -245,6 +248,7 @@
 					 	break;
 					}
 					$arr['rules'][$i]['default_destination_id']=$default_destination_id;
+					$arr['rules'][$i]['other_users'] = count($cur['items']) > 1 ? 'Остальные посетители' : 'Все посетители';
 					
 					$i++;               
 				} 

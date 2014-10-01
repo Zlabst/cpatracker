@@ -18,8 +18,8 @@ $to         = rq('to', 4, '');
 // Определяем названия отчётов
 switch ($subtype) {
     case 'out_id':
-        $report_name = "Переходы по ссылкам";
-    	$parent_link = "Все ссылки";
+        $report_name = "Переходы по офферам";
+    	$parent_link = "Все офферы";
         break;
 
     case 'source_name':
@@ -30,7 +30,7 @@ switch ($subtype) {
 
 // Литералы для группировок
 $group_types = array(
-	'out_id'          => array('Ссылка', 'Без ссылки'), 
+	'out_id'          => array('Оффер', 'Без оффера'), 
 	'campaign_name'   => array('Кампания', 'Не определена'),
 	'source_name'     => array('Источник', 'Не определён'),
 	'ads_name'        => array('Объявление', 'Без объявления'),
