@@ -21,6 +21,12 @@ if($subtype == 'out_id') {
 	$id_fld = 'name';
 }
 
+/*
+$r['is_lead'];
+	cnt'];
+	*/
+	
+
 // При некоторых группировках необходимо искать значения в других таблицах
 $group_join = array(
 	'out_id' => array('offer_name', 'tbl_offers', 'out_id', 'id') // например, название ссылки
@@ -30,7 +36,16 @@ $rows          = array(); // все клики за период
 $data          = array(); // сгруппированные данные
 $parent_clicks = array(); // массив для единичного зачёта дочерних кликов (иначе у нас LP CTR больше 100% может быть)
 
-$q="SELECT " . (empty($group_join[$group_by]) ? mysql_real_escape_string($group_by) : 't2.' . $group_join[$group_by][0]) . " as `name`, t1.*
+$q="SELECT " . (empty($group_join[$group_by]) ? mysql_real_escape_string($group_by) : 't2.' . $group_join[$group_by][0]) . " as `name`, 
+	t1.id,
+	t1.source_name,
+	t1.out_id, 
+	t1.parent_id,
+	t1.click_price,
+	t1.is_unique,
+	t1.conversion_price_main,
+	t1.is_sale,
+	t1.is_lead
 	FROM `tbl_clicks` t1
 	" . (empty($group_join[$group_by]) ? '' : "LEFT JOIN `".$group_join[$group_by][1]."` t2 ON ".$group_join[$group_by][2]." = t2." . $group_join[$group_by][3]) . "
 	WHERE t1.`date_add_day` BETWEEN '" . $from . "' AND '" . $to . "'" . $where;
@@ -52,10 +67,8 @@ foreach($rows as $id => &$r) {
 		
 		/*
 		$r = $rows[$r['parent_id']];
-		
 		*/
 		$k = $r[$group_by];
-		
 		$r['out'] = $out_calc;
 		$r['cnt'] = 1;
 	}
@@ -203,7 +216,7 @@ $(document).ready(function() {
 	///"bPaginate": <?php echo (count($data) > 10) ? 'true' : 'false'; ?>,
 	window.table1.fnSortNeutral();
 } );
-</script>	
+</script>
 <div class="row">
 	<div class="col-md-12">
 		<table class="table table-striped table-bordered table-condensed dataTableT dataTable">

@@ -133,12 +133,27 @@ switch ($_REQUEST['type']) {
 	}
 
 	// Подгружаем данные
-	$arr_report_data = get_clicks_report_grouped($subtype, $group_by, $limited_to, $timestep, $from, $to);
+	//$arr_report_data = get_clicks_report_grouped($subtype, $group_by, $limited_to, $timestep, $from, $to);
+	
+	$params = array(
+		'subtype'    => $subtype,
+		'group_by'   => $group_by,
+		'limited_to' => $limited_to,
+		'type'  => $timestep,
+		'from'  => $from,
+		'to'    => $to
+	);
+	
+	$arr_report_data = get_clicks_report_grouped2($params);
+	
+	//dmp($arr_report_data);
+	//dmp($arr_report_data2);
 
 	// Совместимость со старым форматом
+	/*
 	if($group_by != $subtype) {
 		$arr_report_data = current($arr_report_data);
-	}
+	}*/
 
 	//dmp($arr_report_data);
 

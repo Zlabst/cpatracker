@@ -106,24 +106,64 @@
 		}
 		
 		// При некоторых группировках необходимо искать значения в других таблицах
+		
 		$group_join = array(
-			'out_id' => array('offer_name', 'tbl_offers', 'out_id', 'id') // например, название ссылки
+			//'out_id' => array('offer_name', 'tbl_offers', 'out_id', 'id') // например, название ссылки
 		);
 		
 		$rows = array(); // все клики за период
 		$data = array(); // сгруппированные данные
 		
 		// Выбираем все переходы за период
-		$q="SELECT " . (empty($group_join[$group_by]) ? mysql_real_escape_string($group_by) : 't2.' . $group_join[$group_by][0]) . " as `name`, t1.*
+		$q="SELECT " . (empty($group_join[$params['group_by']]) ? mysql_real_escape_string($params['group_by']) : 't2.' . $group_join[$params['group_by']][0]) . " as `name`, 
+			t1.id,
+			t1.source_name,
+			UNIX_TIMESTAMP(t1.date_add) as `time_add`,
+			t1.out_id,
+			t1.parent_id,
+			t1.click_price,
+			t1.is_unique,
+			t1.conversion_price_main,
+			t1.is_sale,
+			t1.is_lead,
+			t1.is_parent
 			FROM `tbl_clicks` t1
-			" . (empty($group_join[$group_by]) ? '' : "LEFT JOIN `".$group_join[$group_by][1]."` t2 ON ".$group_join[$group_by][2]." = t2." . $group_join[$group_by][3]) . "
-			WHERE CONVERT_TZ(t1.`date_add_day`, '+00:00', '"._str($timezone_shift)."') BETWEEN '" . $from . "' AND '" . $to . "'" . 
+			" . (empty($group_join[$params['group_by']]) ? '' : "LEFT JOIN `".$group_join[$params['group_by']][1]."` t2 ON t1.".$group_join[$params['group_by']][2]." = t2." . $group_join[$params['group_by']][3]) . "
+			WHERE CONVERT_TZ(t1.`date_add_day`, '+00:00', '"._str($timezone_shift)."') BETWEEN '" . $params['from'] . "' AND '" . $params['to'] . "'" . 
 				$where;
 		
 		$rs = mysql_query($q) or die(mysql_error());
 		while($r = mysql_fetch_assoc($rs)) {
 			$rows[$r['id']] = $r;
 		}
+		
+		// Данные выбраны, начинаем группировку
+		
+		$date_formats = array(
+			'hourly' => 'Y-m-d H',
+			'daily'  => 'Y-m-d',
+			'monthly'=> 'm.Y'
+		);
+		
+		$groups = array(
+			'00' => 'click',
+			'01' => 'lead',
+			'10' => 'sale',
+			'11' => 'sale_lead'
+		);
+		
+		foreach($rows as $r) {
+			$k1 = (trim($r['name']) == '' ? '{empty}' : $r['name']);
+			$k2 = date($date_formats[$params['type']], $r['time_add']);
+			$k3 = $groups[$r['is_sale'].$r['is_lead']];
+			
+			$data[$k1][$k2][$k3]['cnt'] += 1;
+			$data[$k1][$k2][$k3]['cost'] += $r['clicks_price'];
+			$data[$k1][$k2][$k3]['earnings'] += $r['conversions_sum'];
+			$data[$k1][$k2][$k3]['is_parent_cnt'] += $r['is_parent'];
+		}
+		
+		return $data;
 	} 
 	
 	

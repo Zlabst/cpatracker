@@ -38,6 +38,7 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 			$source_name_full = $group_types[$var['group_by']][1]; 
 		} else {
 			if($var['group_by'] == 'out_id') {
+				//$source_name_full = $source_name;
 				$source_name_full = current(get_out_description($source_name));
 			} elseif($var['group_by'] == 'referer') {
 				$source_name_full = str_replace('https://', '', $source_name);

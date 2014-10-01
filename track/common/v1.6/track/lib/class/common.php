@@ -115,7 +115,9 @@ class common {
             unset($data['status']);
         }
         
-        mysql_query('INSERT INTO `tbl_conversions` (`network`  '.$params.') VALUES ("'.mysql_real_escape_string($data['network']).'" '.$vals.')') or die(mysql_error());
+        
+        $q='INSERT INTO `tbl_conversions` (`network`  '.$params.') VALUES ("'.mysql_real_escape_string($data['network']).'" '.$vals.')';
+        mysql_query($q) or die(mysql_error());
         $conv_id = mysql_insert_id();
         unset($data['network']);
         foreach ($data as $name => $value) {
