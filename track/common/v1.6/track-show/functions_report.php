@@ -93,29 +93,30 @@
 	 */
 	
 	function get_clicks_report_grouped2 ($params) {
-		
+
 		// Смещение часового пояса
 		$timezone_shift = get_current_timezone_shift();
-		
-		// Группировки
-		if(empty($limited_to)) {
-			$group_by = $params['subtype'];
-		} else {
-			$group_by = $params['group_by'];
-			$where = " and `" . _str($params['subtype']) . "` = '" . _str($params['limited_to']) . "'";
-		}
-		
-		// При некоторых группировках необходимо искать значения в других таблицах
-		
-		$group_join = array(
-			//'out_id' => array('offer_name', 'tbl_offers', 'out_id', 'id') // например, название ссылки
-		);
 		
 		$rows = array(); // все клики за период
 		$data = array(); // сгруппированные данные
 		
+		// Применяем фильтры
+		if(!empty($params['filter']) or !is_array($params['filter'])) {
+			$tmp = array();
+			foreach($params['filter'] as $k => $v) {
+				if($k == 'referer') {
+					$tmp[] = "`".$k."` LIKE '%".mysql_real_escape_string($v)."%'";
+				} else {
+					$tmp[] = "`".$k."` = '".mysql_real_escape_string($v)."'";
+				}
+			}
+			$where = ' and ('.join(' and ', $tmp).')';
+		} else {
+			$where = '';
+		}
+		
 		// Выбираем все переходы за период
-		$q="SELECT " . (empty($group_join[$params['group_by']]) ? mysql_real_escape_string($params['group_by']) : 't2.' . $group_join[$params['group_by']][0]) . " as `name`, 
+		$q="SELECT " . mysql_real_escape_string($params['group_by']) . " as `name`, 
 			t1.id,
 			t1.source_name,
 			UNIX_TIMESTAMP(t1.date_add) as `time_add`,
@@ -126,11 +127,10 @@
 			t1.conversion_price_main,
 			t1.is_sale,
 			t1.is_lead,
-			t1.is_parent
+			t1.is_parent,
+			t1.is_connected
 			FROM `tbl_clicks` t1
-			" . (empty($group_join[$params['group_by']]) ? '' : "LEFT JOIN `".$group_join[$params['group_by']][1]."` t2 ON t1.".$group_join[$params['group_by']][2]." = t2." . $group_join[$params['group_by']][3]) . "
-			WHERE CONVERT_TZ(t1.`date_add_day`, '+00:00', '"._str($timezone_shift)."') BETWEEN '" . $params['from'] . "' AND '" . $params['to'] . "'" . 
-				$where;
+			WHERE CONVERT_TZ(t1.`date_add_day`, '+00:00', '"._str($timezone_shift)."') BETWEEN '" . $params['from'] . "' AND '" . $params['to'] . "'" . $where . (empty($params['where']) ? '' : " and " . $params['where'] );
 		
 		$rs = mysql_query($q) or die(mysql_error());
 		while($r = mysql_fetch_assoc($rs)) {
@@ -139,30 +139,72 @@
 		
 		// Данные выбраны, начинаем группировку
 		
-		$date_formats = array(
-			'hourly' => 'Y-m-d H',
-			'daily'  => 'Y-m-d',
-			'monthly'=> 'm.Y'
-		);
-		
-		$groups = array(
-			'00' => 'click',
-			'01' => 'lead',
-			'10' => 'sale',
-			'11' => 'sale_lead'
-		);
-		
-		foreach($rows as $r) {
-			$k1 = (trim($r['name']) == '' ? '{empty}' : $r['name']);
-			$k2 = date($date_formats[$params['type']], $r['time_add']);
-			$k3 = $groups[$r['is_sale'].$r['is_lead']];
+		if($params['part'] == 'all') {
+			// Вся статистика, без разбиения по времени
+			foreach($rows as $r) {
+				$k = (trim($r['name']) == '' ? '{empty}' : $r['name']);
+				
+				// Обрезаем реферер до домена
+				if($params['group_by'] == 'referer') {
+					$url = parse_url($k);
+					$k = $r['name'] = $url['host'];
+				}
+				
+				if(!isset($data[$k])) {
+					$data[$k] = array(
+						'id'     => $r['name'],
+						'name'   => $r['name'],
+						'price'  => 0,
+						'unique' => 0,
+						'income' => 0,
+						'sale'   => 0,
+						'lead'   => 0,
+						'out'    => 0,
+						'cnt'    => 0,
+					);
+				}
+				
+				$data[$k]['lead']   += $r['is_lead'];
+				$data[$k]['cnt']    += 1;
+				$data[$k]['price']  += $r['click_price'];
+				$data[$k]['unique'] += $r['is_unique'];
+				$data[$k]['income'] += $r['conversion_price_main'];
+				$data[$k]['sale']   += $r['is_sale'];
+				$data[$k]['out']    += $r['is_connected'];
+			}
 			
-			$data[$k1][$k2][$k3]['cnt'] += 1;
-			$data[$k1][$k2][$k3]['cost'] += $r['clicks_price'];
-			$data[$k1][$k2][$k3]['earnings'] += $r['conversions_sum'];
-			$data[$k1][$k2][$k3]['is_parent_cnt'] += $r['is_parent'];
+		} else {
+			// По временным промежуткам
+			$date_formats = array(
+				'hour' => 'Y-m-d H',
+				'day'  => 'Y-m-d',
+				'month'=> 'm.Y'
+			);
+			
+			$groups = array(
+				'00' => 'click',
+				'01' => 'lead',
+				'10' => 'sale',
+				'11' => 'sale_lead'
+			);
+			
+			foreach($rows as $r) {
+				$k1 = (trim($r['name']) == '' ? '{empty}' : $r['name']);
+				$k2 = date($date_formats[$params['part']], $r['time_add']);
+				$k3 = $groups[$r['is_sale'].$r['is_lead']];
+				
+				// Обрезаем реферер до домена
+				if($params['group_by'] == 'referer') {
+					$url = parse_url($k1);
+					$k1 = $r['name'] = $url['host'];
+				}
+				
+				$data[$k1][$k2][$k3]['cnt'] += 1;
+				$data[$k1][$k2][$k3]['cost'] += $r['clicks_price'];
+				$data[$k1][$k2][$k3]['earnings'] += $r['conversions_sum'];
+				$data[$k1][$k2][$k3]['is_parent_cnt'] += $r['is_parent'];
+			}
 		}
-		
 		return $data;
 	} 
 	
@@ -651,5 +693,127 @@
 		    }
 		    $out .= '</div>';
 		    return $out;
+		}
+		
+		// Литералы для группировок
+		$group_types = array(
+			'out_id'          => array('Оффер', 'Без оффера', 'офферам'), 
+			'source_name'     => array('Источник', 'Не определён', 'источникам'),
+			'campaign_name'   => array('Кампания', 'Не определена', 'кампаниям'),
+			'ads_name'        => array('Объявление', 'Без объявления', 'объявлениям'),
+			'referer'         => array('Площадка', 'Не определена', 'площадкам'),
+			'user_os'         => array('ОС', 'Не определена', 'ОС'),
+			'user_platform'   => array('Платформа', 'Не определена', 'платформам'),
+			'user_browser'    => array('Браузер', 'Не определен', 'браузерам'),
+			'country'         => array('Страна', 'Не определена', 'странам'),
+			'state'           => array('Регион', 'Не определен', 'регионам'),
+			'city'            => array('Город', 'Не определен', 'городам'),
+			'isp'             => array('Провайдер', 'Не определен', 'провайдерам'),
+			'campaign_param1' => array('Параметр ссылки #1', 'Не определен', 'параметру ссылки #1'),
+			'campaign_param2' => array('Параметр ссылки #2', 'Не определен', 'параметру ссылки #2'),
+			'campaign_param3' => array('Параметр ссылки #3', 'Не определен', 'параметру ссылки #3'),
+			'campaign_param4' => array('Параметр ссылки #4', 'Не определен', 'параметру ссылки #4'),
+			'campaign_param5' => array('Параметр ссылки #5', 'Не определен', 'параметру ссылки #5'),
+			'click_param_value1'  => array('Параметр перехода #1', 'Не определен', 'параметру перехода #1'),
+			'click_param_value2'  => array('Параметр перехода #2', 'Не определен', 'параметру перехода #2'),
+			'click_param_value3'  => array('Параметр перехода #3', 'Не определен', 'параметру перехода #3'),
+			'click_param_value4'  => array('Параметр перехода #4', 'Не определен', 'параметру перехода #4'),
+			'click_param_value5'  => array('Параметр перехода #5', 'Не определен', 'параметру перехода #5'),
+			'click_param_value6'  => array('Параметр перехода #6', 'Не определен', 'параметру перехода #6'),
+			'click_param_value7'  => array('Параметр перехода #7', 'Не определен', 'параметру перехода #7'),
+			'click_param_value8'  => array('Параметр перехода #8', 'Не определен', 'параметру перехода #8'),
+			'click_param_value9'  => array('Параметр перехода #9', 'Не определен', 'параметру перехода #9'),
+			'click_param_value10' => array('Параметр перехода #10', 'Не определен', 'параметру перехода #10'),
+			'click_param_value11' => array('Параметр перехода #11', 'Не определен', 'параметру перехода #11'),
+			'click_param_value12' => array('Параметр перехода #12', 'Не определен', 'параметру перехода #12'),
+			'click_param_value13' => array('Параметр перехода #13', 'Не определен', 'параметру перехода #13'),
+			'click_param_value14' => array('Параметр перехода #14', 'Не определен', 'параметру перехода #14'),
+			'click_param_value15' => array('Параметр перехода #15', 'Не определен', 'параметру перехода #15'),
+		);
+		
+		/*
+		 * Ссылка согласно параметрам отчёта
+		 */
+		
+		function report_lnk($params, $set = false) {
+			if($set and is_array($set)) {
+				foreach($set as $k => $v) {
+					$params[$k] = $v;
+				}
+			}
+			
+			$tmp = array();
+			foreach($params['filter'] as $k => $v) {
+				$tmp[] = $k . ':' . $v;
+			}
+			$vars = array(
+				'act' => 'reports',
+				'filter' => join(';', $tmp),
+				'type' => $params['type'],
+				'part' => $params['part'],
+				'group_by' => $params['group_by'],
+				'from' => $params['from'],
+				'to' => $params['to'],
+			);
+			return '?' . http_build_query($vars);
+		}
+		
+		/*
+		 * Формируем параметры отчёта из REQUEST-переменных
+		 */
+		function report_options() {
+			global $group_types;
+			// Дешифруем фильтры
+			$tmp_filters = rq('filter');
+			if(!empty($tmp_filters)) {
+				$tmp_filters = explode(';', $tmp_filters);
+				foreach($tmp_filters as $tmp_filter) {
+					list($k, $v) = explode(':', $tmp_filter);
+					if(array_key_exists($k, $group_types)) {
+						$filter[$k] = $v;
+					}
+				}
+			} else {
+				$filter = array();
+			}
+			
+			$part = rq('part', 0, 'day');
+			
+			// Устанавливаем даты по умолчанию
+			switch($part) {
+				case 'month':
+	        		$from  = date ('Y-m-01', strtotime(get_current_day('-6 months')));
+	    			$to    = date ('Y-m-t',  strtotime(get_current_day()));
+				break;
+				default:
+					$from = get_current_day('-6 days');
+	        		$to   = get_current_day();
+				break;
+			}
+			
+			$group_by = rq('group_by', 0, 'out_id');
+			
+			// Если эта группировка уже затронута фильтром - выбираем следующую по приоритету
+			$i = 0;
+			$group_types_keys = array_keys($group_types);
+			while(!empty($filter) and array_key_exists($group_by, $filter)) {
+				$group_by = $group_types_keys[$i];
+				$i++;
+			}
+			/*
+			for($i = 0; empty($filter) or array_key_exists($group_by, $filter); $i++) {
+				$group_by = $group_types_keys[$i];
+			}*/
+			
+			// Готовим параметры для отдачи
+			$v = array(
+				'type' => rq('type', 0, 'basic'),
+				'part' => rq('part', 0, 'all'),
+				'filter' => $filter,
+				'group_by' => $group_by,
+				'from' => rq('from', 4, $from),
+				'to'   => rq('to', 4, $to)
+			);
+			return $v;
 		}
 ?>

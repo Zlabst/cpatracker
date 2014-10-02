@@ -244,7 +244,7 @@
 					 	break;
 					 	
 					 	default:
-						 	$arr['rules'][$i]['destination_multi']=declination($destinations_count, array(' ссылка', ' ссылки', ' ссылок'));
+						 	$arr['rules'][$i]['destination_multi']=declination($destinations_count, array(' оффер', ' оффера', ' офферов'));
 					 	break;
 					}
 					$arr['rules'][$i]['default_destination_id']=$default_destination_id;

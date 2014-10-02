@@ -4,28 +4,41 @@ if (!$include_flag){exit();}
 
 extract($var);
 
+global $params;
+
+// Параметры отчёта нужны для формирования ссылок
+$params = $var['report_params'];
+
+// Формируем ссылку на группировку
+function glink($v, $li = false) {
+	global $group_types, $params;
+	
+	// Если параметр уже есть в фильтре - не показываем этот тип группировки
+	if(array_key_exists($v, $params['filter'])) return ''; 
+	
+	if($li) {
+		$class = '';
+	} else {
+		$class = ' class="btn btn-default'.($v == $params['group_by'] ? ' active' : '').'"';
+	}
+	$out = '<a href="' . report_lnk($params, array('group_by' => $v)) . '"' . $class . '>' . $group_types[$v][0] . '</a>';
+	if($li) $out = '<li>' . $out . '</li>';
+	return $out;
+}
+	
+
+
 ?><div class='row report_grouped_menu'>
 <div class='col-md-12'>
 	<div class="btn-group">
-		<?php if(!empty($limited_to)) { ?>
-		<?php if($subtype == 'out_id') { 
-			if ($group_by=='source_name'){$class="active";}else{$class='';}
-			?>
-			<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=source_name&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>" >Источник</a>
-		<? } ?>
-		<?php if($subtype == 'source_name') {
-			if ($group_by=='out_id'){$class="active";}else{$class='';}
-			?>
-			<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=out_id&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>" >Оффер</a>
-		<? } } ?>
-		<?php if ($group_by=='campaign_name'){$class="active";}else{$class='';} ?>
-		<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=campaign_name&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>" >Кампания</a>
-
-		<?php if ($group_by=='ads_name'){$class="active";}else{$class='';} ?>
-		<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=ads_name&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>">Объявление</a>
-
-		<?php if ($group_by=='referer'){$class="active";}else{$class='';} ?>
-		<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=referer&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>">Площадка</a>
+		<?php
+			echo 
+				glink('out_id') .
+				glink('source_name') .
+				glink('campaign_name') .
+				glink('ads_name') .
+				glink('referer') ;
+		?>
 
 		<?php if ($group_by=='out_id'){$class="active";}else{$class='';} ?>
 		<!--<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo $subtype;?>&group_by=out_id&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>">Ссылка</a>-->
@@ -36,11 +49,13 @@ extract($var);
 			<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu">
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=country&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Страна</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=city&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Город</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=region&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Регион</a></li>			
-			<li class="divider"></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=isp&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Провайдер</a></li>			
+			<?php 
+				echo 
+				glink('country', true) .
+				glink('state', true) .
+				glink('city', true) ;
+			echo '<li class="divider"></li>';
+			echo glink('isp', true); ?>
 			</ul>
 		</div>
 
@@ -50,9 +65,12 @@ extract($var);
 			<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu">
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=user_os&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">ОС</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=user_platform&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Платформа</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=user_browser&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Браузер</a></li>
+			<?php 
+				echo 
+				glink('user_os', true) .  
+				glink('user_platform', true) .
+				glink('user_browser', true);
+			?>
 			</ul>
 		</div>
 
@@ -62,22 +80,33 @@ extract($var);
 			<span class="caret"></span>
 			</button>
 			<ul class="dropdown-menu">
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=campaign_param1&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Параметр ссылки #1</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=campaign_param2&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Параметр ссылки #2</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=campaign_param3&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Параметр ссылки #3</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=campaign_param4&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Параметр ссылки #4</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=campaign_param5&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Параметр ссылки #5</a></li>
-			<li class="divider"></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=click_param_value1&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Параметр перехода #1</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=click_param_value2&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Параметр перехода #2</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=click_param_value3&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Параметр перехода #3</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=click_param_value4&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Параметр перехода #4</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=click_param_value5&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Параметр перехода #5</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=click_param_value6&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Параметр перехода #6</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=click_param_value7&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Параметр перехода #7</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=click_param_value8&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Параметр перехода #8</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=click_param_value9&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Параметр перехода #9</a></li>
-			<li><a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo _e($subtype);?>&group_by=click_param_value10&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Параметр перехода #10</a></li>
+			<?php
+				echo 
+				glink('campaign_param1', true) .
+				glink('campaign_param2', true) .
+				glink('campaign_param3', true) .
+				glink('campaign_param4', true) .
+				glink('campaign_param5', true);
+				
+				echo '<li class="divider"></li>';
+				
+				echo 
+				glink('click_param_value1', true) .
+				glink('click_param_value2', true) .
+				glink('click_param_value3', true) .
+				glink('click_param_value4', true) .
+				glink('click_param_value5', true) .
+				glink('click_param_value6', true) .
+				glink('click_param_value7', true) .
+				glink('click_param_value8', true) .
+				glink('click_param_value9', true) .
+				glink('click_param_value10', true) .
+				glink('click_param_value11', true) .
+				glink('click_param_value12', true) .
+				glink('click_param_value13', true) .
+				glink('click_param_value14', true) .
+				glink('click_param_value15', true);
+			?>
 			</ul>
 		</div>
 	</div>

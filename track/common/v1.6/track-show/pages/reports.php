@@ -11,6 +11,7 @@ $type       = rq('type', 0, 'daily_stats');
 $subtype    = rq('subtype'); // XSS ОПАСНО!!!
 $limited_to = rq('limited_to');
 $group_by   = rq('group_by', 0, $subtype);
+$part       = rq('part', 0, 'all');
 
 $from       = rq('from', 4, '');
 $to         = rq('to', 4, '');
@@ -28,151 +29,60 @@ switch ($subtype) {
         break;
 }
 
-// Литералы для группировок
-$group_types = array(
-	'out_id'          => array('Оффер', 'Без оффера'), 
-	'campaign_name'   => array('Кампания', 'Не определена'),
-	'source_name'     => array('Источник', 'Не определён'),
-	'ads_name'        => array('Объявление', 'Без объявления'),
-	'referer'         => array('Площадка', 'Не определена'),
-	'user_os'         => array('ОС', 'Не определена'),
-	'user_platform'   => array('Платформа', 'Не определена'),
-	'user_browser'    => array('Браузер', 'Не определен'),
-	'country'         => array('Страна', 'Не определена'),
-	'state'           => array('Регион', 'Не определен'),
-	'city'            => array('Город', 'Не определен'),
-	'isp'             => array('Провайдер', 'Не определен'),
-	'campaign_param1' => array('Параметр ссылки #1', 'Не определен'),
-	'campaign_param2' => array('Параметр ссылки #2', 'Не определен'),
-	'campaign_param3' => array('Параметр ссылки #3', 'Не определен'),
-	'campaign_param4' => array('Параметр ссылки #4', 'Не определен'),
-	'campaign_param5' => array('Параметр ссылки #5', 'Не определен'),
-	'click_param_value1'  => array('Параметр перехода #1', 'Не определен'),
-	'click_param_value2'  => array('Параметр перехода #2', 'Не определен'),
-	'click_param_value3'  => array('Параметр перехода #3', 'Не определен'),
-	'click_param_value4'  => array('Параметр перехода #4', 'Не определен'),
-	'click_param_value5'  => array('Параметр перехода #5', 'Не определен'),
-	'click_param_value6'  => array('Параметр перехода #6', 'Не определен'),
-	'click_param_value7'  => array('Параметр перехода #7', 'Не определен'),
-	'click_param_value8'  => array('Параметр перехода #8', 'Не определен'),
-	'click_param_value9'  => array('Параметр перехода #9', 'Не определен'),
-	'click_param_value10' => array('Параметр перехода #10', 'Не определен'),
-	'click_param_value11' => array('Параметр перехода #11', 'Не определен'),
-	'click_param_value12' => array('Параметр перехода #12', 'Не определен'),
-	'click_param_value13' => array('Параметр перехода #13', 'Не определен'),
-	'click_param_value14' => array('Параметр перехода #14', 'Не определен'),
-	'click_param_value15' => array('Параметр перехода #15', 'Не определен'),
-);
-
 switch ($_REQUEST['type']) {
-    case 'daily_stats':
-	case 'monthly_stats':
-	case 'all_stats':
-		
-	// Хлебные крошки
-	if(!empty($limited_to)) {
-		// Для ссылок преобразуем ID в название
-		
-		if($subtype == 'out_id') {
-			$source_name = current(get_out_description($limited_to));
-		} else {
-			$source_name = $limited_to;
-		}
-		echo '<div><ol class="breadcrumb"><li><a href="?act=reports&type=all_stats&subtype='._e($subtype).'">'.$parent_link.'</a></li><li class="active">'._e($source_name).'</li></ol></div>';
-	}
-	break;
-}
-
-switch ($_REQUEST['type']) {
-    case 'daily_stats':
-	case 'monthly_stats':
+	case 'basic':
 	
-		/*
+	// Параметры отчёта
+	$params = report_options();
+	
 	// Хлебные крошки
-	if(!empty($limited_to)) {
-		// Для ссылок преобразуем ID в название
+	if(!empty($params['filter'])) {
 		
-		if($subtype == 'out_id') {
-			$source_name = current(get_out_description($limited_to));
-		} else {
-			$source_name = $limited_to;
+		//$breadcrumbs = array(report_lnk($params, array('filter' => array())) => 'Все данные');
+		$i = 1;
+		echo '<div><ol class="breadcrumb">
+			<li><a href="' . report_lnk($params, array('filter' => array())) . '">Все данные</a></li>';
+		// Для ссылок преобразуем ID в название	
+		foreach($params['filter'] as $k => $v) {
+			if($k == 'out_id') {
+				$source_name = current(get_out_description($v));
+			} else {
+				$source_name = $v;
+			}
+			// Текущая ссылка
+			if($i == count($params['filter'])) {
+				echo '<li class="active">' . _e($source_name) . '</li>';
+			} else {
+				echo '<li class="active"><a href="' . report_lnk($params, array('filter' => array_slice($params['filter'], 0, $i))) . '">' . _e($source_name) . '</a></li>';
+			}
+			//echo '<li><a href="?act=reports&type=all_stats&subtype='._e($subtype).'">'.$parent_link.'</a></li><li class="active">'._e($source_name).'</li>';
+			$i++;
 		}
-		echo '<div><ol class="breadcrumb"><li><a href="?act=reports&type=all_stats&subtype='._e($subtype).'">'.$parent_link.'</a></li><li class="active">'._e($source_name).'</li></ol></div>';
-	}*/
-
-	// Заголовок отчёта и временной период
-
-	if($type == 'monthly_stats') {
-		
-		// Временной период по умолчанию
-		if(empty($from)) {
-			$from = get_current_day('-6 months');
-	        $to = get_current_day();
-		}
-		
-		// Преобразование во временные рамки месяца
-		$from  = date ('Y-m-01',  strtotime($from));
-	    $to    = date ('Y-m-t',  strtotime($to));
-		
-		$timestep = 'monthly';
-	} else {
-		
-		// Временной период по умолчанию
-		if(empty($from)) {
-			$from = get_current_day('-6 days');
-	        $to   = get_current_day();
-		}
-		$timestep = 'daily';
+		echo '</ol></div>';
 	}
-
+	
 	// Даты отчёта
-	if($timestep == 'monthly') {
-		$arr_dates = getMonthsBetween($from, $to);
-	} else {
-		$arr_dates = getDatesBetween($from, $to);
+	if($params['part'] == 'month') {
+		$arr_dates = getMonthsBetween($params['from'], $params['to']);
+	} elseif($params['part'] == 'day') {
+		$arr_dates = getDatesBetween($params['from'], $params['to']);
 	}
-
-	// Подгружаем данные
-	//$arr_report_data = get_clicks_report_grouped($subtype, $group_by, $limited_to, $timestep, $from, $to);
 	
-	$params = array(
-		'subtype'    => $subtype,
-		'group_by'   => $group_by,
-		'limited_to' => $limited_to,
-		'type'  => $timestep,
-		'from'  => $from,
-		'to'    => $to
-	);
-	
+	$params['where'] = "`is_connected` = '0'"; // только лэндинги
 	$arr_report_data = get_clicks_report_grouped2($params);
-	
-	//dmp($arr_report_data);
-	//dmp($arr_report_data2);
-
-	// Совместимость со старым форматом
-	/*
-	if($group_by != $subtype) {
-		$arr_report_data = current($arr_report_data);
-	}*/
-
-	//dmp($arr_report_data);
 
 	// Оставляем даты, за которые есть данные
 	$arr_dates = strip_empty_dates($arr_dates, $arr_report_data);
 
+	//dmp($arr_report_data);
+
 	// Собираем переменные в шаблон
-	$assign = array(
-		'report_name' => $report_name,
-		'type' => $type,
-		'subtype' => $subtype,
-		'from' => $from,
-		'to' => $to,
-		'timestep' => $timestep,
-		'arr_dates' => $arr_dates,
-		'arr_report_data' => $arr_report_data,
-		'group_by' => $group_by,
-		'limited_to' => $limited_to
-	);
+	$assign = $params;
+	$assign['report_params'] = $params;
+	$assign['report_name'] = 'Отчёт по ' . $group_types[$params['group_by']][2] . ' за ';
+	$assign['timestep'] = ($params['part'] == 'month' ? 'monthly' : 'daily');
+	$assign['arr_report_data'] = $arr_report_data;
+	$assign['arr_dates'] = $arr_dates;
 
 	// Заголовок отчета
 	echo tpx('report_name', $assign);
@@ -181,7 +91,11 @@ switch ($_REQUEST['type']) {
 	echo tpx('report_groups', $assign);
 
 	// Таблица отчета
-	echo tpx('report_daily', $assign);
+	if($params['part'] == 'all') {
+		echo tpx('report_click_all', $assign);
+	} else {
+		echo tpx('report_daily', $assign);
+	}
 	break;
 
     case 'daily_grouped':
@@ -310,7 +224,7 @@ switch ($_REQUEST['type']) {
         return ((x[0] < y[0]) ? 1 : ((x[0] > y[0]) ? -1 : ((x[1] < y[1]) ? 1 : ((x[1] > y[1]) ? -1 : 0))));
     };
 </script>
-<?php if($type != 'targetreport' and $type != 'all_stats') { ?>
+<?php if($type != 'targetreport' and $type != 'all_stats' and $part != 'all') { ?>
 <div class="row" id='report_toolbar'>
     <div class="col-md-12">
         <div class="form-group">

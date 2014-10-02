@@ -12,8 +12,18 @@ $where      = '';
 
 if(!empty($limited_to)) {
 	$where = " and `"._str($subtype)."` = '"._str($limited_to)."'";
+} else {
+	//$subtype = $group_by;
 }
 
+/*
+if(empty($params['limited_to'])) {
+			$group_by = $params['subtype'];
+		} else {
+			$group_by = $params['group_by'];
+			$where = " and `" . _str($params['subtype']) . "` = '" . _str($params['limited_to']) . "'";
+		}
+*/
 
 if($subtype == 'out_id') {
 	$id_fld = 'out_id';
@@ -72,6 +82,8 @@ foreach($rows as $id => &$r) {
 		$r['out'] = $out_calc;
 		$r['cnt'] = 1;
 	}
+	$k = $r['name'];
+	
 	
 	if($group_by == 'referer' and $r[$group_by] != '') {
 		$url = parse_url($r[$group_by]);
@@ -104,6 +116,8 @@ foreach($rows as $id => &$r) {
 $fromF = date ('d.m.Y', strtotime($from));
 $toF   = date ('d.m.Y', strtotime($to));
 $value_date_range = "$fromF - $toF";
+
+//dmp($data);
 /*
 if($limited_to) {
 	$report_name = 'Переходы на ' . current(get_out_description($limited_to)) . ' за';
@@ -261,7 +275,13 @@ $(document).ready(function() {
 						
 						$group_link = $subtype == 'out_id' ? 'source_name' : 'out_id';
 						
-						echo '<tr><td nowrap=""><a href="?act=reports&type='._e($type).'&subtype='._e($main_type).'&limited_to='.$r['id'].'&group_by='.$group_link.'">'.(empty($r['name']) ? $group_types[$group_by][1] : $r['name']).'</a></td><td>'.intval($r['cnt']).'</td><td>'.$repeated.'%</td><td class="col_s">'.$r['sale'].'</td><td class="col_s">'.$conversion.'%</td><td>'.$price.'</td><td class="col_s">'.$profit.'</td><td class="col_s">'.$epc.'</td><td class="col_s">'.$roi.'%</td><td class="col_l">'.$r['lead'].'</td><td class="col_l">'.$conversion_l.'%</td><td class="col_l">'.$cpl.'</td></tr>';
+						$name = (empty($r['name']) ? $group_types[$group_by][1] : $r['name']);
+						
+						if(empty($limited_to)) {
+							$name = '<a href="?act=reports&type='._e($type).'&subtype='._e($main_type).'&limited_to='.$r['id'].'&group_by='.$group_link.'">'.$name.'</a>';
+						}
+						
+						echo '<tr><td nowrap="">'.$name.'</td><td>'.intval($r['cnt']).'</td><td>'.$repeated.'%</td><td class="col_s">'.$r['sale'].'</td><td class="col_s">'.$conversion.'%</td><td>'.$price.'</td><td class="col_s">'.$profit.'</td><td class="col_s">'.$epc.'</td><td class="col_s">'.$roi.'%</td><td class="col_l">'.$r['lead'].'</td><td class="col_l">'.$conversion_l.'%</td><td class="col_l">'.$cpl.'</td></tr>';
 					}
 				?>
 			</tbody>

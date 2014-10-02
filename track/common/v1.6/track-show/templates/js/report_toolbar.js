@@ -6,12 +6,10 @@ function update_cols(selected_option) {
 		case 'sales':
 			$('.col_l').hide();
 			$('.col_s').show();
-			$('#rt_currency_section').removeClass('invisible');
 		break;
 		case 'leads':
 			$('.col_s').hide();
 			$('.col_l').show();
-			$('#rt_currency_section').addClass('invisible'); 
 		break;
 		case 'currency_rub': 
 			$('.sdata.usd').hide();

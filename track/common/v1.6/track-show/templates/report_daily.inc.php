@@ -53,10 +53,9 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 			}
 		}
 		
-		// Если limited не определён - делаем такую возможность через ссылку
-		if(empty($var['limited_to'])) {
-			$group_link = $var['subtype'] == 'out_id' ? 'source_name' : 'out_id';
-			$source_name_full = '<a href="?act=reports&type='._e($var['type']).'&subtype='._e($var['subtype']).'&group_by='.$group_link.'&limited_to='._e($source_name).'">' . _e($source_name_full) . '</a>';
+		// Ограничиваем глубину фильтров
+		if(empty($var['report_params']['filter']) or count($var['report_params']['filter']) < 5) {
+			$source_name_full = '<a href="'.report_lnk($var['report_params'], array('filter' => array_merge($var['report_params']['filter'], array($var['report_params']['group_by'] => _e($source_name))))).'">' . _e($source_name_full) . '</a>';
 		} else {
 			$source_name_full = _e($source_name_full);
 		}
