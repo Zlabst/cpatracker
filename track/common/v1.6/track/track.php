@@ -1,8 +1,89 @@
 <?php
 	
 	ob_start();
+	
+	/*
+	 * Проверка правила IP
+	 * Примеры верных диапазонов: 8.8.8.9 - 8.8.10.255, 212.11.92.*, 212.11.*.*, 212.10.*.100 
+	 */
+	 
+	function check_ip($mask, $ip) {
+		// Убираем пробелы рядом с дефисом
+		$mask = str_replace(' -', '-', $mask);
+		$mask = str_replace('- ', '-', $mask);
+		
+		// Заменяем все разделители запятыми
+		$mask = str_replace(';', ' ', $mask);
+		$mask = str_replace(',', ' ', $mask);
+		$mask = preg_replace("/\s+/", ' ', $mask);
+		
+		$mask = explode(' ', $mask);
+		foreach($mask as $current_mask) {
+			// Имеем дело с диапазоном IP
+			if(strstr($current_mask, '-') !== false) {
+				list($ip_start, $ip_end) = explode('-', $current_mask);
+				if(ip_in_range($ip, $ip_start, $ip_end)) {
+					return true;
+				}
+			// Одиночный IP, возможно с * 
+			} else {
+				if(ip_in_range($ip, $current_mask)) {
+					return true;
+				}
+			}
+		}
+		
+		return false;
+	}
+
+	/*
+	 * Преобразуем строковый IP в массив из 4-х элементов
+	 */
+	function ip2arr($ip) {
+		if(empty($ip)) return array();
+		$ip_arr = explode('.', $ip);
+		return count($ip_arr) == 4 ? $ip_arr : array();
+	}
+
+	/*
+	 * Проверка принадлежности IP диапазону
+	 * Либо явно задан диапазон с дефисом, либо звёдочка
+	 */
+	function ip_in_range($ip, $ip_start, $ip_end = '') {
+
+		// Обычный IP
+		if(empty($ip_end) and strstr($ip_start, '*') === false) {
+			return $ip == $ip_start;
+			
+		// Диапазон или маска со звёздочкой
+		} else {
+			$ip_arr = ip2arr($ip);
+			$ip_start_arr = ip2arr($ip_start);
+			
+			// Диапазон
+			if(!empty($ip_end)) {
+				$ip_end_arr = ip2arr($ip_end);
+			
+			// Маска со звёздочкой
+			} else {
+				for ($i=0; $i<4; $i++) {
+					if ($ip_start_arr[$i]=='*') {
+						$ip_start_arr[$i]='0';
+						$ip_end_arr[$i]='255';
+					} else {
+						$ip_end_arr[$i]=$ip_start_arr[$i]; 
+					}
+				}
+			}
+			
+			$ip_num = ip2long($ip);
+			return ($ip_num >= ip2long(join('.', $ip_start_arr)) && $ip_num <= ip2long(join('.', $ip_end_arr)));
+		}
+		return false;
+	}
 
 	$settings_file=_CACHE_PATH.'/settings.php';
+ 
 	$str=file_get_contents($settings_file);
 	$str=str_replace('<?php exit(); ?>', '', $str);
 	$arr_settings=unserialize($str);
@@ -344,8 +425,17 @@
                       }
                       $flag = true;
                   }
-               }else{
-                   if(strripos(' '.$internal_value['value'], $user_params[$key])){                 
+               } elseif($key == 'ip') {
+               	   if(check_ip($internal_value['value'], $user_params[$key])) {
+               	   	   $relevant_params[] = $internal_value;
+               	   	   if(!$relevant_param_order){$relevant_param_order = $internal_value['order'];}else{
+                         if($relevant_param_order>$internal_value['order']){$relevant_param_order = $internal_value['order'];}
+                       }
+					   $flag = true;
+               	   }
+               	   
+               } else {
+                   if(strripos(' '.$internal_value['value'], $user_params[$key])){
                      $relevant_params[] = $internal_value;
                       if(!$relevant_param_order){$relevant_param_order = $internal_value['order'];}else{
                          if($relevant_param_order>$internal_value['order']){$relevant_param_order = $internal_value['order'];}
@@ -355,7 +445,6 @@
                } 
               
               }
-             
             $relevant_count = count($relevant_params); 
             if($relevant_count)
             {

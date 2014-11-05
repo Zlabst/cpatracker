@@ -4,7 +4,22 @@
 <script src="<?php echo _HTML_LIB_PATH;?>/mustache/mustache.js"></script>
 <script src="<?php echo _HTML_LIB_PATH;?>/select2/select2.js"></script>
 <script src="<?php echo _HTML_LIB_PATH;?>/clipboard/ZeroClipboard.min.js"></script>
-
+<style>
+	.rule-link-text {
+		width: 345px;
+		border: none;
+		margin-top: 10px;
+	}
+	.btn-rule-copy.for_text {
+		border: medium none;
+	    border-radius: 0;
+	    color: #888;
+	    float: right;
+	    margin: 0;
+	    min-width: 50px;
+	    padding: 10px 0;
+	}
+</style>
 <script>
     var last_removed = 0;
     $(document).ready(function()
@@ -101,6 +116,7 @@
                 tr.find('input.select-item').attr('placeholder',title);
                 tr.find('input.select-item').attr('itemtype',name);
                 tr.find('input.select-link').select2({data: {results: dictionary_links}, width: 'copy', containerCssClass: 'form-control select2'});
+                tr.find('input.select-sources').select2({data: {results: dictionary_sources}, width: 'copy', containerCssClass: 'form-control select2'});
             } 
            // buttons {// 
             
@@ -113,7 +129,9 @@
                 rule_table.prepend(template);
                 rule_table.find('input.select-geo_country').select2({data: {results: dictionary_countries}, width: '250px', containerCssClass: 'form-control select2 noborder-select2'});
                 rule_table.find('input.select-link').select2({data: {results: dictionary_links}, width: 'copy', containerCssClass: 'form-control select2'});               
-                rule_table.find('input.select-link').first().select2('val',$('#rule'+rule_id).find('[name = default_out_id]').val()) ;    
+                rule_table.find('input.select-sources').select2({data: {results: dictionary_sources}, width: 'copy', containerCssClass: 'form-control select2'});
+                rule_table.find('input.select-link').first().select2('val',$('#rule'+rule_id).find('[name = default_out_id]').val());
+rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id).find('[name = default_out_id]').val()) ; // ???
             });
             $('.addlang').on("click", function(e) {
                 e.preventDefault();
@@ -123,8 +141,10 @@
                 users_label(rule_table);
                 rule_table.prepend(template);
                 rule_table.find('input.select-lang').select2({data: {results: dictionary_langs}, width: '250px', containerCssClass: 'form-control select2 noborder-select2'});
-                rule_table.find('input.select-link').select2({data: {results: dictionary_links}, width: 'copy', containerCssClass: 'form-control select2'});               
-                rule_table.find('input.select-link').first().select2('val',$('#rule'+rule_id).find('[name = default_out_id]').val()) ;    
+                rule_table.find('input.select-link').select2({data: {results: dictionary_links}, width: 'copy', containerCssClass: 'form-control select2'});
+                rule_table.find('input.select-sources').select2({data: {results: dictionary_sources}, width: 'copy', containerCssClass: 'form-control select2'});
+                rule_table.find('input.select-link').first().select2('val',$('#rule'+rule_id).find('[name = default_out_id]').val()) ; 
+                rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id).find('[name = default_out_id]').val()) ; // ???
             });
             $('.addrefer').on("click", function(e) {
                 e.preventDefault();
@@ -274,14 +294,25 @@
             
             // Fill values for destination links
             var dictionary_links = [];
-            dictionary_links.push(<?php echo  $js_offers_data; ?>);
+            dictionary_links.push(<?php echo $js_offers_data; ?>);
+            
+            var dictionary_sources = <?php echo $js_sources_data; ?>;
+  
             
             $('input.select-link').each(function()
             {
                 $(this).select2({data: {results: dictionary_links}, width: 'copy', containerCssClass: 'form-control select2'});
+
                 $(this).select2("val", $(this).attr('data-selected-value'));
             });
-
+            
+            $('input.select-sources').each(function()
+            {
+                $(this).select2({data: {results: dictionary_sources}, width: 'copy', containerCssClass: 'form-control select2'});
+                $(this).select2("val", $(this).attr('data-selected-value'));
+                $(this).on("select2-selecting", function(e) {change_source(e)});
+            });
+            
             var dictionary_countries = [];
            
             dictionary_countries.push(<?php echo  $js_countries_data; ?>); 
@@ -314,7 +345,26 @@
             });
         });
     });
-
+	
+	function change_source(obj) {
+		
+		//val = obj.val;
+		
+		var table = $(obj.target).parent().parent().parent().parent().parent();
+		table.find('.rule-link').each(function() {
+			lnk = $(this).val();
+			parts = lnk.split('/');
+//			parts[5] = val;
+		});
+		
+		$.ajax({
+            type: "POST",
+            url: "index.php",
+            data: 'ajax_act=get_source_link&source=' + obj.val + '&name=' + parts[4]
+        }).done(function(msg) {
+        	table.find('.rule-link-text').val(msg);
+	    });
+	}
     
     function delete_rule(rule_id)
     {
@@ -354,6 +404,7 @@
     {
 
         var links = [];
+        var sources = [];
         var rules_items = '';
         var values = '';
         var error = '';
@@ -684,7 +735,7 @@
                                 <span class='badge'>{{destination_multi}}</span>
                             {{/destination_multi}}
                         </span>
-                        <input type="hidden" id='rule-link-{{id}}' value='{{url}}'>
+                        <input type="hidden" id='rule-link-{{id}}' class="rule-link" value='{{url}}'>
                     </th>
                 </tr>
             </thead>
@@ -749,7 +800,7 @@
                                     <li class="divider"></li>
                                     <li><a class="delbut" id="{{id}}" href="#">Удалить ссылку</a></li>
                                 </ul>
-                            </div>                        
+                            </div>
                               <div class="btn-group">
                                 <button type="button" class="btn btn-link dropdown-toggle" data-toggle="dropdown">
                                   Добавить условие
@@ -775,8 +826,16 @@
                         </div>
                         <button id="{{id}}" class='btn btn-default pull-right btnsave'>Сохранить</button>
                     </form>
+                    
                 </td></tr>
-
+                <tr>
+                	<td>
+                		<div style='width:200px; margin: 5px 5px 5px 0;' class="pull-left"><input type=hidden name='source_id[]' class='select-sources toSave' data-selected-value='source'></div>
+                    	<input type="text" class="rule-link-text" id="rule-link-text-{{id}}" value="{{url}}" />
+                    	<button type='button' id='copy-button-text-{{id}}' class='btn-rule-copy for_text' role="button" data-clipboard-target='rule-link-text-{{id}}'><i class="fa fa-copy" title="Скопировать ссылку в буфер"></i></button>
+                    </td>
+                </tr>
+				
             </tbody>
         </table>
     {{/rules}}

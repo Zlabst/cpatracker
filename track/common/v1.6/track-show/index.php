@@ -15,12 +15,14 @@
     // Define flag to allow templates inclusion, security measure
 	$include_flag=true;
 	
-	if (isset($_GET['debug']))
+	if (isset($_GET['debug'])) {
 		ini_set('display_errors', 1);
+		error_reporting(E_ERROR | E_WARNING | E_PARSE);
+	}
 
 	// Set allowed for inclusion files list, security measure
 	$page_sidebar_allowed=array('sidebar-left-links.inc.php', 'sidebar-left-reports.inc.php');
-	$page_content_allowed=array('reports.php', 'sales.php', 'stats-flow.php','links_page.inc.php','rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'import_page_postback.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'register.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php');
+	$page_content_allowed=array('reports.php', 'sales.php', 'stats-flow.php','links_page.inc.php','rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'import_page_postback.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'register.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php', 'landing_page.inc.php');
 
 	// Include main functions
 	include _TRACK_SHOW_PATH."/functions_general.php";
@@ -141,6 +143,7 @@
 	mysql_connect($_DB_HOST, $_DB_LOGIN, $_DB_PASSWORD) or die("Could not connect: " .mysql_error());
 	mysql_select_db($_DB_NAME);
 	mysql_query('SET NAMES utf8');
+	mysql_query('SET TIME_ZONE=\'+04:00\'');
 
 	if ($_REQUEST['ajax_act']=='a_load_flow') {
 		$filter='';
@@ -167,6 +170,32 @@
 		foreach ($arr_data as $row)	{
 			include _HTML_TEMPLATE_PATH . '/../pages/stats-flow-row.php';
 		}
+		exit();
+	}
+	
+	if ($_REQUEST['ajax_act']=='get_source_link') {
+		$source = rq('source');
+		$name   = rq('name');
+		
+		$lnk = 'http://' . $_SERVER['HTTP_HOST'] . '/track/' . $name . '/';
+		
+		if(array_key_exists($source, $source_config)) {
+			$lnk .= $source . '/campaign-ads/';
+			if(!empty($source_config[$source]['params'])) {
+				$tmp = array();
+				foreach($source_config[$source]['params'] as $param_name => $param_value) {
+					if(empty($param_value['url'])) continue;
+					$tmp[] = $param_name . '=' . $param_value['url'];
+				}
+				if(count($tmp) > 0) {
+					$lnk .= '?' . join('&', $tmp);
+				}
+			}
+		} else {
+			$lnk .= 'source/campaign-ads';
+		}
+		
+		echo $lnk;
 		exit();
 	}
 
@@ -209,7 +238,7 @@
 
 				foreach($arr_rules as $cur)
 				{
-					$arr['rules'][$i]=array('id'=>$cur['id'], 'name'=>$cur['name'], 'url'=>_HTML_TRACK_PATH."/{$cur['name']}/SOURCE/CAMPAIGN-ADS");
+					$arr['rules'][$i]=array('id'=>$cur['id'], 'name'=>$cur['name'], 'url'=>_HTML_TRACK_PATH."/{$cur['name']}/source/campaign-ads");
 
 					$arr_destinations=array(); $default_destination_id='';
 					foreach ($cur['items'] as $cur_item_val)
@@ -700,33 +729,61 @@
 	}
 
 	header('Content-Type: text/html; charset=utf-8');
+	
+	$page = rq('page');
+	
+	switch ($page) {
+		case 'import':
+		case 'costs':
+		case 'postback':
+		case 'pixel':
+		case 'landing':
+			$arr_left_menu = array(
+				'import'   => array('link'=>'index.php?page=import', 'icon'=>'icon-shopping-cart', 'caption'=>'Добавление продаж'),
+				'costs'    => array('link'=>'index.php?page=costs', 'icon'=>'icon-credit-card', 'caption'=>'Добавление затрат'),
+				'postback' => array('link'=>'index.php?page=postback', 'icon'=>'icon-cogs', 'caption'=>'Интеграция с CPA сетями'),
+				//'pixel'    => array('link'=>'index.php?page=pixel', 'icon'=>'icon-cogs', 'caption'=>'Пиксель отслеживания'),
+				'landing'  => array('link'=>'index.php?page=landing', 'icon'=>'icon-cogs', 'caption'=>'Целевые страницы'),
+			);
+		
+			foreach($arr_left_menu as $k => $v) {
+				if($page == $k) {
+					$arr_left_menu[$k]['is_active'] = 1;
+					break;
+				}
+			}
+        break;
+	}
+	
+	
 	switch ($_REQUEST['page'])
 	{
+		case 'landing':
+			
+			$page_content='landing_page.inc.php';
+			include _TRACK_SHOW_PATH."/templates/main.inc.php";
+			exit();
+		break;
 		case 'links': 
 			$page_sidebar='sidebar-left-links.inc.php';
 			$page_content="links_page.inc.php";
 			include _TRACK_SHOW_PATH."/templates/main.inc.php";
-			exit();			
+			exit();
 		break;
 
 		case 'rules': 
 			$arr_offers=get_rules_offers();
 		    list ($js_last_offer_id, $js_offers_data)=get_offers_data_js($arr_offers);
+		    $js_sources_data = get_sources_data_js();
 
 			$js_countries_data=get_countries_data_js();
-                        $js_langs_data=get_langs_data_js();         
+			$js_langs_data=get_langs_data_js();         
 			$page_content='rules_page.inc.php';
 			include _TRACK_SHOW_PATH."/templates/main.inc.php";
 			exit();
 		break;
 		
 		case 'costs': 
-			$arr_left_menu=array();
-			$arr_left_menu[]=array('link'=>'index.php?page=import', 'icon'=>'icon-shopping-cart', 'caption'=>'Добавление продаж');
-			$arr_left_menu[]=array('link'=>'index.php?page=costs', 'icon'=>'icon-credit-card', 'caption'=>'Добавление затрат', 'is_active'=>1);
-			$arr_left_menu[]=array('link'=>'index.php?page=postback', 'icon'=>'icon-cogs', 'caption'=>'Интеграция с CPA сетями');
-                        $arr_left_menu[]=array('link'=>'index.php?page=pixel', 'icon'=>'icon-cogs', 'caption'=>'Пиксель отслеживания');
-
 			$arr_sources=get_sources();
 			$arr_campaigns=get_campaigns();
 			$arr_ads=get_ads();
@@ -737,36 +794,18 @@
 		break;
 		
 		case 'import':
-			$arr_left_menu=array();
-			$arr_left_menu[]=array('link'=>'index.php?page=import', 'icon'=>'icon-shopping-cart', 'caption'=>'Добавление продаж', 'is_active'=>1);
-			$arr_left_menu[]=array('link'=>'index.php?page=costs', 'icon'=>'icon-credit-card', 'caption'=>'Добавление затрат');
-			$arr_left_menu[]=array('link'=>'index.php?page=postback', 'icon'=>'icon-cogs', 'caption'=>'Интеграция с CPA сетями');
-			$arr_left_menu[]=array('link'=>'index.php?page=pixel', 'icon'=>'icon-cogs', 'caption'=>'Пиксель отслеживания');
-
 			$page_content='import_page.inc.php';
 			include _TRACK_SHOW_PATH."/templates/main.inc.php";
 			exit();
 		break;
 		
 		case 'postback':
-			$arr_left_menu=array();
-			$arr_left_menu[]=array('link'=>'index.php?page=import', 'icon'=>'icon-shopping-cart', 'caption'=>'Добавление продаж');
-			$arr_left_menu[]=array('link'=>'index.php?page=costs', 'icon'=>'icon-credit-card', 'caption'=>'Добавление затрат');
-			$arr_left_menu[]=array('link'=>'index.php?page=postback', 'icon'=>'icon-cogs', 'caption'=>'Интеграция с CPA сетями', 'is_active'=>1);
-            $arr_left_menu[]=array('link'=>'index.php?page=pixel', 'icon'=>'icon-cogs', 'caption'=>'Пиксель отслеживания');
-
 			$page_content='import_page_postback.inc.php';
 			include _TRACK_SHOW_PATH."/templates/main.inc.php";
 			exit();
 		break;
 		
 		case 'pixel':
-			$arr_left_menu=array();
-			$arr_left_menu[]=array('link'=>'index.php?page=import', 'icon'=>'icon-shopping-cart', 'caption'=>'Добавление продаж');
-			$arr_left_menu[]=array('link'=>'index.php?page=costs', 'icon'=>'icon-credit-card', 'caption'=>'Добавление затрат');
-			$arr_left_menu[]=array('link'=>'index.php?page=postback', 'icon'=>'icon-cogs', 'caption'=>'Интеграция с CPA сетями');
-                        $arr_left_menu[]=array('link'=>'index.php?page=pixel', 'icon'=>'icon-cogs', 'caption'=>'Пиксель отслеживания', 'is_active'=>1);
-
 			$page_content='pixel_page.inc.php';
 			include _TRACK_SHOW_PATH."/templates/main.inc.php";
 			exit();
@@ -785,8 +824,7 @@
 		break;
 
 		case 'settings':
-			switch ($_REQUEST['type'])
-			{
+			switch ($_REQUEST['type']) {
 				case 'timezone': 
 					$page_content='timezone_settings_page.inc.php';
 				break;
@@ -796,8 +834,7 @@
 		break;
 
     	case 'login':
-	    	switch ($_REQUEST['act'])
-    		{
+	    	switch ($_REQUEST['act']) {
     			case 'login': 
 					$email=$_REQUEST['email'];
 					$password=$_REQUEST['password'];
@@ -877,11 +914,6 @@
 						case 'salesreport':
 							$page_content = 'salesreport.php';
 						break;
-						/*
-						case 'targetreport':
-							$page_content = 'targetreport.php';
-						break;
-						*/
 						default:
 							$page_content="reports.php"; 
 						break;

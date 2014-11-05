@@ -1,4 +1,443 @@
 <?php
+$source_types = array(
+	0 => array(
+		'name' => '',
+		'values' => array('yadirect', 'adwords', 
+		'startapp', 'dntx', 'leadimpact', 'adultmoda', 'admoda', 'inmobi', 'buzzcity', 'adinch', 'decisive', 'exoclick', 'octobird', 'leadbolt', 'adtwirl', 'jumptap', 'mmedia', 'mobfox', 'plugrush', 'sitescout', 'tapgage', 'wapstart', 'zeropark')
+	),
+	1 => array(
+		'name' => 'Социальные сети',
+		'values' => array('vk', 'facebook', 'targetmail')
+	),
+	2 => array(
+		'name' => 'Тизерные сети',
+		'values' => array('adlabs', 'bodyclick', 'cashprom', 'directadvert', 'kadam', 'marketgid', 'mediatarget', 'teasermedia', 'teasernet', 'visitweb')
+	),
+	3 => array(
+		'name' => 'Рекламные сети',
+		'values' => array('popunder', )
+	),
+	4 => array(
+		'name' => 'Мобильные сети',
+		'values' => array('airpush', 'mobiads', 'tapit', 'go2mobi')
+	),
+);
+
+$source_config = array(
+	/*
+	'' => array(
+		'name' => '',
+		'params' => array(
+			'' => array('name' => '',  'url' => ''),
+		)
+	),
+	*/
+	'topmmorpg' => array(
+		'name' => 'Topmmorpg',
+	),
+	'zeropark' => array(
+		'name' => 'Zeropark',
+		'params' => array(
+			'place_id' => array('name' => 'ID площадки',    'url' => '{target}'),
+			'keyword'  => array('name' => 'Ключевая фраза', 'url' => '{keyword}'),
+			'match'    => array('name' => 'Исходная фраза', 'url' => '{match}'),
+		)
+	),
+	'wapstart' => array(
+		'name' => 'Wapstart',
+		'params' => array(
+			'place_id' => array('name' => 'ID площадки',  'url' => '%SITE_ID%'),
+		)
+	),
+	'tapgage' => array(
+		'name' => 'Tapgage',
+		'params' => array(
+			'place_id' => array('name' => 'ID площадки',  'url' => 'TAPGAGE_VAR_SITEID'),
+		)
+	),
+	'sitescout' => array(
+		'name' => 'SiteScout',
+		'params' => array(
+			'ad_id'    => array('name' => 'ID объявления',   'url' => '{adId}'),
+			'place_id' => array('name' => 'ID площадки',     'url' => '{siteId}'),
+			'campaign_id' => array('name' => 'ID кампании',  'url' => '{campaignId}'),
+			'net_id'   => array('name' => 'ID сети',         'url' => '{networkId}'),
+			'domain'   => array('name' => 'Домен SiteScout', 'url' => '{domain}'),
+			'place'    => array('name' => 'Площадка SiteScout',  'url' => '{pageUrl}'),
+			'aud_id'   => array('name' => 'ID аудитории',    'url' => '{demographicIds}'),
+			'type_id'  => array('name' => 'ID категории',    'url' => '{contextualIds}'),
+			'operator' => array('name' => 'Оператор',        'url' => '{carrier}'),
+			'device'   => array('name' => 'Устройство',      'url' => '{device}'),
+			'app_id'   => array('name' => 'ID приложения',   'url' => '{appId}'),
+		)
+	),
+	'plugrush' => array(
+		'name' => 'Plugrush',
+		'params' => array(
+			'place_id'   => array('name' => 'ID площадки',   'url' => '{$id}'),
+			'type_id'    => array('name' => 'ID категории',  'url' => '{$category}'),
+			'domain'     => array('name' => 'Площадка Plugrush', 'url' => '{$domain}'),
+			'place_type' => array('name' => 'Тип площадки',  'url' => '{$trafficsource}'),
+			'ad_id'      => array('name' => 'ID объявления', 'url' => '{$ad_id}'),
+		)
+	),
+	'mobfox' => array(
+		'name' => 'Mobfox',
+		'params' => array(
+			'ad_id'       => array('name' => 'ID объявления', 'url' => 'MFOXADID'),
+			'place_id'    => array('name' => 'ID площадки',   'url' => 'MFOXPUBID'),
+			'campaign_id' => array('name' => 'ID кампании',   'url' => 'MFOXCAID'),
+		)
+	),
+	'mmedia' => array(
+		'name' => 'mMedia',
+		'params' => array(
+			'place_id' => array('name' => 'ID площадки',  'url' => '[:_jv_apid:]'),
+		)
+	),
+	'jumptap' => array(
+		'name' => 'Jumptap',
+		'params' => array(
+			'ad_id'    => array('name' => 'Объявление',     'url' => 'JT_ADBUNDLE'),
+			'device'   => array('name' => 'Устройство',     'url' => 'JT_HANDSET'),
+			'publisher'=> array('name' => 'Вебмастер',      'url' => 'JT_PUBLISHER'),
+			'place_id' => array('name' => 'Площадка',       'url' => 'JT_SITE'),
+			'operator' => array('name' => 'Оператор',       'url' => 'JT_OPERATOR'),
+			'keyword'  => array('name' => 'Ключевая фраза', 'url' => 'JT_KEYWORD'),
+		)
+	),
+	'adtwirl' => array(
+		'name' => 'Adtwirl',
+	),
+	'leadbolt' => array(
+		'name' => 'Leadbolt',
+		'params' => array(
+			'place_id'    => array('name' => 'ID площадки',   'url' => '[PUB_ID]'),
+			'campaign_id' => array('name' => 'ID кампании',   'url' => '[AD_GROUP_ID]'),
+			'ad_id'      => array('name' => 'ID объявления', 'url' => '[AD_ID]'),
+		)
+	),
+	'octobird' => array(
+		'name' => 'Octobird',
+		'params' => array(
+			'site_id' => array('name' => 'ID площадки',  'url' => '{OB_SITE_ID} '),
+		)
+	),
+	'exoclick' => array(
+		'name' => 'ExoClick',
+		'params' => array(
+			'campaign_id'  => array('name' => 'ID кампании',   'url' => '{campaign_id}'),
+			'variation_id' => array('name' => 'ID объявления', 'url' => '{variation_id}'),
+			'src_hostname' => array('name' => 'Площадка Exoclick', 'url' => '{src_hostname}'),
+			'site_id'      => array('name' => 'ID площадки',   'url' => '{site_id}'),
+			'zone_id'      => array('name' => 'ID размещения', 'url' => '{zone_id}'),
+			'category_id'  => array('name' => 'ID категории',  'url' => '{category_id}'),
+		)
+	),
+	'decisive' => array(
+		'name' => 'Decisive',
+		'params' => array(
+			'ad_id'       => array('name' => 'ID объявления',         'url' => '{{{ad_id}}}'),
+			'creative_id' => array('name' => 'ID баннера',            'url' => '{{{creative_id}}}'),
+			'ad_name'     => array('name' => 'Кампания',              'url' => '{{{ad_name}}}'),
+			'carrier'     => array('name' => 'Оператор',              'url' => '{{{carrier}}}'),
+			'os'          => array('name' => 'ОС',                    'url' => '{{{os}}}'),
+			'os_version'  => array('name' => 'Версия ОС',             'url' => '{{{os_version}}}'),
+			'device'      => array('name' => 'Устройство',            'url' => '{{{device}}}'),
+			'media'       => array('name' => 'Тип размещения',        'url' => '{{{media}}}'),
+			'country'     => array('name' => 'Страна',                'url' => '{{{country}}}'),
+			'app'         => array('name' => 'Приложение',            'url' => '{{{app}}}'),
+			'site'        => array('name' => 'Площадка Decisive',     'url' => '{{{site}}}'),
+			'category'    => array('name' => 'Категория площадки',    'url' => '{{{category}}}'),
+			'subcategory' => array('name' => 'Подкатегория площадки', 'url' => '{{{subcategory}}}'),
+		)
+	),
+	'adinch' => array(
+		'name' => 'Adinch',
+		'params' => array(
+			'appid' => array('name' => 'ID площадки',  'url' => '{APP_ID}'),
+		)
+	),
+	'buzzcity' => array(
+		'name' => 'Buzzcity',
+		'params' => array(
+			'pubid'      => array('name' => 'ID площадки',  'url' => '{pubid}'),
+		)
+	),
+	'inmobi' => array(
+		'name' => 'Inmobi',
+		'params' => array(
+			'place'      => array('name' => 'ID площадки',  'url' => '__si__cb'),
+		)
+	),
+	'admoda' => array(
+		'name' => 'Admoda',
+		'params' => array(
+			'zoneid'     => array('name' => 'ID площадки',  'url' => '%zoneid%'),
+			'campaignid' => array('name' => 'ID кампании',  'url' => '%campaignid%'),
+		)
+	),
+	'adultmoda' => array(
+		'name' => 'Adultmoda',
+		'params' => array(
+			'zoneid'     => array('name' => 'ID площадки',   'url' => '%zoneid%'),
+			'pubid'      => array('name' => 'ID вебмастера', 'url' => '%pubid%'),
+			'adid'       => array('name' => 'ID объявления', 'url' => '%adid%'),
+			'campaignid' => array('name' => 'ID кампании',   'url' => '%campaignid%'),
+		)
+	),
+	'leadimpact' => array(
+		'name' => 'Leadimpact',
+		'params' => array(
+			'keyword' => array('name' => 'Ключевая фраза',  'url' => '%KEYWORD%'),
+		)
+	),
+	'dntx' => array(
+		'name' => 'DNTX',
+		'params' => array(
+			'sourceid' => array('name' => 'ID площадки',  'url' => '[sourceid]'),
+			'match'    => array('name' => 'Ключевая фраза',  'url' => '[match]'),
+		)
+	),
+	'startapp' => array(
+		'name' => 'StartApp',
+		'params' => array(
+			'aid'         => array('name' => 'ID приложения',  'url' => 'app_id'),
+			'creativeid'  => array('name' => 'ID объявления',  'url' => 'creative_name'),
+			'cid'         => array('name' => 'ID кампании',    'url' => 'campaign_id'),
+		)
+	),
+	'go2mobi' => array(
+		'name' => 'Go2mobi',
+		'params' => array(
+			'campaign'      => array('name' => 'ID кампании',  'url' => '{campaign}'),
+			'pln'           => array('name' => 'Площадка Go2mobi',   'url' => '{pln}'),
+			'plid'          => array('name' => 'ID площадки',   'url' => '{plid}'),
+			'crid'          => array('name' => 'ID объявления',   'url' => '{crid}'),
+			'isp'           => array('name' => 'Оператор',   'url' => '{isp}'),
+			'device_vendor' => array('name' => 'Производитель',   'url' => '{device_vendor}'),
+			'device_model'  => array('name' => 'Устройство',   'url' => '{device_model}'),
+			'os'            => array('name' => 'ОС',   'url' => '{os}'),
+			'os_verion'     => array('name' => 'Версия ОС',   'url' => '{os_verion}'),
+		)
+	),
+	'tapit' => array(
+		'name' => 'Tapit',
+		'params' => array(
+			'site'         => array('name' => 'ID площадки',   'url' => '[site]'),
+			'channel'      => array('name' => 'ID категории',  'url' => '[channel]'),
+			'carrier'      => array('name' => 'Оператор',      'url' => '[carrier]'),
+			'platform'     => array('name' => 'Платформа',     'url' => '[platform]'),
+			'version'      => array('name' => 'Версия ОС',     'url' => '[version]'),
+			'device'       => array('name' => 'Устройство',    'url' => '[phone_brand]'),
+			'model'        => array('name' => 'Модель',        'url' => '[phone_model]'),
+			'creativeid'   => array('name' => 'ID объявления', 'url' => '[creative]'),
+			'environment'  => array('name' => 'Тип площадки',  'url' => '[environment]'),
+		)
+	),
+	'airpush' => array(
+		'name' => 'Airpush',
+		'params' => array(
+			'carrier'      => array('name' => 'Оператор',      'url' => '%carrier%'),
+			'device'       => array('name' => 'Устройство',    'url' => '%device%'),
+			'manufacturer' => array('name' => 'Производитель', 'url' => '%manufacturer%'),
+			'campaign_id'  => array('name' => 'ID кампании',   'url' => '%campaignid%'),
+			'creativeid'   => array('name' => 'ID объявления', 'url' => '%creativeid%'),
+			'app_id'       => array('name' => 'ID приложения', 'url' => '%dapp%'),
+			'pubid'        => array('name' => 'ID площадки',   'url' => '%pubid%'),
+			'framework'    => array('name' => 'Версия ОС',     'url' => '%framework%'),
+		)
+	), 
+	'mobiads' => array(
+		'name' => 'Mobiads',
+		'params' => array(
+			'place_id'     => array('name' => 'ID площадки', 'url' => '[place_id]'),
+		)
+	),
+	'adlabs' => array(
+		'name' => 'Adlabs',
+		'params' => array(
+			'adv_id'       => array('name' => 'ID тизера',   'url' => '%tizer_id%'),
+			'place_id'     => array('name' => 'ID площадки', 'url' => '%source_id%'),
+			'campaign_id'  => array('name' => 'ID кампании', 'url' => '%campaign_id%'),
+		)
+	),
+	'bodyclick' => array(
+		'name' => 'Bodyclick',
+		'params' => array(
+			'place_id'     => array('name' => 'ID площадки',    'url' => '[SID]'),
+			'adv_id'       => array('name' => 'ID объявления',  'url' => '[ID]'),
+			'keywords'     => array('name' => 'Ключевая фраза', 'url' => '[Q]'),
+			'title'        => array('name' => 'Заголовок',      'url' => '[TITLE]'),
+			'img'          => array('name' => 'Изображение',    'url' => '[IMG]'),
+		)
+	), 
+	'cashprom' => array(
+		'name' => 'Cashprom',
+		'params' => array(
+			'place_id'    => array('name' => 'ID площадки',   'url' => '{%CASHPROM_PLACE_ID%}'),
+			'campaign_id' => array('name' => 'ID кампании',   'url' => '{%CASHPROM_CAMPAIGN_ID%}'),
+			'adv_id'      => array('name' => 'ID объявления', 'url' => '{%CASHPROM_ADV_ID%}'),
+		)
+	), 
+	'directadvert' => array(
+		'name' => 'DirectAdvert',
+		'params' => array(
+			'place_id'    => array('name' => 'ID площадки',   'url' => '{%SITE_ID% '),
+			'adv_id'      => array('name' => 'ID объявления', 'url' => '%AD_ID%'),
+		)
+	), 
+	'kadam' => array(
+		'name' => 'Kadam',
+		'params' => array(
+			'place_id'    => array('name' => 'ID площадки', 'url' => '[SID]'),
+			'adv_id'      => array('name' => 'ID тизера',   'url' => '[ID]'),
+			'campaign_id' => array('name' => 'ID кампании', 'url' => '[CID]'),
+		)
+	), 
+	'marketgid' => array(
+		'name' => 'Marketgid',
+		'params' => array(
+			'place_id'    => array('name' => 'ID площадки',  'url' => '{widget_id}'),
+			'adv_id'      => array('name' => 'ID тизера',    'url' => '{teaser_id}'),
+			'campaign_id' => array('name' => 'ID кампании',  'url' => '{campaign_id}'),
+			'category_id' => array('name' => 'ID категории', 'url' => '{category_id} '),
+		)
+	), 
+	'mediatarget' => array(
+		'name' => 'Mediatarget',
+		'params' => array(
+			'utm_campaign' => array('name' => 'ID кампании',          'url' => '[SITE_ID]'),
+			'utm_place'    => array('name' => 'Площадка MediaTarget', 'url' => '[TEASER_ID]'),
+			'utm_term'     => array('name' => 'Ключевая фраза',       'url' => '[IMAGE]'),
+		)
+	), 
+	'teasermedia' => array(
+		'name' => 'Teasermedia',
+	), 
+	'teasernet' => array(
+		'name' => 'Teasernet',
+		'params' => array(
+			'place_id'  => array('name' => 'ID площадки',  'url' => '[SITE_ID]'),
+			'adv_id'    => array('name' => 'ID тизера',    'url' => '[TEASER_ID]'),
+			'image'     => array('name' => 'Изображение',  'url' => '[IMAGE]'),
+			'title'     => array('name' => 'Заголовок',    'url' => '[TITLE]'),
+		)
+	), 
+	'visitweb'  => array(
+		'name' => 'Visitweb',
+		'params' => array(
+			'adv_id'   => array('name' => 'ID объявления',     'url' => '{AD}'),
+			'place_id' => array('name' => 'Площадка Visitweb', 'url' => '{USITE}'),
+			'referer'  => array('name' => 'Реферер Vistweb',   'url' => '{REF}'),
+		)
+	),
+	'vk' => array(
+		'name' => 'ВКонтакте',
+	),
+	'facebook' => array(
+		'name' => 'Facebook',
+	),
+	'targetmail' => array(
+		'name' => 'Target@Mail.ru',
+		'params' => array(
+			'campaign_id' => array('name' => 'ID кампании', 'url' => '{{campaign_id}}'),
+			'adv_id'      => array('name' => 'ID баннера',  'url' => '{{banner_id}}'),
+			'gender'      => array('name' => 'Пол',         'url' => '{{gender}}'),
+			'age'         => array('name' => 'Возраст',     'url' => '{{age}}'),
+		)
+	),
+	'adwords'  => array(
+		'name' => 'Google Adwords',
+		'params' => array(
+			'adv_id'     => array('name' => 'ID объявления',    'url' => '{creative}' ),
+			'keyword'    => array('name' => 'Ключевая фраза',   'url' => '{keyword}'),
+			'place_id'   => array('name' => 'Площадка Adwords', 'url' => '{placement}'),
+			'adposition' => array('name' => 'Позиция',          'url' => '{adposition}
+'),
+			'position_type' => array(
+				'n' => 5, 
+				'name' => 'Размещение',
+				'list' => array(
+					'0' => 'Не определено',
+					's' => 'Реклама справа',
+					't' => 'Спецразмещение',
+				)
+			),
+		)
+	),
+	'yadirect' => array(
+		'name' => 'Яндекс.Директ',
+		'params' => array(
+			'source_type' => array(
+				'name' => 'Тип площадки',
+				'list' => array(
+					'search' => 'Поиск',
+					'context' => 'РСЯ',
+				),
+			),
+			'source' => array(
+				'name' => 'Площадка',
+				'list' => array(
+					'none' => 'Не определена'
+				)
+			),
+			'position_type' => array(
+				'name' => 'Размещение',
+				'list' => array(
+					'premium' => 'Cпецразмещение',
+					'other' => 'Блок внизу',
+					'none' => 'Не определено'
+				)
+			),
+			'position' => array(
+				'name' => 'Позиция',
+				'list' => array(
+					'0' => 'Не определено',
+				)
+			),
+			'keyword'     => array('n' => 5, 'name' => 'Ключевая фраза'),
+			'campaign_id' => array('n' => 6, 'name' => 'ID кампании'),
+			'ad_id'       => array('n' => 7, 'name' => 'ID объявления'),
+		),
+	),
+	'popunder' => array(
+		'name' => 'Popunder.ru',
+		'params' => array(
+			'account'  => array('name' => 'ID вебмастера', 'url' => '{wm_account_id}'),
+			'place_id' => array('name' => 'ID площадки', 'url' => '{wm_site_id}'),
+			'domain'   => array('name' => 'Площадка Popunder', 'url' => '{wm_domain}'),
+			'adv_id'   => array('name' => 'ID баннера', 'url' => '{banner_id}'),
+			'keywords' => array('name' => 'Ключевая фраза', 'url' => '{kwlist}'),
+			'camp_type'=> array('name' => 'Тип кампании', 'url' => '{ad_type}'),
+			'topic_id' => array(
+				'name' => 'ID категории',
+				'url' => '{topic_id}',
+				'list' => array(
+					'0'  => 'Не определена',
+					'5'  => 'Авто',
+					'6'  => 'Дом',
+					'7'  => 'Заработок', 
+					'8'  => 'Коммуникации',
+					'9'  => 'Личное',
+					'10' => 'Недвижимость',
+					'11' => 'Общество',
+					'12' => 'Путешествия',
+					'13' => 'Развлечения',
+					'14' => 'Реклама',
+					'15' => 'Строительство',
+					'16' => 'Учёба',
+					'17' => 'Финансы',
+					'18' => 'Шопинг',
+					'19' => 'Эротика',
+					'20' => 'Разное'
+				)
+			)
+		)
+	)
+);
+
+
 	function _str($str)
 	{
 		return mysql_real_escape_string(trim($str));
@@ -212,11 +651,14 @@
 
 	function get_sources()
 	{
+		global $source_config;
 		$arr_sources=array();
 		$sql="select distinct source_name from tbl_clicks where source_name!='' order by source_name asc";
 		$result=mysql_query($sql);
 		while ($row=mysql_fetch_assoc($result))
 		{
+			$source_name = $row['source_name'];
+			$row['name'] = empty($source_config[$source_name]['name']) ? $source_name : $source_config[$source_name]['name'];
 			$arr_sources[]=$row;
 		}
 		return $arr_sources;
@@ -522,7 +964,7 @@
 		}
 		else
 		{
-			$sql="insert into tbl_conversions (profit, subid, date_add) values ('"._str($amount)."', '"._str($subid)."', NOW())";
+			$sql="insert into tbl_conversions (profit, subid, date_add) values ('"._str($amount)."', '"._str($subid)."', NOW()) ON DUPLICATE KEY UPDATE `date_add` = NOW()";
 			mysql_query($sql) or die(mysql_error());
 		}
 
@@ -1064,12 +1506,16 @@ function show_country_select($selected='')
 		return $arr_data;	
 	}
 	
-	function get_current_timezone_shift()
+	function get_current_timezone_shift($simple = false)
 	{
 		$timezone_shift='+00:00';
 		$sql="select tbl_timezones.timezone_offset_h from tbl_timezones where tbl_timezones.status=0 and tbl_timezones.is_active=1";
 		$result=mysql_query($sql);
 		$row=mysql_fetch_assoc($result);
+		
+		if($simple) {
+			return $row['timezone_offset_h'] * 3600;
+		}
 
 		if ($row['timezone_offset_h']!='')
 		{
@@ -1153,8 +1599,12 @@ function show_country_select($selected='')
 	{
 		$arr_offers=array();
 
-		$sql="select tbl_offers.*, tbl_links_categories_list.category_caption from tbl_offers left join tbl_links_categories on tbl_links_categories.offer_id=tbl_offers.id left join tbl_links_categories_list on tbl_links_categories_list.id=tbl_links_categories.category_id where tbl_offers.status=0 order by tbl_links_categories_list.category_caption asc, tbl_offers.date_add desc";
-
+		$sql="select tbl_offers.*, tbl_links_categories_list.category_caption 
+			from tbl_offers 
+			left join tbl_links_categories on tbl_links_categories.offer_id=tbl_offers.id 
+			left join tbl_links_categories_list on tbl_links_categories_list.id=tbl_links_categories.category_id 
+			where tbl_offers.status=0 
+			order by tbl_links_categories_list.category_caption asc, tbl_offers.date_add desc";
 		$result=mysql_query($sql);
 		while ($row=mysql_fetch_assoc($result))
 		{
@@ -1254,7 +1704,28 @@ function show_country_select($selected='')
 		}
 		return $result;
 	}
-
+	
+	function get_sources_data_js() {
+		$i = 1;
+		global $source_types, $source_config;
+		$arr_data = array();
+		
+		foreach($source_types as $type_val) {
+			if($type_val['name'] == '') {
+			$tmp = array(array('id' => 'source', 'text' => 'Основная ссылка'));
+			} else {
+				$tmp = array();
+			}
+			foreach($type_val['values'] as $v) {
+				$tmp[] = array('id' => $v, 'text' => $source_config[$v]['name']);
+				$i ++;
+			}
+			$arr_data[] = array('text' => $type_val['name'] . ' ', 'children' => $tmp);
+			
+		}
+		return json_encode($arr_data, JSON_UNESCAPED_UNICODE);
+	}
+	
 	function get_offers_data_js($arr_offers)
 	{
 	    $arr_data=array(); $i=0;
@@ -1443,6 +1914,7 @@ function show_country_select($selected='')
 	Умное округление в зависимости от величины
 */ 	
  	function round2($v) {
+ 		$m = $v < 0 ? -1 : 1;
  		$v = abs($v);
  		if($v < 1) {
  			$size = 4;
@@ -1451,8 +1923,27 @@ function show_country_select($selected='')
  		} else {
  			$size = 2;
  		}
- 		return round($v, $size);
+ 		return round($v * $m, $size);
  	}
+ 	
+ 	function round3($v) {
+ 		if($v < 0.5) {
+ 			if($v < 0.0001) {
+ 				return 0;
+ 			} elseif($v < 0.001) {
+ 				return round($v, 4);
+ 			} elseif($v < 0.01) {
+ 				return round($v, 3);
+ 			} elseif($v < 0.1) {
+ 				return round($v, 2);
+ 			} else {
+ 				return round($v, 1);
+ 			}
+ 		} else {
+ 			return round($v);
+ 		}
+ 	}
+ 	
 /*
 	Это - SubID. Стопудова!
 */
@@ -1460,4 +1951,92 @@ function show_country_select($selected='')
 	function is_subid($v) {
 		return preg_match('/^\d{14}x\d{5}$/', $v); 
 	}
+	
+/**
+ * 	Формирование запроса на insert
+ */
+function insertsql($values, $table, $duplicate_update = false) {
+    foreach ($values as $key => $val) {
+        $values[$key] = "'" . _str($val) . "'";
+    }
+    $sql = "insert into `$table` (`" . join("`,`", array_keys($values)) . "`) values (" . join(",", array_values($values)) . ")";
+    
+    if($duplicate_update) {
+    	$sql .= " ON DUPLICATE KEY UPDATE " . setdefs($values);
+    }
+    return $sql;
+}
+	
+/**
+ * 	Формирование запроса на update
+ */
+ 
+function updatesql($values, $table, $idfield='', $eq='=') {
+	if(empty($values) or !is_array($values)) return '';
+    
+    $sql = "update `$table` set " . setdefs($values, $idfield);
+    if ($idfield) {
+        $sql .= " where `$idfield` $eq '{$values[$idfield]}'";
+    }
+    return $sql;
+}	
+
+/**
+ * Сервисная функция для формирование запросов
+ */
+function setdefs($values, $idfield='') {
+  	if (is_array($values)) {
+        foreach ($values as $field => $val) {
+    		$val = mysql_real_escape_string($val);
+    			
+        	if($field != $idfield)
+            	$sets[] = "`$field`='$val'";
+        }
+        return @join(", ", $sets);
+    } else {
+        return '';
+    }
+}
+
+/*
+ * Милисекунды в формате php5
+ */
+function microtime_float() {
+    list($usec, $sec) = explode(" ", microtime());
+    return ((float)$usec + (float)$sec);
+}
+
+/**
+ * Небольшая оболочка для выполнения запросов в БД
+ */
+function db_query($q, $die_on_error = false) {
+	global $sql_log, $sql_time;
+	$start = microtime_float();
+	$rs = mysql_query($q);
+	if(!$rs) {
+		$str = $q . "\n" . mysql_error();
+		to_log('db_errors', $str);
+		
+		if($die_on_error) {
+			die($str);
+		}
+		return false;
+	} else {
+		$t = microtime_float() - $start;
+		if($t < 0) $t = 0;
+		$sql_time += $t;
+		$sql_log[] = round($t, 4) . ' ' . $q;
+		to_log('db_success', $q . "\n" . round($t, 4));
+		
+		return $rs;
+	}
+}
+
+function to_log($name, $data) {
+	$fp = fopen(_TRACK_SHOW_PATH . '/log/' . $name. '.log', 'a');
+	if(is_array($data)) $data = print_r($data, true);
+	fwrite($fp, date('Y-m-d H:i:s') . "\n" . $data . "\n\n");
+	fclose($fp);
+}
+
 ?>

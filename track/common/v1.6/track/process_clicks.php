@@ -8,6 +8,11 @@
 	$str=file_get_contents($settings_file);
 	$str=str_replace('<?php exit(); ?>', '', $str);
 	$arr_settings=unserialize($str);
+	
+	if (isset($_GET['debug'])) {
+		ini_set('display_errors', 1);
+		error_reporting(E_ERROR | E_WARNING | E_PARSE);
+	}
 
 	$_DB_LOGIN=$arr_settings['login'];
 	$_DB_PASSWORD=$arr_settings['password'];
@@ -18,6 +23,8 @@
 	mysql_connect($_DB_HOST, $_DB_LOGIN, $_DB_PASSWORD) or die("Could not connect: " .mysql_error());
 	mysql_select_db($_DB_NAME);
 	mysql_query('SET NAMES utf8');
+	
+	include _TRACK_SHOW_PATH . "/functions_general.php";
 
 	$arr_files=array();
 	$process_at_once=60;
@@ -97,11 +104,12 @@
 		return current(explode (':', $a));	
 	}
 
+/*
 	function _str($str)
 	{
 		return mysql_real_escape_string ($str);
 	}	
-	
+*/	
 	function get_geodata($ip)
 	{
 		require_once (_TRACK_LIB_PATH."/maxmind/geoip.inc.php");
@@ -221,11 +229,81 @@
 		
 		// Parse get string
 		parse_str ($arr_click_info[17], $click_get_params);
-		$i=1;
+		
 		$sql_click_params=array();
-
-		$is_connected=false; $connected_subid='';
-		foreach ($click_get_params as $param_name=>$param_value)
+		
+		// Save this source params
+		
+		global $source_config;
+		
+		to_log('src', $click_link_source);
+		to_log('src', $source_config);
+		to_log('src', $click_get_params);
+		
+		// Source config exists
+		if(array_key_exists($click_link_source, $source_config) 
+			and array_key_exists('params', $source_config[$click_link_source])) {
+			
+			// Выбираем именованные параметры из того, что пришло
+			$i = 1;
+			foreach($source_config[$click_link_source]['params'] as $param_name => $param_info) {
+				
+				if(empty($param_info['url'])) continue; // "виртуальный" параметр, он определяется не ссылкой, а через другие параметры, см ниже
+					
+				if(array_key_exists($param_name, $click_get_params)) {
+					$param_value = $click_get_params[$param_name];
+					$sql_click_params[]="click_param_name{$i}='"._str($param_name)."', click_param_value{$i}='"._str($param_value)."'";
+					
+					// Adwords передает в одном параметре и то что это спецразмещение и то, что это реклама в сайдбаре и сразу же позицию объявления. Поэтому мы разбиваем это значение на два параметра, Размещение (если t - Спецразмещение, если s - Реклама справа, если o или что-то другое - Не определено) и Позиция (где выводим значения как есть, то есть 1t1, 1s2 и т.д.) 
+					// Пример "виртуального параметра"
+					
+					if($click_link_source == 'adwords' and $param_name == 'adposition') {
+						$i++;
+						$position_type = 0;
+						if(strstr($param_value, 's') !== false) {
+							$position_type = 's';
+						}
+						
+						if(strstr($param_value, 't') !== false) {
+							$position_type = 't';
+						}
+						$sql_click_params[]="click_param_name{$i}='position_type', click_param_value{$i}='"._str($position_type)."'";
+					}
+					unset($click_get_params[$param_name]); // Параметр отработан, убираем его чтобы остались только пользовательские
+				}
+				$i++;
+			}
+			/*
+			foreach($click_get_params as $param_name => $param_value) {
+				if(!empty($source_config[$click_link_source]['params'][$param_name]['n'])) {
+					//$i = $source_config[$click_link_source]['params'][$param_name]['n'] + 5;
+					$sql_click_params[]="click_param_name{$i}='"._str($param_name)."', click_param_value{$i}='"._str($param_value)."'";
+					
+					// Adwords передает в одном параметре и то что это спецразмещение и то, что это реклама в сайдбаре и сразу же позицию объявления. Поэтому мы разбиваем это значение на два параметра, Размещение (если t - Спецразмещение, если s - Реклама справа, если o или что-то другое - Не определено) и Позиция (где выводим значения как есть, то есть 1t1, 1s2 и т.д.) 
+					
+					if($click_link_source == 'adwords' and $param_name == 'adposition') {
+						$position_type = 0;
+						if(strstr($param_value, 's') !== false) {
+							$position_type = 's';
+						}
+						
+						if(strstr($param_value, 't') !== false) {
+							$position_type = 't';
+						}
+						$sql_click_params[]="click_param_name10='position_type', click_param_value10='"._str($position_type)."'";
+					}
+					
+					unset($click_get_params[$param_name]);
+				}
+			}
+			*/
+		}
+		
+		// Пользовательские параметры
+		//$i=1;
+		$is_connected=false; 
+		$connected_subid='';
+		foreach ($click_get_params as $param_name => $param_value)
 		{
 			if ($param_name=='_subid')
 			{
@@ -247,7 +325,7 @@
 			$i++;
 
 			// Maximum 15 get parameters allowed
-			if ($i>15){break;}
+			if ($i > 15){break;}
 		}
 
 		$sql_click_params=implode (', ', $sql_click_params);

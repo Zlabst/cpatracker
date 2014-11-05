@@ -97,7 +97,7 @@
 					<?
 						foreach ($arr_sources as $cur)
 						{
-							echo "<option value='"._e($cur['source_name'])."'>"._e($cur['source_name'])."</option>";
+							echo "<option value='"._e($cur['source_name'])."'>"._e($cur['name'])."</option>";
 						}
 					?>
 				</select>

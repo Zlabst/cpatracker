@@ -212,12 +212,12 @@ $custom = new custom();
 
         <table class="table table-hover table-striped">
             <tr>
-                <td><input type="checkbox" id="profit"></td>
+                <td><input type="checkbox" id="profit" checked="checked"></td>
                 <td>Сумма конверсии:</td>
                 <td><input type="text" id="profit_val" value="{profit}"></td>
             </tr>
             <tr>
-                <td><input type="checkbox" id="subid"></td>
+                <td><input type="checkbox" id="subid" checked="checked"></td>
                 <td>SubID:</td>
                 <td><input type="text" id="subid_val" value="{subid}"></td>
             </tr>

@@ -36,7 +36,7 @@
         </div> <!-- /wrap -->
 
         <div id="footer">
-            <?php include _TRACK_SHOW_PATH."/templates/footer.inc.php"; ?>
+            <?php echo tpx('footer'); ?>
         </div>
     </body>
 </html>

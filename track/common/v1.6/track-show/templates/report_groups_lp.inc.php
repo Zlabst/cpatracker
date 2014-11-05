@@ -20,9 +20,9 @@ function glink($v, $li = false, $name = '') {
 	if($li) {
 		$class = '';
 	} else {
-		$class = ' class="btn btn-default'.(($v == $params['group_by'] and $params['mode'] != 'popular') ? ' active' : '').'"';
+		$class = ' class="btn btn-default'.(($v == $params['subgroup_by'] and $params['mode'] != 'popular') ? ' active' : '').'"';
 	}
-	$out = '<a href="' . report_lnk($params, array('group_by' => $v, 'mode' => ($params['mode'] == 'lp_offers' ? $params['mode'] : ''))) . '"' . $class . '>' . ($name == '' ? $group_types[$v][0] : $name) . '</a>';
+	$out = '<a href="' . report_lnk($params, array('subgroup_by' => $v, 'mode' => ($params['mode'] == 'lp_offers' ? $params['mode'] : ''))) . '"' . $class . '>' . ($name == '' ? $group_types[$v][0] : $name) . '</a>';
 	if($li) $out = '<li>' . $out . '</li>';
 	return $out;
 }
@@ -47,7 +47,7 @@ function glink($v, $li = false, $name = '') {
 
 		<?php if ($group_by=='out_id'){$class="active";}else{$class='';} ?>
 		<!--<a href="?act=reports&type=<?php echo _e($type);?>&subtype=<?php echo $subtype;?>&group_by=out_id&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>" class="btn btn-default <?php echo $class;?>">Ссылка</a>-->
-
+		
 		<div class="btn-group">
 			<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
 			Гео
@@ -128,7 +128,6 @@ function glink($v, $li = false, $name = '') {
 			
 			
 		?>
-			
 	</div>
 
 </div> <!-- ./col-md-12 -->

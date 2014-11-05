@@ -2,6 +2,17 @@
 if (!$include_flag) {
     exit();
 }
+
+global $table_n;
+
+if(!isset($table_n)) {
+	$table_n = 0;
+} else {
+	$table_n++;
+}
+
+echo $table_n . '------------------------------';
+
 $days = getDatesBetween($from, $to);
 
 $group_by   = rq('group_by', 0, $subtype);

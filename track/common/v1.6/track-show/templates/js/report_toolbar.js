@@ -1,25 +1,67 @@
 var timer_cols = false;
 
-function update_cols(selected_option) {
+// Вставляем параметры во все ссылки контейнера
+function modify_links(name, val) {
+	var node = document.getElementsByClassName("container")[1];
+	var els = node.getElementsByTagName("a");
+
+	for(var i=0,j=els.length; i<j; i++) {
+		href = els[i].href;
+		offset = href.indexOf(name);
+		if(offset == -1) {
+	    	divider = href.indexOf('?') == -1 ? '?' : '&';
+	    	end = href.indexOf('#');
+	    	if (end == -1) {
+	    		end = href.length;
+	    	}
+	    	els[i].href = els[i].href.substring(0, end) + divider + name + '=' + val + els[i].href.substring(end, href.length);
+		} else {
+			end = href.indexOf('&', offset);
+			if (end == -1) {
+				end = href.length;
+			}
+			now = unescape(href.substring(offset, end));
+			els[i].href = els[i].href.substring(0, offset + name.length + 1) + val + els[i].href.substring(offset + now.length, href.length);
+		}	
+	}
+}
+
+function update_cols(selected_option, mod_links) {
 	console.log(selected_option);
 	switch (selected_option) {
-		case 'sales':
+		case 'sale_lead':
+			$('.col_s').hide();
 			$('.col_l').hide();
-			$('.col_s').show();
+			$('.col_a').show();
+			if(mod_links) {
+				modify_links('col', 'sale_lead');
+			}
 		break;
-		case 'leads':
+		case 'sale':
+			$('.col_l').hide();
+			$('.col_a').hide();
+			$('.col_s').show();
+			if(mod_links) {
+				modify_links('col', 'sale');
+			}
+		break;
+		case 'lead':
+			$('.col_a').hide();
 			$('.col_s').hide();
 			$('.col_l').show();
+			if(mod_links) {
+				modify_links('col', 'lead');
+			}
 		break;
 		case 'currency_rub': 
 			$('.sdata.usd').hide();
 			$('.sdata.rub').show();
-			
+			modify_links('currency', 'rub');
 		break;
 		case 'currency_usd': 
 			$('.sdata.usd').show();
 			$('.sdata.rub').hide();
-			
+			modify_links('currency', 'usd');
 		break;
 	}
 }
@@ -52,11 +94,11 @@ function update_stats(selected_option)
 			$('#type_selected').val('sales'); $('#rt_currency_section').removeClass('invisible');
 		break;
 
-		case 'sales': 
+		case 'sale': 
 			$('#sales_selected').val('1');
 		break;
 
-		case 'leads': 
+		case 'lead': 
 			$('#sales_selected').val('0');
 		break;
 

@@ -4,15 +4,31 @@ if (!$include_flag){exit();}
 
 global $group_types;
 
+global $table_n;
+
+if(!isset($table_n)) {
+	$table_n = 0;
+} else {
+	$table_n++;
+}
+
 echo "<div class='row'>";
 echo "<div class='col-md-12'>";
-echo "<table class='table table-condensed table-striped table-bordered dataTableT' style='margin-bottom:15px !important;'>";
+echo "<table class='table table-condensed table-striped table-bordered dataTableT dataTableT".$table_n."' style='margin-bottom:15px !important;'>";
 	
 	// Заголовок 
 	
+	//dmp($var);
+	
 	echo "<thead>";
 		echo "<tr>";
-		echo "<th>" . _e($group_types[$var['group_by']][0]) . "</th>";
+		
+		if($var['report_params']['mode'] == 'popular') {
+			echo "<th>Популярные</th><th>Значение</th>";
+		} else {
+			echo "<th>" . _e(col_name($var)) . "</th>";
+		}
+		
 		foreach ($var['arr_dates'] as $cur_date) {
 			$d = $var['timestep'] == 'monthly' ? $cur_date : date('d.m', strtotime($cur_date));
 			echo "<th>"._e($d)."</th>";
@@ -27,10 +43,14 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 	$arr_sparkline     = array();
 	$i = 0;
 	
+	//dmp($var['arr_report_data']);
+	
 	foreach ($var['arr_report_data'] as $source_name => $data) {
 
 		$row_total_data = array(); // суммирование по строкам
 		$i++;
+		
+		//dmp($data);
 		
 		// Первая колонка, название
 		
@@ -53,14 +73,29 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 			}
 		}
 		
-		// Ограничиваем глубину фильтров
-		if(empty($var['report_params']['filter']) or count($var['report_params']['filter']) < 5) {
-			$source_name_full = '<a href="'.report_lnk($var['report_params'], array('filter' => array_merge($var['report_params']['filter'], array($var['report_params']['group_by'] => _e($source_name))))).'">' . _e($source_name_full) . '</a>';
+		//dmp($var['arr_dates']);
+		
+		if($var['report_params']['mode'] == 'popular') {
+			
+			$name = str_replace('Параметр перехода', 'ПП', $group_types[$source_name_full][0]);
+			$name = str_replace('Параметр перехода', 'ПС', $name);
+			
+			$source_name_full = '<b><a href="'.report_lnk($var['report_params'], array('filter_str' => array_merge($var['report_params']['filter_str'], array('group_by' => _e($source_name))))).'">' . $name . '</a></b>';
+			
+			$data['popular'] = '<a href="'.report_lnk($var['report_params'], array('filter_str' => array_merge($var['report_params']['filter_str'], array($source_name => _e($data['popular']))))).'">' . _e($data['popular']) . '</a>';
+			
+			echo "<tr><td>" . $source_name_full . "<span style='float:right; margin-left:10px;'><div id='sparkline_{$i}'></div></span></td><td>".$data['popular']."</td>";
 		} else {
-			$source_name_full = _e($source_name_full);
+			// Ограничиваем глубину фильтров
+			if(empty($var['report_params']['filter'][0]) or count($var['report_params']['filter'][0]) < 5) {
+				$source_name_full = '<a href="'.report_lnk($var['report_params'], array('filter_str' => array_merge($var['report_params']['filter_str'], array($var['report_params']['group_by'] => _e($source_name))))).'">' . _e($source_name_full) . '</a>';
+			} else {
+				$source_name_full = _e($source_name_full);
+			}
+			
+			echo "<tr><td>" . $source_name_full . "<span style='float:right; margin-left:10px;'><div id='sparkline_{$i}'></div></span></td>";
 		}
-
-		echo "<tr><td>".$source_name_full."<span style='float:right; margin-left:10px;'><div id='sparkline_{$i}'></div></span></td>";
+		
 		
 		// Следующие колонки, данные
 		
@@ -91,7 +126,7 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 	
 	// Итоговая строка
 	
-	echo "<tfoot><tr><th><strong><i style='display:none;'>&#148257;</i>Итого</strong></th>";
+	echo "<tfoot><tr><th ".($var['report_params']['mode'] == 'popular' ? ' colspan="2"' : '') ."><strong><i style='display:none;'>&#148257;</i>Итого</strong></th>";
 	foreach ($var['arr_dates'] as $cur_date) {
 			echo '<th>' . get_clicks_report_element($column_total_data[$cur_date]['click'], $column_total_data[$cur_date]['lead'], $column_total_data[$cur_date]['sale'], $column_total_data[$cur_date]['sale_lead']) . '</th>';
 	}	
@@ -104,16 +139,13 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 <script>
 $(document).ready(function() {
 
-    $('.dataTableT').dataTable
+    $('.dataTableT<?php echo $table_n; ?>').dataTable
     ({    	
     	"fnDrawCallback":function(){
 	    if ( $('#writerHistory_paginate span span.paginate_button').size()) {
-	      	if ($('#writerHistory_paginate')[0])
-	      	{
+	      	if ($('#writerHistory_paginate')[0]) {
 	      		$('#writerHistory_paginate')[0].style.display = "block";
-		    }
-		    else 
-		    {
+		    } else {
 		    	$('#writerHistory_paginate')[0].style.display = "none";
 		   	}
 	    }
@@ -121,6 +153,7 @@ $(document).ready(function() {
 		},
     	"aoColumns": [
             null,
+            <?php if($var['report_params']['mode'] == 'popular') { ?>null,<?php } ?>
             <?php echo str_repeat('{ "asSorting": [ "desc", "asc"], "sType": "click-data" },', count($var['arr_dates']))?>
 			{ "asSorting": [ "desc", "asc" ], "sType": "click-data" },            
         ],

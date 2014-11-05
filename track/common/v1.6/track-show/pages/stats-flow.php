@@ -73,6 +73,7 @@
 			}
 			echo "</tr>";		
 			echo "<tr>";
+			
 			foreach ($arr_hourly as $source_name=>$data)
 			{
 				switch ($main_type)
@@ -84,7 +85,12 @@
 					break;
 					
 					default: 
-						if ($source_name=='' || $source_name=='{empty}') { $source_name = 'Без&nbsp;источника'; $source_name_lnk = ''; } else { $source_name_lnk = $source_name;}
+						if ($source_name=='' || $source_name=='{empty}') { 
+							$source_name = 'Без&nbsp;источника'; $source_name_lnk = ''; 
+						} else { 
+							$source_name_lnk = $source_name;
+							$source_name = empty($source_config[$source_name]['name']) ? $source_name : $source_config[$source_name]['name'];
+						}
 						echo "<td>"._e($source_name)."</td>";	
 					break;
 				}
@@ -154,8 +160,7 @@ if(!empty($arr_data)) {
 	
 	echo "<table class='table table-striped' id='stats-flow'>";
 	echo "<tbody>";
-	foreach ($arr_data as $row)
-	{
+	foreach ($arr_data as $row) {
 		include _HTML_TEMPLATE_PATH . '/../pages/stats-flow-row.php';
 	}
 	echo "</tbody></table>";
