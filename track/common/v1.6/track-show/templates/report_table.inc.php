@@ -13,7 +13,11 @@ if($var['report_params']['mode'] == 'lp_offers' and $var['report_params']['part'
 			echo tpx('report_click_all', $var);
 		}
 	} else {
-		echo tpx('report_daily', $var);
+		if($var['report_params']['mode'] == 'lp_offers') {
+			echo tpx('report_daily_lp', $var);
+		} else {
+			echo tpx('report_daily', $var);
+		}
 	}
 }
 

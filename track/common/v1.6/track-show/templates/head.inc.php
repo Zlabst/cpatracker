@@ -1,6 +1,6 @@
 <?php if (!$include_flag){exit();} ?>
 <meta charset="utf-8">
-<title>CPA Tracker</title>    
+<title>CPA Tracker<?php if($_GET['page'] == 'support') echo ' 1.6'; ?></title>    
 <meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noodp, noydir">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link href="<?php echo _HTML_LIB_PATH;?>/bootstrap/css/bootstrap.min.css" rel="stylesheet" media="screen">

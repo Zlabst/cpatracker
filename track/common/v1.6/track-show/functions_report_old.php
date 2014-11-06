@@ -330,8 +330,6 @@
 				unset($parent_clicks2);
 			}
 			
-			// Режим популярных значений
-			// Вынесен в отдельное условие из-за особой обработки по дням и месяцам
 			if($params['mode'] == 'popular') {
 				
 				$data2 = array();
@@ -368,171 +366,12 @@
 						}
 					}
 				}
-			
-			// Режим показа группировки офферов и лэндингов
-			// Тоже вынесен в отдельное условие из-за особой обработки по дням и месяцам
-			} elseif($params['mode'] == 'lp_offers') {
 				
-				$parent_clicks = array(); // массив для единичного зачёта дочерних кликов (иначе у нас LP CTR больше 100% может быть)
-				
-				// Вся статистика, без разбиения по времени
-				foreach($rows as $r) {
-					
-					//$k = $r['name'] = param_val($r, $params['group_by']);
-					//$name = param_val($r, $k);
-					
-					$k = (trim($r['name']) == '' ? '{empty}' : $r['name']);
-					
-					// Обрезаем реферер до домена
-					if($params['group_by'] == 'referer') {
-						$url = parse_url($k);
-						$k = $r['name'] = $url['host'];
-					
-					// Для объявления добавляем кампанию
-					} elseif($params['group_by'] == 'ads_name') {
-						if($r['name'] != '') {
-							$k = $r['name'] = ($r['campaign_name'] . '-' . $r['name']);
-						} else {
-							$k = '{empty}';
-						}
-					}
-					
-					if(!isset($data[$k])) {
-						$data[$k] = array(
-							'id'     => $r['name'],
-							'name'   => $r['name'],
-							'price'  => 0,
-							'unique' => 0,
-							'income' => 0,
-							'sale'   => 0,
-							'lead'   => 0,
-							'out'    => 0,
-							'cnt'    => 0,
-							'sale_lead' => 0,
-						);
-					}
-					
-					// Продажи + Лиды = Действия. 
-					$r['sale_lead'] = $r['is_sale'] + $r['is_lead'];
-					if($r['sale_lead'] > 2) $r['sale_lead'] = 2; // Не более одного на переход
-
-					// 
-					if($r['parent_id'] == 0 and $params['subgroup_by'] != $params['group_by']) {
-						$k1 = $r[$params['subgroup_by']];
-						
-						// Обрезаем реферер до домена
-						if($params['subgroup_by'] == 'referer') {
-							$url = parse_url($k1);
-							$k1 = $r['name'] = $r[$params['subgroup_by']] = $url['host'];
-						} elseif($params['subgroup_by'] == 'source_name') {
-							$r['name'] = empty($source_config[$r['source_name']]) ? $r['source_name'] : $source_config[$r['source_name']]['name'];
-						}
-						
-						$data[$k]['sub'][$k1]['id']     =  $r[$params['subgroup_by']];
-						$data[$k]['sub'][$k1]['name']   =  $r['name'];
-						$data[$k]['sub'][$k1]['sale']   += $r['is_sale'];
-						$data[$k]['sub'][$k1]['lead']   += $r['is_lead'];
-						$data[$k]['sub'][$k1]['cnt']    += $out_calc;
-						$data[$k]['sub'][$k1]['price']  += $r['click_price'];
-						$data[$k]['sub'][$k1]['unique'] += $r['is_unique'];
-						$data[$k]['sub'][$k1]['income'] += $r['conversion_price_main'];
-						$data[$k]['sub'][$k1]['out']    += $r['is_connected'];
-						$data[$k]['sub'][$k1]['sale_lead'] += $r['sale_lead'];
-						
-						$lp_offers_valid[$k] = 1;
-					}
-					
-					
-					// Если это не общий режим - добавляем информацию о датах
-					/****************/
-					/*
-					if($params['part'] != 'all') {
-						
-						//$k1 = (trim($r['name']) == '' ? '{empty}' : $r['name']);
-						$k2 = date($date_formats[$params['part']], $r['time_add']);
-						$k3 = $groups[$r['is_sale'].$r['is_lead']];
-						
-						$data2[$k][$name][$k2][$k3]['cnt'] += 1;
-						$data2[$k][$name][$k2][$k3]['cost'] += $r['clicks_price'];
-						$data2[$k][$name][$k2][$k3]['earnings'] += $r['conversions_sum'];
-						$data2[$k][$name][$k2][$k3]['is_parent_cnt'] += $r['is_parent'];
-					}
-					*/
-					/****************/
-					
-					// Режим отображений структуры подчинённых страниц
-					if($r['parent_id'] > 0) {
-						
-						if($r['parent_id'] > 0) {
-							$out_calc = isset($parent_clicks[$r['parent_id']]) ? 0 : 1;
-							$parent_clicks[$r['parent_id']] = 1;
-						} else {
-							$out_calc = 0;
-						}
-						
-						$k0 = parent_row($r['parent_id'], $params['group_by']);
-						$k1 = ($params['group_by'] == $params['subgroup_by']) ? $k : $r[$params['subgroup_by']];
-						
-						$data[$k0]['sub'][$k1]['id']     = $r[$params['subgroup_by']];
-						$data[$k0]['sub'][$k1]['name']   =  $r[$params['subgroup_by']]; //$r['name'];
-						$data[$k0]['sub'][$k1]['sale']   += $r['is_sale'];
-						$data[$k0]['sub'][$k1]['lead']   += $r['is_lead'];
-						$data[$k0]['sub'][$k1]['cnt']    += $out_calc;
-						$data[$k0]['sub'][$k1]['price']  += $r['click_price'];
-						$data[$k0]['sub'][$k1]['unique'] += $r['is_unique'];
-						$data[$k0]['sub'][$k1]['income'] += $r['conversion_price_main'];
-						$data[$k0]['sub'][$k1]['out']    += $r['is_connected'];
-						$data[$k0]['sub'][$k1]['sale_lead'] += $r['sale_lead'];
-						$data[$k]['order'] = 1;
-						
-						$lp_offers_valid[$k0] = 1;
-						$lp_offers_valid[$k1] = 1;
-						
-						// Информация по дням
-						if($params['part'] != 'all') {
-						
-							$k2 = date($date_formats[$params['part']], $r['time_add']);
-							$k3 = $groups[$r['is_sale'].$r['is_lead']];
-							
-							$data[$k0]['sub'][$k1][$k2][$k3]['cnt'] += 1;
-							$data[$k0]['sub'][$k1][$k2][$k3]['cost'] += $r['clicks_price'];
-							$data[$k0]['sub'][$k1][$k2][$k3]['earnings'] += $r['conversions_sum'];
-							$data[$k0]['sub'][$k1][$k2][$k3]['is_parent_cnt'] += $r['is_parent'];
-						}
-						
-						
-					// Обычный инкремент статистики
-					} else {
-
-						$data[$k]['lead']   += $r['is_lead'];
-						$data[$k]['cnt']    += $r['cnt'];
-						$data[$k]['price']  += $r['click_price'];
-						$data[$k]['unique'] += $r['is_unique'];
-						$data[$k]['income'] += $r['conversion_price_main'];
-						$data[$k]['sale']   += $r['is_sale'];
-						$data[$k]['out']    += $r['out'];
-						$data[$k]['sale_lead'] += $r['sale_lead'];
-						
-						// Информация по дням
-						if($params['part'] != 'all') {
-						
-							$k2 = date($date_formats[$params['part']], $r['time_add']);
-							$k3 = $groups[$r['is_sale'].$r['is_lead']];
-							
-							$data[$k][$k2][$k3]['cnt'] += 1;
-							$data[$k][$k2][$k3]['cost'] += $r['clicks_price'];
-							$data[$k][$k2][$k3]['earnings'] += $r['conversions_sum'];
-							$data[$k][$k2][$k3]['is_parent_cnt'] += $r['is_parent'];
-						}
-					}
-				}
-				
-				//dmp($data);
-				/*************/
+				//dmp($data2);
 				
 			} else {
 				// Данные выбраны, начинаем группировку
-				// Статистика за весь период
+				// Статистик
 				if($params['part'] == 'all') {
 					
 					$parent_clicks = array(); // массив для единичного зачёта дочерних кликов (иначе у нас LP CTR больше 100% может быть)
@@ -575,17 +414,76 @@
 						$r['sale_lead'] = $r['is_sale'] + $r['is_lead'];
 						if($r['sale_lead'] > 2) $r['sale_lead'] = 2; // Не более одного на переход
 						
-						$data[$k]['lead']   += $r['is_lead'];
-						$data[$k]['cnt']    += $r['cnt'];
-						$data[$k]['price']  += $r['click_price'];
-						$data[$k]['unique'] += $r['is_unique'];
-						$data[$k]['income'] += $r['conversion_price_main'];
-						$data[$k]['sale']   += $r['is_sale'];
-						$data[$k]['out']    += $r['out'];
-						$data[$k]['sale_lead'] += $r['sale_lead'];
-					}
+						// 
+						if($params['mode'] == 'lp_offers' and $r['parent_id'] == 0 and $params['subgroup_by'] != $params['group_by']) {
+							$k1 = $r[$params['subgroup_by']];
+							
+							// Обрезаем реферер до домена
+							if($params['subgroup_by'] == 'referer') {
+								$url = parse_url($k1);
+								$k1 = $r['name'] = $r[$params['subgroup_by']] = $url['host'];
+							} elseif($params['subgroup_by'] == 'source_name') {
+								$r['name'] = empty($source_config[$r['source_name']]) ? $r['source_name'] : $source_config[$r['source_name']]['name'];
+							}
+							
+							$data[$k]['sub'][$k1]['id']     =  $r[$params['subgroup_by']];
+							$data[$k]['sub'][$k1]['name']   =  $r['name'];
+							$data[$k]['sub'][$k1]['sale']   += $r['is_sale'];
+							$data[$k]['sub'][$k1]['lead']   += $r['is_lead'];
+							$data[$k]['sub'][$k1]['cnt']    += $out_calc;
+							$data[$k]['sub'][$k1]['price']  += $r['click_price'];
+							$data[$k]['sub'][$k1]['unique'] += $r['is_unique'];
+							$data[$k]['sub'][$k1]['income'] += $r['conversion_price_main'];
+							$data[$k]['sub'][$k1]['out']    += $r['is_connected'];
+							$data[$k]['sub'][$k1]['sale_lead'] += $r['sale_lead'];
+							
+							$lp_offers_valid[$k] = 1;
+						}
+						
+						// Режим отображений структуры подчинённых страниц
+						if($params['mode'] == 'lp_offers' and $r['parent_id'] > 0) {
+							
+							if($r['parent_id'] > 0) {
+								$out_calc = isset($parent_clicks[$r['parent_id']]) ? 0 : 1;
+								$parent_clicks[$r['parent_id']] = 1;
+							} else {
+								$out_calc = 0;
+							}
+							
+							$k0 = parent_row($r['parent_id'], $params['group_by']);
+							
+							$k1 = ($params['group_by'] == $params['subgroup_by']) ? $k : $r[$params['subgroup_by']];
+							
+							
+							$data[$k0]['sub'][$k1]['id']     = $r[$params['subgroup_by']];
+							$data[$k0]['sub'][$k1]['name']   =  $r[$params['subgroup_by']]; //$r['name'];
+							$data[$k0]['sub'][$k1]['sale']   += $r['is_sale'];
+							$data[$k0]['sub'][$k1]['lead']   += $r['is_lead'];
+							$data[$k0]['sub'][$k1]['cnt']    += $out_calc;
+							$data[$k0]['sub'][$k1]['price']  += $r['click_price'];
+							$data[$k0]['sub'][$k1]['unique'] += $r['is_unique'];
+							$data[$k0]['sub'][$k1]['income'] += $r['conversion_price_main'];
+							$data[$k0]['sub'][$k1]['out']    += $r['is_connected'];
+							$data[$k0]['sub'][$k1]['sale_lead'] += $r['sale_lead'];
+							$data[$k]['order'] = 1;
+							
+							$lp_offers_valid[$k0] = 1;
+							$lp_offers_valid[$k1] = 1;
+							
+						// Обычный инкремент статистики
+						} else {
 
-				// Статистика по дням
+							$data[$k]['lead']   += $r['is_lead'];
+							$data[$k]['cnt']    += $r['cnt'];
+							$data[$k]['price']  += $r['click_price'];
+							$data[$k]['unique'] += $r['is_unique'];
+							$data[$k]['income'] += $r['conversion_price_main'];
+							$data[$k]['sale']   += $r['is_sale'];
+							$data[$k]['out']    += $r['out'];
+							$data[$k]['sale_lead'] += $r['sale_lead'];
+						}
+					}
+					//dmp($data);
 				} else {
 
 					foreach($rows as $r) {
@@ -688,7 +586,7 @@
 		//dmp($lp_offers_valid);
 		
 		// Особая сортировка для режима lp_offers, офферы с прямыми переходами в конце
-		if($params['mode'] == 'lp_offers') { //and $params['part'] == 'all'
+		if($params['mode'] == 'lp_offers' and $params['part'] == 'all') {
 			uasort($data, 'lp_order');
 			
 			//dmp($data);
@@ -1202,7 +1100,6 @@
         function strip_empty_dates($arr_dates, $arr_report_data, $mode = 'date') {
 			$dates = array();
 			$begin = false;
-			
 			if($mode == 'group') {
 				$arr_report_data = current($arr_report_data);
 			}

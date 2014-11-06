@@ -414,7 +414,7 @@
           foreach ($arr_rules as $key  => $value) {
               $relevant_params = array(); $relevant_param_order = 0;
               foreach ($value as $internal_key => $internal_value) {
-              if($key=='get'){
+              if($key == 'get') {
                   $get_arr = explode('=', $internal_value['value']);
                   $get_name = $get_arr[0];
                   $get_val = $get_arr[1];
@@ -425,6 +425,17 @@
                       }
                       $flag = true;
                   }
+               } elseif($key == 'referer') {
+               	   $val = strtolower($internal_value['value']);
+               	   // дописываем http:// на случай, если юзер забыл
+               	   if(substr($val, 0, 7) != 'http://') $val = 'http://' . $val;
+					if(trim($user_params[$key]) != '' and strtolower(substr($user_params[$key], 0, strlen($val))) == $val) {
+	           	   		$relevant_params[] = $internal_value;
+						if(!$relevant_param_order){$relevant_param_order = $internal_value['order'];}else{
+						if($relevant_param_order>$internal_value['order']){$relevant_param_order = $internal_value['order'];}
+						}
+					$flag = true;
+               	   }
                } elseif($key == 'ip') {
                	   if(check_ip($internal_value['value'], $user_params[$key])) {
                	   	   $relevant_params[] = $internal_value;

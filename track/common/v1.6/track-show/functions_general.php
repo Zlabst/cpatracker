@@ -3,7 +3,7 @@ $source_types = array(
 	0 => array(
 		'name' => '',
 		'values' => array('yadirect', 'adwords', 
-		'startapp', 'dntx', 'leadimpact', 'adultmoda', 'admoda', 'inmobi', 'buzzcity', 'adinch', 'decisive', 'exoclick', 'octobird', 'leadbolt', 'adtwirl', 'jumptap', 'mmedia', 'mobfox', 'plugrush', 'sitescout', 'tapgage', 'wapstart', 'zeropark')
+		'startapp', 'dntx', 'leadimpact', 'adultmoda', 'admoda', 'inmobi', 'buzzcity', 'adinch', 'decisive', 'exoclick', 'octobird', 'leadbolt', 'adtwirl', 'jumptap', 'mmedia', 'mobfox', 'plugrush', 'sitescout', 'tapgage', 'wapstart', 'zeropark', 'advertlink', 'bannerbook', 'adhub', 'actionteaser', 'redtram', 'redclick', 'adprofy', 'globalteaser', 'novostimira', 'privatteaser', 'yottos')
 	),
 	1 => array(
 		'name' => 'Социальные сети',
@@ -32,6 +32,87 @@ $source_config = array(
 		)
 	),
 	*/
+	'yottos' => array(
+		'name' => 'Yottos',
+		'params' => array(
+			'place_id' => array('name' => 'ID площадки',   'url' => '{source}'),
+			'ad_id'    => array('name' => 'ID объявления', 'url' => '{content}'),
+		)
+	),
+	'privatteaser' => array(
+		'name' => 'Privatteaser',
+		'params' => array(
+			'place_id' => array('name' => 'ID площадки',   'url' => '{REF}'),
+		)
+	),
+	'novostimira' => array(
+		'name' => 'Novostimira',
+		'params' => array(
+			'place_id' => array('name' => 'ID площадки',   'url' => '{nm_inf_g}'),
+			'ad_id'    => array('name' => 'ID объявления', 'url' => '{nm_g}'),
+		)
+	),
+	'globalteaser' => array(
+		'name' => 'GlobalTeaser',
+		'params' => array(
+			'place_id' => array('name' => 'ID площадки',   'url' => '{sid}'),
+			'ad_id'    => array('name' => 'ID объявления', 'url' => '{tid}'),
+		)
+	),
+	'adprofy' => array(
+		'name' => 'Adprofy',
+		'params' => array(
+			'site_id'     => array('name' => 'ID площадки',   'url' => '[ab]'),
+			'ad_id'       => array('name' => 'ID объявления', 'url' => '[at]'),
+			'campaign_id' => array('name' => 'ID кампании',   'url' => '[ac]'),
+		)
+	),
+	'redclick' => array(
+		'name' => 'Redclick',
+		'params' => array(
+			'place_id' => array('name' => 'ID площадки',   'url' => 'source_id'),
+			'ad_id'    => array('name' => 'ID объявления', 'url' => 'tizer_id'),
+		)
+	),
+	'redtram' => array(
+		'name' => 'Redtram',
+		'params' => array(
+			'place_id' => array('name' => 'ID площадки',   'url' => '{SITE_NAME}'),
+			'ad_id'    => array('name' => 'ID объявления', 'url' => '{GOOD_ID}'),
+		)
+	),
+	'actionteaser' => array(
+		'name' => 'Actionteaser',
+		'params' => array(
+			'place_id' => array('name' => 'ID площадки',   'url' => '[SID]'),
+			'ad_id'    => array('name' => 'ID объявления', 'url' => '[ID]'),
+		)
+	),
+	'adhub' => array(
+		'name' => 'Adhub',
+		'params' => array(
+			'site_id'     => array('name' => 'ID площадки',   'url' => '{site_id}'),
+			'ad_id'       => array('name' => 'ID объявления', 'url' => '{ad_id}'),
+			'campaign_id' => array('name' => 'ID кампании',   'url' => '{camp_id}'),
+		)
+	),
+	'bannerbook' => array(
+		'name' => 'Bannerbook',
+		'params' => array(
+			'ad_id'       => array('name' => 'ID объявления', 'url' => '{TEASER_ID}'),
+			'site_id'     => array('name' => 'ID площадки',   'url' => '{SITE_ID}'),
+			'campaign_id' => array('name' => 'ID кампании',   'url' => '{CAMP_ID} '),
+			'place_id'    => array('name' => 'ID размещения', 'url' => '{PLACE_ID}'),
+		)
+	),
+	'advertlink' => array(
+		'name' => 'Advertlink',
+		'params' => array(
+			'place_id'    => array('name' => 'ID площадки',   'url' => '[SID]'),
+			'campaign_id' => array('name' => 'ID кампании',   'url' => '[CID]'),
+			'ad_id'       => array('name' => 'ID объявления', 'url' => '[TID]'),
+		)
+	),
 	'topmmorpg' => array(
 		'name' => 'Topmmorpg',
 	),
@@ -283,7 +364,7 @@ $source_config = array(
 	'directadvert' => array(
 		'name' => 'DirectAdvert',
 		'params' => array(
-			'place_id'    => array('name' => 'ID площадки',   'url' => '{%SITE_ID% '),
+			'place_id'    => array('name' => 'ID площадки',   'url' => '%SITE_ID%'),
 			'adv_id'      => array('name' => 'ID объявления', 'url' => '%AD_ID%'),
 		)
 	), 
@@ -314,6 +395,10 @@ $source_config = array(
 	), 
 	'teasermedia' => array(
 		'name' => 'Teasermedia',
+		'params' => array(
+			'place_id'  => array('name' => 'ID площадки',   'url' => '{{domain}}'),
+			'adv_id'    => array('name' => 'ID объявления', 'url' => '{{tid}}'),
+		)
 	), 
 	'teasernet' => array(
 		'name' => 'Teasernet',
@@ -409,7 +494,6 @@ $source_config = array(
 			'domain'   => array('name' => 'Площадка Popunder', 'url' => '{wm_domain}'),
 			'adv_id'   => array('name' => 'ID баннера', 'url' => '{banner_id}'),
 			'keywords' => array('name' => 'Ключевая фраза', 'url' => '{kwlist}'),
-			'camp_type'=> array('name' => 'Тип кампании', 'url' => '{ad_type}'),
 			'topic_id' => array(
 				'name' => 'ID категории',
 				'url' => '{topic_id}',
