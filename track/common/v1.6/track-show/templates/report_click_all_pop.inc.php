@@ -56,7 +56,7 @@ if($var['report_params']['group_by'] != '')  {
 								$r['popular'] = _e($r['popular']);
 							}
 							
-							echo '<tr><td nowrap=""><b><a href="' . report_lnk($var['report_params'], array('group_by' => $r['name'])) . '">' . $name . '</a></b></td><td>' . $r['popular'] . '</td>';
+							echo '<tr><td nowrap=""><b><a href="' . report_lnk($var['report_params'], array('mode' => '', 'group_by' => $r['name'])) . '">' . $name . '</a></b></td><td>' . $r['popular'] . '</td>';
 						} else {
 							echo '<tr><td nowrap=""><a href="' . report_lnk($var['report_params'], array('group_by' => '', 'filter_str' => array_merge($var['report_params']['filter_str'], array($var['report_params']['group_by'] => _e($k))))) . '">' . $k . '</a></td>';
 						}
