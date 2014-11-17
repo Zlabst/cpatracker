@@ -55,26 +55,26 @@ if(!isset($table_n)) {
 						
 						// Ограничиваем глубину фильтров
 						if(empty($var['report_params']['filter'][0]) or count($var['report_params']['filter'][0]) < 5) {
-							$name = '<a href="'.report_lnk($var['report_params'], array('filter_str' => array_merge($var['report_params']['filter_str'], array($var['report_params']['group_by'] => _e($r['name']))))).'">' . _e($name) . '</a>';
+							$name = '<a href="'.report_lnk($var['report_params'], array('filter_str' => array_merge($var['report_params']['filter_str'], array($var['report_params']['group_by'] => _e($r['id']))))).'">' . _e($name) . '</a>';
 						} else {
 							$name = _e($name);
 						}
 						
 						echo '<tr><td nowrap="">'.$name.'</td><td>'.
 							$r['cnt'].'</td><td>'.
-							t_repeated($r).'%</td><td>'.
+							t_repeated($r).'</td><td>'.
 							t_lpctr($r).'</td><td>'.
 							$r['out'].'</td><td class="col_s">'.
 							$r['sale'].'</td><td class="col_l">'.
 							$r['lead'].'</td><td class="col_a">'.
 							$r['sale_lead'].'</td><td class="col_s">'.
-							t_conversion($r).'%</td><td class="col_l">'.
-							t_conversion_l($r).'%</td><td class="col_a">'.
-							t_conversion_a($r).'%</td><td>'.
+							t_conversion($r).'</td><td class="col_l">'.
+							t_conversion_l($r).'</td><td class="col_a">'.
+							t_conversion_a($r).'</td><td>'.
 							t_price($r).'</td><td class="col_s col_a">'.
 							t_profit($r).'</td><td class="col_s">'.
 							t_epc($r).'</td><td class="col_s">'.
-							t_roi($r).'%</td><td class="col_s">'.
+							t_roi($r).'</td><td class="col_s">'.
 							t_cps($r).'</td><td class="col_l">'.
 							t_cpl($r).'</td><td class="col_a">'.
 							t_cpa($r).'</td>'.
@@ -87,19 +87,19 @@ if(!isset($table_n)) {
 					$r = $column_total_data;
 					echo '<td>'.
 							$r['cnt'].'</td><td>'.
-							t_repeated($r).'%</td><td>'.
+							t_repeated($r).'</td><td>'.
 							t_lpctr($r).'</td><td>'.
 							$r['out'].'</td><td class="col_s">'.
 							$r['sale'].'</td><td class="col_l">'.
 							$r['lead'].'</td><td class="col_a">'.
 							$r['sale_lead'].'</td><td class="col_s">'.
-							t_conversion($r).'%</td><td class="col_l">'.
-							t_conversion_l($r).'%</td><td class="col_a">'.
-							t_conversion_a($r).'%</td><td>'.
+							t_conversion($r).'</td><td class="col_l">'.
+							t_conversion_l($r).'</td><td class="col_a">'.
+							t_conversion_a($r).'</td><td>'.
 							t_price($r).'</td><td class="col_s col_a">'.
 							t_profit($r).'</td><td class="col_s">'.
 							t_epc($r).'</td><td class="col_s">'.
-							t_roi($r).'%</td><td class="col_s">'.
+							t_roi($r).'</td><td class="col_s">'.
 							t_cps($r).'</td><td class="col_l">'.
 							t_cpl($r).'</td><td class="col_a">'.
 							t_cpa($r).'</td>';

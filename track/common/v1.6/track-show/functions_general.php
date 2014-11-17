@@ -1,9 +1,40 @@
 <?php
+/* Колонки, присутствующие в отчётах
+ * money - флаг, обозначающий, что нужен значок валюты и возможно конвертация курса
+ * каждому ключу массива NAME должна соответствовать функция t_NAME, рассчитывающая значение из начальных данных
+ */
+$report_cols = array(
+	'cnt'          => array('name' => 'Переходы',  'money' => 0),
+	'repeated'     => array('name' => 'Повторные', 'money' => 0),
+	'lpctr'        => array('name' => 'LP CTR',    'money' => 0),
+	'sale'         => array('name' => 'Продажи',   'money' => 0),
+	'lead'         => array('name' => 'Лиды',      'money' => 0),
+	'sale_lead'    => array('name' => 'Действия' , 'money' => 0),
+	'conversion'   => array('name' => 'Конверсия', 'money' => 0),
+	'conversion_l' => array('name' => 'Конверсия', 'money' => 0),
+	'conversion_a' => array('name' => 'Конверсия', 'money' => 0),
+	'price'        => array('name' => 'Затраты',   'money' => 1),
+	'profit'       => array('name' => 'Прибыль',   'money' => 1),
+	'epc'          => array('name' => 'EPC',       'money' => 1),
+	'roi'          => array('name' => 'ROI',       'money' => 0),
+	'cps'          => array('name' => 'CPS',       'money' => 1),
+	'cpl'          => array('name' => 'CPL',       'money' => 1),
+	'cpa'          => array('name' => 'CPA',       'money' => 1),
+);
+
+/*
+ * Курсы валют. На будущее, хорошо бы обновлять их откуда-то
+ */
+$currencies = array(
+	'usd' => 1, // рассчёты внутри системы проводятся в долларах
+	'rub' => 30,
+);
+
+
 $source_types = array(
 	0 => array(
 		'name' => '',
-		'values' => array('yadirect', 'adwords', 
-		'startapp', 'dntx', 'leadimpact', 'adultmoda', 'admoda', 'inmobi', 'buzzcity', 'adinch', 'decisive', 'exoclick', 'octobird', 'leadbolt', 'adtwirl', 'jumptap', 'mmedia', 'mobfox', 'plugrush', 'sitescout', 'tapgage', 'wapstart', 'zeropark', 'advertlink', 'bannerbook', 'adhub', 'actionteaser', 'redtram', 'redclick', 'adprofy', 'globalteaser', 'novostimira', 'privatteaser', 'yottos')
+		'values' => array('landing', 'yadirect', 'adwords')
 	),
 	1 => array(
 		'name' => 'Социальные сети',
@@ -11,15 +42,15 @@ $source_types = array(
 	),
 	2 => array(
 		'name' => 'Тизерные сети',
-		'values' => array('adlabs', 'bodyclick', 'cashprom', 'directadvert', 'kadam', 'marketgid', 'mediatarget', 'teasermedia', 'teasernet', 'visitweb')
+		'values' => array('actionteaser', 'adhub', 'adlabs', 'adprofy', 'advertlink', 'bannerbook', 'bodyclick', 'cashprom', 'directadvert', 'globalteaser', 'kadam', 'marketgid', 'mediatarget', 'novostimira', 'privatteaser', 'redclick', 'redtram', 'teasermedia', 'teasernet', 'visitweb', 'yottos')
 	),
 	3 => array(
 		'name' => 'Рекламные сети',
-		'values' => array('popunder', )
+		'values' => array('dntx', 'exoclick', 'leadimpact', 'plugrush', 'popunder', 'sitescout', 'zeropark')
 	),
 	4 => array(
 		'name' => 'Мобильные сети',
-		'values' => array('airpush', 'mobiads', 'tapit', 'go2mobi')
+		'values' => array('adinch', 'admoda', 'adtwirl', 'adultmoda', 'airpush', 'buzzcity', 'decisive', 'go2mobi', 'inmobi', 'jumptap', 'leadbolt', 'mmedia', 'mobfox', 'mobiads', 'octobird', 'startapp', 'tapgage', 'tapit', 'wapstart')
 	),
 );
 
@@ -32,6 +63,14 @@ $source_config = array(
 		)
 	),
 	*/
+	'landing' => array(
+		'name' => 'Целевая страница',
+		'params' => array(
+			'source'       => array('name' => 'Источник',       'url' => '{utm_source}'),
+			'keyword'      => array('name' => 'Ключевая фраза', 'url' => '{utm_term}'),
+			'campaign_id'  => array('name' => 'ID объявления',  'url' => '{utm_campaign}'),
+		)
+	),
 	'yottos' => array(
 		'name' => 'Yottos',
 		'params' => array(
@@ -456,19 +495,22 @@ $source_config = array(
 		'params' => array(
 			'source_type' => array(
 				'name' => 'Тип площадки',
+				'url'  => '{source_type}',
 				'list' => array(
 					'search' => 'Поиск',
 					'context' => 'РСЯ',
 				),
 			),
 			'source' => array(
-				'name' => 'Площадка',
+				'name' => 'Площадка РСЯ',
+				'url'  => '{source}',
 				'list' => array(
 					'none' => 'Не определена'
 				)
 			),
 			'position_type' => array(
 				'name' => 'Размещение',
+				'url'  => '{position_type}',
 				'list' => array(
 					'premium' => 'Cпецразмещение',
 					'other' => 'Блок внизу',
@@ -477,13 +519,14 @@ $source_config = array(
 			),
 			'position' => array(
 				'name' => 'Позиция',
+				'url'  => '{position}',
 				'list' => array(
 					'0' => 'Не определено',
 				)
 			),
-			'keyword'     => array('n' => 5, 'name' => 'Ключевая фраза'),
-			'campaign_id' => array('n' => 6, 'name' => 'ID кампании'),
-			'ad_id'       => array('n' => 7, 'name' => 'ID объявления'),
+			'keyword'     => array('n' => 5, 'name' => 'Ключевая фраза', 'url' => '{keyword}'),
+			'campaign_id' => array('n' => 6, 'name' => 'ID кампании'   , 'url' => '{campaign_id}'),
+			'ad_id'       => array('n' => 7, 'name' => 'ID объявления',  'url' => '{ad_id}'),
 		),
 	),
 	'popunder' => array(
@@ -493,7 +536,7 @@ $source_config = array(
 			'place_id' => array('name' => 'ID площадки', 'url' => '{wm_site_id}'),
 			'domain'   => array('name' => 'Площадка Popunder', 'url' => '{wm_domain}'),
 			'adv_id'   => array('name' => 'ID баннера', 'url' => '{banner_id}'),
-			'keywords' => array('name' => 'Ключевая фраза', 'url' => '{kwlist}'),
+			'keyword'  => array('name' => 'Ключевая фраза', 'url' => '{kwlist}'),
 			'topic_id' => array(
 				'name' => 'ID категории',
 				'url' => '{topic_id}',

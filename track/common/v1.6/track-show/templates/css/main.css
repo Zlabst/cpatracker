@@ -459,14 +459,10 @@ div.links_category_add span {
         width: 263px;
     }
 }
-
-
 .net-btn {
     min-width: 120px; 
     margin-bottom: 5px;
 }
-
-
 #per_day_range {
     background: #ffffff;
     color: #333333;
@@ -477,8 +473,10 @@ div.links_category_add span {
     margin-right: 10px;
     font-size: 20px;
 }
-
-
 table.dataTable td {
     padding: 3px 18px 3px 10px !important;
+}
+.rt_types, .margin5rb {
+	margin-right: 5px;
+	margin-bottom: 5px;
 }

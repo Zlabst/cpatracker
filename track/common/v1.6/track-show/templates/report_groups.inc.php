@@ -34,7 +34,7 @@ function glink($v, $li = false, $name = '') {
 	<div class="btn-group">
 		<?php
 			if($params['part'] == 'all' and (count($params['filter'][0]) > 0)) { //or $params['mode'] == 'popular'
-				echo '<a class="btn btn-default '.($params['mode'] == 'popular' ? 'active' : '').'" href="' . report_lnk($params, array('mode' => 'popular')) . '"' . $class . '>Популярные</a>';
+				echo '<a class="btn btn-default '.($params['mode'] == 'popular' ? 'active' : '').'" href="' . report_lnk($params, array('mode' => 'popular', 'group_by' => '')) . '"' . $class . '>Популярные</a>';
 			}
 			
 			echo 

@@ -317,7 +317,7 @@ $(document).ready(function() {
 	<div id="rt_currency_section" class="btn-group invisible" data-toggle="buttons">
 <label class="btn btn-default" onclick="update_cols('currency_rub');">
 <input type="radio" name="option_currency">
-руб.
+<i class="fa fa-rub"></i>
 </label>
 <label class="btn btn-default active" onclick="update_cols('currency_usd');">
 <input type="radio" name="option_currency">

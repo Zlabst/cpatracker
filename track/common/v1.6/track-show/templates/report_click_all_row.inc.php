@@ -20,7 +20,7 @@ $group_by = $var[$group_by_fld];
 
 $group_link = $subtype == 'out_id' ? 'source_name' : 'out_id';
 
-
+/*
 if(trim($r['name']) == '' or $r['name'] == '{empty}') {
 	$name = $group_types[$group_by][1];
 } else {
@@ -40,6 +40,8 @@ if(trim($r['name']) == '' or $r['name'] == '{empty}') {
 		$name = $r['name'];
 	}
 }
+*/
+$name = $r['name'];
 
 //$name = (empty($r['name'] or $r['name'] == '{empty}') ? $group_types[$group_by][1] : $r['name']);
 
@@ -47,8 +49,12 @@ if(trim($r['name']) == '' or $r['name'] == '{empty}') {
 
 //dmp($var);
 
-if(empty($var['filter'][1])) {
-	$name = '<a href="'.report_lnk($var['report_params'], array('filter_str' => array_merge($var['report_params']['filter_str'], array($var['report_params'][$group_by_fld] => _e($r['name']).'|'.(empty($var['parent']) ? '0' : $var['parent']['name']).':1')))).'">' . _e($name) . '</a>';
+if(empty($var['filter'][1]) or 1) {
+	if($r['id'] == -1) { // Ссылка "Другие"
+		$name = '<a href="'.report_lnk($var['report_params'], array('filter_str' => array_merge($var['report_params']['filter_str'], array($var['report_params']['group_by'] => _e($var['parent']['id']).'|0:1')))).'">' . _e($name) . '</a>';
+	} else {
+		$name = '<a href="'.report_lnk($var['report_params'], array('filter_str' => array_merge($var['report_params']['filter_str'], array($var['report_params'][$group_by_fld] => _e($r['id']).'|'.(empty($var['parent']) ? '0' : $var['parent']['id']).':1')))).'">' . _e($name) . '</a>';
+	}
 } else {
 	$name = _e($name);
 }
@@ -63,18 +69,18 @@ if($var['class'] != '') {
 
 echo '<tr class="'.$var['class'].'"><td nowrap="" class="name">'.$name.'</td><td>'.
 	sortdata('cnt', $var) .'</td><td>'.
-	sortdata('repeated', $var).'%</td><td>'.
+	sortdata('repeated', $var).'</td><td>'.
 	sortdata('lpctr', $var).'</td><td class="col_s">'.
 	sortdata('sale', $var).'</td><td class="col_l">'.
 	sortdata('lead', $var).'</td><td class="col_a">'.
 	sortdata('sale_lead', $var).'</td><td class="col_s">'.
-	sortdata('conversion', $var).'%</td><td class="col_l">'.
-	sortdata('conversion_l', $var).'%</td><td class="col_a">'.
-	sortdata('conversion_a', $var).'%</td><td>'.
+	sortdata('conversion', $var).'</td><td class="col_l">'.
+	sortdata('conversion_l', $var).'</td><td class="col_a">'.
+	sortdata('conversion_a', $var).'</td><td>'.
 	sortdata('price', $var).'</td><td class="col_s col_a">'.
 	sortdata('profit', $var).'</td><td class="col_s">'.
 	sortdata('epc', $var).'</td><td class="col_s">'.
-	sortdata('roi', $var).'%</td><td class="col_s">'.
+	sortdata('roi', $var).'</td><td class="col_s">'.
 	sortdata('cps', $var).'</td><td class="col_l">'.
 	sortdata('cpl', $var).'</td><td class="col_a">'.
 	sortdata('cpa', $var).'</td></tr>';

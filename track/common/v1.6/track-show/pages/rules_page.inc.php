@@ -351,6 +351,7 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
 		//val = obj.val;
 		
 		var table = $(obj.target).parent().parent().parent().parent().parent();
+		var id = table.find('.btnsave').attr('id');
 		table.find('.rule-link').each(function() {
 			lnk = $(this).val();
 			parts = lnk.split('/');
@@ -360,7 +361,7 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
 		$.ajax({
             type: "POST",
             url: "index.php",
-            data: 'ajax_act=get_source_link&source=' + obj.val + '&name=' + parts[4]
+            data: 'ajax_act=get_source_link&source=' + obj.val + '&name=' + parts[4] + '&id=' + id
         }).done(function(msg) {
         	table.find('.rule-link-text').val(msg);
 	    });
@@ -830,12 +831,11 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                 </td></tr>
                 <tr>
                 	<td>
-                		<div style='width:200px; margin: 5px 5px 5px 0;' class="pull-left"><input type=hidden name='source_id[]' class='select-sources toSave' data-selected-value='source'></div>
+                		<div style='width:200px; margin: 5px 5px 5px 0;' class="pull-left"><input type=hidden name='source_id[]' class='select-sources toSave' data-selected-value='source'><br /></div>
                     	<input type="text" class="rule-link-text" id="rule-link-text-{{id}}" value="{{url}}" />
                     	<button type='button' id='copy-button-text-{{id}}' class='btn-rule-copy for_text' role="button" data-clipboard-target='rule-link-text-{{id}}'><i class="fa fa-copy" title="Скопировать ссылку в буфер"></i></button>
                     </td>
                 </tr>
-				
             </tbody>
         </table>
     {{/rules}}

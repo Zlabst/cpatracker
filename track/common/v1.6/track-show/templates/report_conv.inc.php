@@ -12,8 +12,8 @@ $type_buttons = array(
 	'none' => array('Без конверсий', ''),
 );
 
-echo '<div class="row"><div class="btn-group pull-right">';
+echo '<div class="btn-group margin5rb" id="rt_conv_section">';
 foreach($type_buttons as $k => $v) {
 	echo '<a href="' . report_lnk($params, array('conv' => $k)).'" type="button" class="btn btn-default' . ($params['conv'] == $k ? ' active' : '') . ($v[1] != '' ? ' ' . $v[1] : '') . '">' . $v[0] . '</a>';
 }
-echo '</div></div>';
+echo '</div>';

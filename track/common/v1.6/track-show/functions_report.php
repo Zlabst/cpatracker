@@ -96,12 +96,17 @@
 			$tmp = array();
 			foreach($params['filter'][0] as $k => $v) {
 				if($k == 'referer') {
-					$tmp[] = "`".$k."` LIKE '%".mysql_real_escape_string($v)."%'";
+					if($v == '{empty}') {
+						$tmp[] = "`".$k."` = ''";
+					} else {
+						$tmp[] = "`".$k."` LIKE '%".mysql_real_escape_string($v)."%'";
+					}
 				} elseif($k == 'ads_name') {
 					list($campaign_name, $ads_name) = explode('-', $v);
 					$tmp[] = "`campaign_name` = '".mysql_real_escape_string($campaign_name)."'";
 					$tmp[] = "`ads_name` = '".mysql_real_escape_string($ads_name)."'";
 				} else {
+					if($v == '{empty}') { $v = '';}
 					$tmp[] = "`".$k."` = '".mysql_real_escape_string($v)."'";
 				}
 			}
@@ -112,7 +117,7 @@
 		
 		// Дополнительные поля для режима популярных параметров
 		if($params['mode'] == 'popular' or 1) {
-			$select = ', source_name, ads_name, referer, user_os, user_platform, user_browser, country, state, city, isp, campaign_param1, campaign_param2, campaign_param3, campaign_param4, campaign_param5 ';
+			$select = ', out_id, source_name, ads_name, referer, user_os, user_platform, user_browser, country, state, city, isp, campaign_param1, campaign_param2, campaign_param3, campaign_param4, campaign_param5 ';
 			for($i = 1; $i <= 15; $i++) {
 				$select .= ', click_param_value' . $i . ' ';
 			}
@@ -226,16 +231,31 @@
 		$pop_sort_by = 'cnt';
 		$pop_sort_order = 1;
 		
+		// Режим показов конвертаций, все, только действия, только продажи, только лиды, без конвертаций.
+		// В отчете "популярных параметров" этот фильтр работает ТОЛЬКО как параметр сортировки, в других режимах как условие для WHERE
+		
 		if($params['conv'] != 'all') {
-			if($params['conv'] == 'sale') {
-				$pop_sort_by = 'sale';
-			} elseif($params['conv'] == 'lead') {
-				$pop_sort_by = 'lead';
-			} elseif($params['conv'] == 'sale_lead') {
-				$pop_sort_by = 'sale_lead';
-			} elseif($params['conv'] == 'none') {
-				$pop_sort_by = $params['col'];
-				$pop_sort_order = -1;
+			if($params['mode'] == 'popular') {
+				if($params['conv'] == 'sale') {
+					$pop_sort_by = 'sale';
+				} elseif($params['conv'] == 'lead') {
+					$pop_sort_by = 'lead';
+				} elseif($params['conv'] == 'sale_lead') {
+					$pop_sort_by = 'sale_lead';
+				} elseif($params['conv'] == 'none') {
+					$pop_sort_by = $params['col'];
+					$pop_sort_order = -1;
+				}
+			} else {
+				if($params['conv'] == 'sale') {
+					$params['where'] = '`is_sale` = 1';
+				} elseif($params['conv'] == 'lead') {
+					$params['where'] = '`is_lead` = 1';
+				} elseif($params['conv'] == 'sale_lead') {
+					$params['where'] = '(`is_sale` = 1 or `is_lead` = 1)';
+				} elseif($params['conv'] == 'none') {
+					$params['where'] = '`is_sale` = 0 and `is_lead` = 0';
+				}
 			}
 		}
 		
@@ -270,7 +290,7 @@
 			}
 			
 			if($params['mode'] == 'lp_offers') {
-				//$lp_offers_valid = array();
+				
 				foreach($rows as $k => $r) {
 					if($r['parent_id'] > 0) { // ссылка на оффер
 						// Несём продажи наверх, к лэндингу
@@ -288,12 +308,13 @@
 						$rows[$r['parent_id']]['out'] +=  $out_calc;
 					}
 				}
+				
 			}
 			
+			//dmp($params);
 			
 			// Фильтры показа
 			if(!empty($params['filter'][1])) {
-				//dmp($rows);
 				$parent_clicks2 = array(); // $parent_clicks у нас для исходящих, а тут костыль (
 				$rows_new = array(); // сюда будем складывать новые строчки, вместо unset существующих
 				foreach($rows as $k => $v) {
@@ -306,13 +327,22 @@
 						}
 					}
 					
+					//dmp($params['filter'][1]);
+					
+					$viz_filter = 1;
+					
 					foreach($params['filter'][1] as $name => $value) {
 						list($cur_val, $parent_val) = explode('|', $value);
-
-						if(($parent_val == 0 and ($v[$name] == $cur_val or parent_row($v['parent_id'], $name) == $cur_val))
-						or ($parent_val > 0 and $v['parent_id'] > 0 and $v[$name] == $cur_val and parent_row($v['parent_id'], $name) == $parent_val)) {
+						
+						if(
+							$params['subgroup_by'] == 'out_id' and (
 							
-							
+							($parent_val == 0 and ($v[$name] == $cur_val or parent_row($v['parent_id'], $name) == $cur_val))
+						or ($parent_val > 0 and ($v['parent_id'] > 0 and parent_row($v['parent_id'], $name) == $parent_val) and $v[$name] == $cur_val))
+						or ($v[$name] == $cur_val and (empty($parent_val) or $v[$params['group_by']] == $parent_val))
+						
+						) {
+							/*
 							$lp_offers_valid[$cur_val] = 1;
 							
 							// Сбрасываем parent_id, чтобы оффер у нас был как бы "самостоятельный", без лэндинга. Иначе придётся дорабатывать шаблон отчёта
@@ -320,15 +350,35 @@
 								$v['parent_id'] = 0;
 							}
 							$rows_new[$k] = $v;
+							*/
+							//dmp($v);
+						} else {
+							$viz_filter = 0;
+							break;
 						}
 					}
+					
+					if($viz_filter) {
+						//echo '1';
+						$lp_offers_valid[$cur_val] = 1;
+							
+						// Сбрасываем parent_id, чтобы оффер у нас был как бы "самостоятельный", без лэндинга. Иначе придётся дорабатывать шаблон отчёта
+						if($parent_val > 0) {
+							$v['parent_id'] = 0;
+						}
+						$rows_new[$k] = $v;
+					}
 				}
+				
+				//dmp($rows_new);
 				
 				$rows = $rows_new;
 
 				unset($rows_new); // Прибираемся
 				unset($parent_clicks2);
 			}
+			
+			//dmp($rows);
 			
 			// Режим популярных значений
 			// Вынесен в отдельное условие из-за особой обработки по дням и месяцам
@@ -378,29 +428,13 @@
 				// Вся статистика, без разбиения по времени
 				foreach($rows as $r) {
 					
-					//$k = $r['name'] = param_val($r, $params['group_by']);
-					//$name = param_val($r, $k);
-					
-					$k = (trim($r['name']) == '' ? '{empty}' : $r['name']);
-					
-					// Обрезаем реферер до домена
-					if($params['group_by'] == 'referer') {
-						$url = parse_url($k);
-						$k = $r['name'] = $url['host'];
-					
-					// Для объявления добавляем кампанию
-					} elseif($params['group_by'] == 'ads_name') {
-						if($r['name'] != '') {
-							$k = $r['name'] = ($r['campaign_name'] . '-' . $r['name']);
-						} else {
-							$k = '{empty}';
-						}
-					}
+					$k    = param_key($r, $params['group_by']);
+					$name = param_val($r, $params['group_by']);
 					
 					if(!isset($data[$k])) {
 						$data[$k] = array(
-							'id'     => $r['name'],
-							'name'   => $r['name'],
+							'id'     => $k,
+							'name'   => $name,
 							'price'  => 0,
 							'unique' => 0,
 							'income' => 0,
@@ -416,113 +450,83 @@
 					$r['sale_lead'] = $r['is_sale'] + $r['is_lead'];
 					if($r['sale_lead'] > 2) $r['sale_lead'] = 2; // Не более одного на переход
 
-					// 
-					if($r['parent_id'] == 0 and $params['subgroup_by'] != $params['group_by']) {
-						$k1 = $r[$params['subgroup_by']];
-						
-						// Обрезаем реферер до домена
-						if($params['subgroup_by'] == 'referer') {
-							$url = parse_url($k1);
-							$k1 = $r['name'] = $r[$params['subgroup_by']] = $url['host'];
-						} elseif($params['subgroup_by'] == 'source_name') {
-							$r['name'] = empty($source_config[$r['source_name']]) ? $r['source_name'] : $source_config[$r['source_name']]['name'];
-						}
-						
-						$data[$k]['sub'][$k1]['id']     =  $r[$params['subgroup_by']];
-						$data[$k]['sub'][$k1]['name']   =  $r['name'];
-						$data[$k]['sub'][$k1]['sale']   += $r['is_sale'];
-						$data[$k]['sub'][$k1]['lead']   += $r['is_lead'];
-						$data[$k]['sub'][$k1]['cnt']    += $out_calc;
-						$data[$k]['sub'][$k1]['price']  += $r['click_price'];
-						$data[$k]['sub'][$k1]['unique'] += $r['is_unique'];
-						$data[$k]['sub'][$k1]['income'] += $r['conversion_price_main'];
-						$data[$k]['sub'][$k1]['out']    += $r['is_connected'];
-						$data[$k]['sub'][$k1]['sale_lead'] += $r['sale_lead'];
-						
-						$lp_offers_valid[$k] = 1;
-					}
+					// Подчиненные связи будут формироваться не по parent_id перехода,
+					// а через другие параметры этого перехода (например через источники, с которых пришли)
+					// Лэндинг 1
+					// ├ Источник 1
+					// └ Источник 2
 					
-					
-					// Если это не общий режим - добавляем информацию о датах
-					/****************/
-					/*
-					if($params['part'] != 'all') {
+					if($params['subgroup_by'] != $params['group_by']) {
 						
-						//$k1 = (trim($r['name']) == '' ? '{empty}' : $r['name']);
-						$k2 = date($date_formats[$params['part']], $r['time_add']);
-						$k3 = $groups[$r['is_sale'].$r['is_lead']];
-						
-						$data2[$k][$name][$k2][$k3]['cnt'] += 1;
-						$data2[$k][$name][$k2][$k3]['cost'] += $r['clicks_price'];
-						$data2[$k][$name][$k2][$k3]['earnings'] += $r['conversions_sum'];
-						$data2[$k][$name][$k2][$k3]['is_parent_cnt'] += $r['is_parent'];
-					}
-					*/
-					/****************/
-					
-					// Режим отображений структуры подчинённых страниц
-					if($r['parent_id'] > 0) {
-						
-						if($r['parent_id'] > 0) {
-							$out_calc = isset($parent_clicks[$r['parent_id']]) ? 0 : 1;
-							$parent_clicks[$r['parent_id']] = 1;
+						if($r['parent_id'] == 0) {
+							$k1        = param_key($r, $params['subgroup_by']);
+							$r['name'] = param_val($r, $params['subgroup_by']);
+							
+							// Общая часть статистики
+							stat_inc($data[$k]['sub'][$k1], $r, $k1, $r['name']);
+							
+							// Выдаём офферу разрешение на показ (тут ведь у нас лэндинги, просто так не покажем)
+							$lp_offers_valid[$k] = 1;
+							
+							// Информация о датах 
+							if($params['part'] != 'all') {
+								$timekey = date($date_formats[$params['part']], $r['time_add']);
+
+								stat_inc($data[$k]['sub'][$k1][$timekey], $r, $k1, $r['name']);
+							}
 						} else {
-							$out_calc = 0;
+							continue;
+						}
+					}
+					
+					// Подчиненные связи будут формироваться по parent_id перехода
+					// Лэндинг 1
+					// ├ Оффер 1
+					// └ Оффер 2
+					
+					if($r['parent_id'] > 0) {
+						// Будем считать исходящий только если у этого родителя его ещё нет
+						$r['cnt'] = isset($parent_clicks[$r['parent_id']]) ? 0 : 1;
+						$parent_clicks[$r['parent_id']] = 1;
+						
+						$parent_row = parent_row($r['parent_id']);
+						$k0         = param_key($parent_row, $params['group_by']);
+						
+						$k1   = param_key($r, $params['subgroup_by']);
+						$name = param_val($r, $params['subgroup_by']);
+						
+						stat_inc($data[$k0]['sub'][$k1], $r, $k1, $name);
+						
+						// Отмечаем исходящий для лэндинга
+						if($r['cnt']) {
+							$data[$k0]['out'] += 1;
 						}
 						
-						$k0 = parent_row($r['parent_id'], $params['group_by']);
-						$k1 = ($params['group_by'] == $params['subgroup_by']) ? $k : $r[$params['subgroup_by']];
-						
-						$data[$k0]['sub'][$k1]['id']     = $r[$params['subgroup_by']];
-						$data[$k0]['sub'][$k1]['name']   =  $r[$params['subgroup_by']]; //$r['name'];
-						$data[$k0]['sub'][$k1]['sale']   += $r['is_sale'];
-						$data[$k0]['sub'][$k1]['lead']   += $r['is_lead'];
-						$data[$k0]['sub'][$k1]['cnt']    += $out_calc;
-						$data[$k0]['sub'][$k1]['price']  += $r['click_price'];
-						$data[$k0]['sub'][$k1]['unique'] += $r['is_unique'];
-						$data[$k0]['sub'][$k1]['income'] += $r['conversion_price_main'];
-						$data[$k0]['sub'][$k1]['out']    += $r['is_connected'];
-						$data[$k0]['sub'][$k1]['sale_lead'] += $r['sale_lead'];
 						$data[$k]['order'] = 1;
 						
+						// Выдаём офферу разрешение на показ
 						$lp_offers_valid[$k0] = 1;
 						$lp_offers_valid[$k1] = 1;
 						
-						// Информация по дням
+						// Запрошена информация по дням
 						if($params['part'] != 'all') {
-						
-							$k2 = date($date_formats[$params['part']], $r['time_add']);
-							$k3 = $groups[$r['is_sale'].$r['is_lead']];
 							
-							$data[$k0]['sub'][$k1][$k2][$k3]['cnt'] += 1;
-							$data[$k0]['sub'][$k1][$k2][$k3]['cost'] += $r['clicks_price'];
-							$data[$k0]['sub'][$k1][$k2][$k3]['earnings'] += $r['conversions_sum'];
-							$data[$k0]['sub'][$k1][$k2][$k3]['is_parent_cnt'] += $r['is_parent'];
+							$k2 = date($date_formats[$params['part']], $r['time_add']);
+							
+							$id   = param_key($r, $params['subgroup_by']);
+							$name = param_val($r, $params['subgroup_by']);
+							
+							stat_inc($data[$k0]['sub'][$k1][$k2], $r, $id, $name);
 						}
-						
 						
 					// Обычный инкремент статистики
 					} else {
+						stat_inc($data[$k], $r, $k, $name);
 
-						$data[$k]['lead']   += $r['is_lead'];
-						$data[$k]['cnt']    += $r['cnt'];
-						$data[$k]['price']  += $r['click_price'];
-						$data[$k]['unique'] += $r['is_unique'];
-						$data[$k]['income'] += $r['conversion_price_main'];
-						$data[$k]['sale']   += $r['is_sale'];
-						$data[$k]['out']    += $r['out'];
-						$data[$k]['sale_lead'] += $r['sale_lead'];
-						
-						// Информация по дням
+						// Информация о датах
 						if($params['part'] != 'all') {
-						
-							$k2 = date($date_formats[$params['part']], $r['time_add']);
-							$k3 = $groups[$r['is_sale'].$r['is_lead']];
-							
-							$data[$k][$k2][$k3]['cnt'] += 1;
-							$data[$k][$k2][$k3]['cost'] += $r['clicks_price'];
-							$data[$k][$k2][$k3]['earnings'] += $r['conversions_sum'];
-							$data[$k][$k2][$k3]['is_parent_cnt'] += $r['is_parent'];
+							$timekey = date($date_formats[$params['part']], $r['time_add']);
+							stat_inc($data[$k][$timekey], $r, $k, $name);
 						}
 					}
 				}
@@ -539,50 +543,14 @@
 					
 					// Вся статистика, без разбиения по времени
 					foreach($rows as $r) {
-						$k = (trim($r['name']) == '' ? '{empty}' : $r['name']);
-						
-						// Обрезаем реферер до домена
-						if($params['group_by'] == 'referer') {
-							$url = parse_url($k);
-							$k = $r['name'] = $url['host'];
-						
-						// Для объявления добавляем кампанию
-						} elseif($params['group_by'] == 'ads_name') {
-							if($r['name'] != '') {
-								$k = $r['name'] = ($r['campaign_name'] . '-' . $r['name']);
-							} else {
-								$k = '{empty}';
-							}
-						}
-						
-						if(!isset($data[$k])) {
-							$data[$k] = array(
-								'id'     => $r['name'],
-								'name'   => $r['name'],
-								'price'  => 0,
-								'unique' => 0,
-								'income' => 0,
-								'sale'   => 0,
-								'lead'   => 0,
-								'out'    => 0,
-								'cnt'    => 0,
-								'sale_lead' => 0,
-							);
-						}
-						
+						$k    = param_key($r, $params['group_by']);
+						$name = param_val($r, $params['group_by']);
 						
 						// Продажи + Лиды = Действия. 
 						$r['sale_lead'] = $r['is_sale'] + $r['is_lead'];
 						if($r['sale_lead'] > 2) $r['sale_lead'] = 2; // Не более одного на переход
 						
-						$data[$k]['lead']   += $r['is_lead'];
-						$data[$k]['cnt']    += $r['cnt'];
-						$data[$k]['price']  += $r['click_price'];
-						$data[$k]['unique'] += $r['is_unique'];
-						$data[$k]['income'] += $r['conversion_price_main'];
-						$data[$k]['sale']   += $r['is_sale'];
-						$data[$k]['out']    += $r['out'];
-						$data[$k]['sale_lead'] += $r['sale_lead'];
+						stat_inc($data[$k], $r, $k, $name);
 					}
 
 				// Статистика по дням
@@ -606,9 +574,8 @@
 					}
 				}
 			} // Стандартный режим
-			
-			
-		} // Цикличный сбол данных из БД
+		} // Цикличный сбор данных из БД
+		
 		
 		//dmp($data);
 		
@@ -617,75 +584,70 @@
 		// ----------------------------------------
 		
 		//if($params['part'] == 'all') {
-			if($params['mode'] == 'popular') {
+		if($params['mode'] == 'popular') {
+			
+			if($params['group_by'] != '') {
 				
-				if($params['group_by'] != '') {
-					
-					foreach($data as $k => $v) {
-						if($k != $params['group_by']) {
-							unset($data[$k]);
-						} else {
-							$total = sum_arr($v, 'cnt');
-							foreach($data[$k] as $k1 => $v1) {
-								$data[$k][$k1]['total'] = $total;
-							}
-							
-						}
-					}
-				} else {
-					foreach($data as $k => $v) {
-						uasort($v, 'params_order');
-
-						$data[$k] = current($v);
-						
-						// Для этого режима нам нужны ТОЛЬКО нулевые конвертации
-						if($params['conv'] == 'none' and $data[$k][$params['col']] != 0) {
-							unset($data[$k]);
-							continue;
-						}
-						
-						$data[$k]['total'] = sum_arr($v, 'cnt');
-						$data[$k]['name'] = $k;
-						$data[$k]['popular'] = current(array_keys($v));
-					}
-				}
-				
-				// Убираем из популярных "не определено", отфильрованные значения и если 100%
-				
-				foreach($data as $k => $r) {
-					if($r['popular'] == $group_types[$r['name']][1]
-						or !empty($params['filter'][0][$r['name']])
-						or ($r['cnt'] == $r['total'] or round($r['cnt'] / $r['total'] * 100) == 100)
-						) {
+				foreach($data as $k => $v) {
+					if($k != $params['group_by']) {
 						unset($data[$k]);
+					} else {
+						$total = sum_arr($v, 'cnt');
+						foreach($data[$k] as $k1 => $v1) {
+							$data[$k][$k1]['total'] = $total;
+						}
+						
 					}
 				}
-				
-				if($params['part'] != 'all') {
-					$data3 = array();
-					foreach($data as $k => $v) {
-						
-						//$name = $group_types[$v['name']][1];
-						$name = $v['name'];
-						
-						$data3[$name] = $data2[$k][$v['popular']];
-						$data3[$name]['popular'] = $v['popular'];
- 					}
-					unset($data2);
-					$data = $data3;
+			} else {
+				foreach($data as $k => $v) {
+					uasort($v, 'params_order');
+
+					$data[$k] = current($v);
+					
+					// Для этого режима нам нужны ТОЛЬКО нулевые конвертации
+					if($params['conv'] == 'none' and $data[$k][$params['col']] != 0) {
+						unset($data[$k]);
+						continue;
+					}
+					
+					$data[$k]['total'] = sum_arr($v, 'cnt');
+					$data[$k]['name'] = $k;
+					$data[$k]['popular'] = current(array_keys($v));
 				}
-				//dmp($data);
-				//dmp($data3);
 			}
+			
+			// Убираем из популярных "не определено", отфильрованные значения и если 100%
+			
+			foreach($data as $k => $r) {
+				if($r['popular'] == $group_types[$r['name']][1]
+					or !empty($params['filter'][0][$r['name']])
+					or ($r['cnt'] == $r['total'] or round($r['cnt'] / $r['total'] * 100) == 100)
+					) {
+					unset($data[$k]);
+				}
+			}
+			
+			if($params['part'] != 'all') {
+				$data3 = array();
+				foreach($data as $k => $v) {
+					
+					//$name = $group_types[$v['name']][1];
+					$name = $v['name'];
+					
+					$data3[$name] = $data2[$k][$v['popular']];
+					$data3[$name]['popular'] = $v['popular'];
+				}
+				unset($data2);
+				$data = $data3;
+			}
+		}
 		//}
 		
 		if($part != 'all') {
-			// Оставляем даты, за которые есть данные
+			// Оставляем только те даты, за которые есть данные
 			$arr_dates = strip_empty_dates($arr_dates, $data);
 		}
-		
-		
-		//dmp($lp_offers_valid);
 		
 		// Особая сортировка для режима lp_offers, офферы с прямыми переходами в конце
 		if($params['mode'] == 'lp_offers') { //and $params['part'] == 'all'
@@ -709,9 +671,6 @@
 			}
 		}
 		
-		//dmp($lp_offers_valid);
-		//echo $parent_val;
-		
 		// Удаляем страницы, у которых нет исходящих (Это не Лэндинги)
 		if(($params['mode'] == 'lp' and $params['part'] == 'all') and empty($parent_val) ) {
 			foreach($data as $k => $v) {
@@ -721,7 +680,35 @@
 			}
 		}
 		
-		//dmp($data);
+		// cсылка "Другие", для Площадки, параметров ссылки и перехода 
+		// если не выбран какой-то определенный лэндинг.
+		//
+		if(!isset($params['filter'][1]['out_id']) and
+			$params['mode'] == 'lp_offers' and
+			($params['subgroup_by'] == 'referer'
+			or strstr($params['subgroup_by'], 'click_param_value') !== false)
+		) {
+			$max_sub = 50; // После скольки объектов начинаем сворачивать
+			foreach($data as $k => &$v) {
+				if(isset($v['sub']) and count($v['sub']) > $max_sub) {
+					uasort($v['sub'], 'sub_order');
+					
+					$sub = array_slice($v['sub'], $max_sub);
+					$v['sub'] = array_slice($v['sub'], 0, $max_sub);
+					
+					$other = array(); // Сюда мы соберём всю статистику "других"
+					foreach($sub as $sub_row) {
+						stat_inc($other, $sub_row, -1, 'Другие');
+					}
+					$v['sub'][-1] = $other;
+					
+					//dmp($other);
+				}
+			}
+		}
+		
+		//dmp($params);
+		
 		return array(
 			'data' => $data, 
 			'dates' => $arr_dates, 
@@ -729,8 +716,15 @@
 		);
 	} 
 	
-	    function get_clicks_report_grouped ($main_column, $group_by, $limited_to='', $report_type='daily', $from='', $to='')
-    {
+	// Сортировка по кликам 
+	function sub_order($a, $b) {
+		if($a['cnt'] == $b['cnt']) {
+			return 0;
+		}
+		return ($a['cnt'] < $b['cnt']) ? 1 : -1;
+	}
+	
+	function get_clicks_report_grouped ($main_column, $group_by, $limited_to='', $report_type='daily', $from='', $to='') {
         $timezone_shift=get_current_timezone_shift();
 
         switch ($report_type)
@@ -1033,7 +1027,6 @@
 	}
 	
 	// Сортировка по конверсии
-	
 	function params_order($a, $b) {
 		global $pop_sort_by, $pop_sort_order;
 		
@@ -1054,25 +1047,160 @@
 		}
 		return ($k1 < $k2) ? $pop_sort_order * 1 : $pop_sort_order * -1;
 	}
+	
+	/* v2 */
+	function get_clicks_report_element2 ($data) { 
+		global $report_cols, $currencies;
+		$out = array();
+		foreach($report_cols as $col => $options) {
+			$func = 't_' . $col;
+			//$out[] = '<span class="timetab sdata ' . $col . '">' . $func($data) . '</span>';
+			$out[] = '<span class="timetab sdata ' . $col . '">' . sortdata($col, $data) . '</span>';
+			/*
+			if($options['money']) {
+				// Для денежных колонок добавляем все возможные значения
+				foreach($currencies as $currency => $rate) {
+					$out[] = '<span class="sdata ' . $col . '">'.$func($data).'</span>';
+				}
+			} else {
+				
+			}
+			*/
+		}
+		return join('', $out);
+		/*
+		$clicks_data    = $data['click'];
+		$leads_data     = $data['lead'];
+		$sales_data     = $data['sale'];
+		$saleleads_data = $data['sale_lead'];
+		
+		// Выходные данные
+		$out = array();
+		
+		if ((isset($clicks_data)) || (isset($leads_data)) || (isset($sales_data)) || isset($saleleads_data))
+		{
+			$clicks_count = array_sum (array($clicks_data['cnt'], $leads_data['cnt'], $sales_data['cnt'], $saleleads_data['cnt']));
+			$leads_count  = array_sum (array($leads_data['cnt'], $saleleads_data['cnt']));
+			$sales_count  = array_sum (array($sales_data['cnt'], $saleleads_data['cnt']));
 
+			$clicks_cost  = array_sum (array($clicks_data['cost'], $leads_data['cost'], $sales_data['cost'], $saleleads_data['cost']));			
+			
+			$sales_amount = array_sum (array($sales_data['earnings'], $saleleads_data['earnings']));
+			$sales_amount_rub = $sales_amount * 30;
+			
+			$profit_amount = $sales_amount-$clicks_cost;
+			$profit_amount_rub = $profit_amount*30;
+
+			if ($sales_count>0) {
+				$conversion=round2($sales_count/$clicks_count*100).'%';
+				$epc=$sales_amount/$clicks_count;
+				$epc_rub=$epc*30;
+			}
+			else
+			{
+				$conversion="0%";
+			}
+
+			if ($leads_count>0)
+			{
+				$conversion_leads='<b>'.round2($leads_count/$clicks_count).'%</b>';
+				$leads_clicks="<b>{$clicks_count}:{$leads_count}</b>";
+				$lead_price=$clicks_cost/$leads_count;
+				$lead_price_rub=($clicks_cost/$leads_count)*30;
+			}
+			else
+			{
+				$leads_clicks="{$clicks_count}:{$leads_count}";
+				$conversion_leads="0%";
+				$lead_price='';
+				$lead_price_rub='';
+			}
+
+			// Round and format values
+			$sales_amount=round($sales_amount, 2);
+			$sales_amount_rub=round($sales_amount_rub, 2);
+			$profit_amount=round($profit_amount, 2);
+			$profit_amount_rub=round($profit_amount_rub, 2);
+			
+			if ($profit_amount==0)
+			{
+				$profit_amount="<span style='color:lightgray; font-weight:normal;'>$0</span>";
+				$profit_amount_rub="<span style='color:lightgray; font-weight:normal;'>0р.</span>";
+			}
+			else
+			{
+				if ($profit_amount<0)
+				{
+					$profit_amount='<span style="color:red;">-$'.abs($profit_amount)."</span>";
+					$profit_amount_rub="<span style='color:red;'>{$profit_amount_rub} р.</span>";						
+				}
+				else
+				{
+					$profit_amount='$'.$profit_amount;
+					$profit_amount_rub=$profit_amount_rub.' р.';
+				}
+			}
+			
+			if (is_numeric ($lead_price)) {$lead_price='$'.round($lead_price, 2);}
+			if (is_numeric ($lead_price_rub)) {$lead_price_rub=round($lead_price_rub, 2).'р.';}
+			
+			if ($epc>=0.01){$epc=round($epc, 2);}else{$epc=round($epc, 3);}
+			if ($epc_rub>=0.01){$epc_rub=round($epc_rub, 2);}else{$epc_rub=round($epc_rub, 3);}
+
+
+			if ($clicks_cost>0)
+			{
+				$roi=round(($sales_amount-$clicks_cost)/$clicks_cost*100).'%';
+				if ($roi<=0){$roi="<span style='color:red;'>{$roi}</span>";}
+			}
+			else
+			{
+				$roi='';
+			}
+
+			if ($sales_count>0)
+			{
+				return "<span class='sdata leads leads_clicks'>{$leads_clicks}</span>
+						<span class='sdata leads leads_conversion'>{$conversion_leads}</span> 
+						<span class='sdata leads leads_price usd'>{$lead_price}</span>
+						<span class='sdata leads leads_price rub'>{$lead_price_rub}</span>
+						<b><span class='sdata clicks'>{$clicks_count}:{$sales_count}</span><span class='sdata conversion'>{$conversion}</span><span class='sdata sales usd'>{$profit_amount}</span><span class='sdata sales rub'>{$profit_amount_rub}</span><span class='sdata epc usd'>\${$epc}</span><span class='sdata epc rub'>{$epc_rub} р.</span><span class='sdata roi'>{$roi}</span></b>";				
+			}
+			else
+			{
+				return "<span class='sdata leads leads_clicks'>{$leads_clicks}</span>
+						<span class='sdata leads leads_conversion'>{$conversion_leads}</span> 
+						<span class='sdata leads leads_price'>{$lead_price}</span>
+						<span class='sdata clicks'>{$clicks_count}</span><span class='sdata conversion'>{$conversion}</span><span class='sdata roi' style='color:lightgray;'>-</span>
+						<span style='color:lightgray;' class='sdata epc usd'>$0</span><span style='color:lightgray;' class='sdata epc rub'>0 р.</span>
+						<span class='sdata sales usd' style='font-weight:bold;'>{$profit_amount}</span><span class='sdata sales rub' style='font-weight:bold;'>{$profit_amount_rub}</span>";
+			}
+		}
+		else
+		{
+			return '';
+		}
+		*/
+	}
+	/* /v2 */
+	
 	function get_clicks_report_element ($clicks_data, $leads_data, $sales_data, $saleleads_data)
 	{ 
 		if ((isset($clicks_data)) || (isset($leads_data)) || (isset($sales_data)) || isset($saleleads_data))
 		{
-			$clicks_count=array_sum (array($clicks_data['cnt'], $leads_data['cnt'], $sales_data['cnt'], $saleleads_data['cnt']));
-			$leads_count=array_sum (array($leads_data['cnt'], $saleleads_data['cnt']));
-			$sales_count=array_sum (array($sales_data['cnt'], $saleleads_data['cnt']));
+			$clicks_count = array_sum (array($clicks_data['cnt'], $leads_data['cnt'], $sales_data['cnt'], $saleleads_data['cnt']));
+			$leads_count  = array_sum (array($leads_data['cnt'], $saleleads_data['cnt']));
+			$sales_count  = array_sum (array($sales_data['cnt'], $saleleads_data['cnt']));
 
-			$clicks_cost=array_sum (array($clicks_data['cost'], $leads_data['cost'], $sales_data['cost'], $saleleads_data['cost']));			
+			$clicks_cost  = array_sum (array($clicks_data['cost'], $leads_data['cost'], $sales_data['cost'], $saleleads_data['cost']));			
 			
-			$sales_amount=array_sum (array($sales_data['earnings'], $saleleads_data['earnings']));
-			$sales_amount_rub=$sales_amount*30;
+			$sales_amount = array_sum (array($sales_data['earnings'], $saleleads_data['earnings']));
+			$sales_amount_rub = $sales_amount * 30;
 			
-			$profit_amount=$sales_amount-$clicks_cost;
-			$profit_amount_rub=$profit_amount*30;
+			$profit_amount = $sales_amount-$clicks_cost;
+			$profit_amount_rub = $profit_amount*30;
 
-			if ($sales_count>0)
-			{
+			if ($sales_count>0) {
 				$conversion=round2($sales_count/$clicks_count*100).'%';
 				$epc=$sales_amount/$clicks_count;
 				$epc_rub=$epc*30;
@@ -1285,39 +1413,39 @@
 		
 		// Литералы для группировок
 		$group_types = array(
-			'out_id'          => array('Оффер', 'Без оффера', 'офферам'), 
-			'source_name'     => array('Источник', 'Не определён', 'источникам'),
-			'campaign_name'   => array('Кампания', 'Не определена', 'кампаниям'),
-			'ads_name'        => array('Объявление', 'Не определено', 'объявлениям'),
-			'referer'         => array('Площадка', 'Не определена', 'площадкам'),
+			'out_id'          => array('Оффер', 'Без оффера', 'Офферы'), 
+			'source_name'     => array('Источник', 'Не определён', 'Источники'),
+			'campaign_name'   => array('Кампания', 'Не определена', 'Кампании'),
+			'ads_name'        => array('Объявление', 'Не определено', 'Объявления'),
+			'referer'         => array('Площадка', 'Не определена', 'Площадки'),
 			'user_os'         => array('ОС', 'Не определена', 'ОС'),
-			'user_platform'   => array('Платформа', 'Не определена', 'платформам'),
-			'user_browser'    => array('Браузер', 'Не определен', 'браузерам'),
-			'country'         => array('Страна', 'Не определена', 'странам'),
-			'state'           => array('Регион', 'Не определен', 'регионам'),
-			'city'            => array('Город', 'Не определен', 'городам'),
-			'isp'             => array('Провайдер', 'Не определен', 'провайдерам'),
-			'campaign_param1' => array('Параметр ссылки #1', 'Не определен', 'параметру #1'),
-			'campaign_param2' => array('Параметр ссылки #2', 'Не определен', 'параметру #2'),
-			'campaign_param3' => array('Параметр ссылки #3', 'Не определен', 'параметру #3'),
-			'campaign_param4' => array('Параметр ссылки #4', 'Не определен', 'параметру #4'),
-			'campaign_param5' => array('Параметр ссылки #5', 'Не определен', 'параметру #5'),
+			'user_platform'   => array('Платформа', 'Не определена', 'Платформы'),
+			'user_browser'    => array('Браузер', 'Не определен', 'Браузеры'),
+			'country'         => array('Страна', 'Не определена', 'Страны'),
+			'state'           => array('Регион', 'Не определен', 'Регионы'),
+			'city'            => array('Город', 'Не определен', 'Города'),
+			'isp'             => array('Провайдер', 'Не определен', 'Провайдеры'),
+			'campaign_param1' => array('Параметр ссылки #1', 'Не определен', 'Параметр ссылки #1'),
+			'campaign_param2' => array('Параметр ссылки #2', 'Не определен', 'Параметр ссылки #2'),
+			'campaign_param3' => array('Параметр ссылки #3', 'Не определен', 'Параметр ссылки #3'),
+			'campaign_param4' => array('Параметр ссылки #4', 'Не определен', 'Параметр ссылки #4'),
+			'campaign_param5' => array('Параметр ссылки #5', 'Не определен', 'Параметр ссылки #5'),
 			
-			'click_param_value1'  => array('Параметр перехода #1', 'Не определен', 'параметру #1'),
-			'click_param_value2'  => array('Параметр перехода #2', 'Не определен', 'параметру #2'),
-			'click_param_value3'  => array('Параметр перехода #3', 'Не определен', 'параметру #3'),
-			'click_param_value4'  => array('Параметр перехода #4', 'Не определен', 'параметру #4'),
-			'click_param_value5'  => array('Параметр перехода #5', 'Не определен', 'параметру #5'),
-			'click_param_value6'  => array('Параметр перехода #6', 'Не определен', 'параметру #6'),
-			'click_param_value7'  => array('Параметр перехода #7', 'Не определен', 'параметру #7'),
-			'click_param_value8'  => array('Параметр перехода #8', 'Не определен', 'параметру #8'),
-			'click_param_value9'  => array('Параметр перехода #9', 'Не определен', 'параметру #9'),
-			'click_param_value10' => array('Параметр перехода #10', 'Не определен', 'параметру #10'),
-			'click_param_value11' => array('Параметр перехода #11', 'Не определен', 'параметру #11'),
-			'click_param_value12' => array('Параметр перехода #12', 'Не определен', 'параметру #12'),
-			'click_param_value13' => array('Параметр перехода #13', 'Не определен', 'параметру #13'),
-			'click_param_value14' => array('Параметр перехода #14', 'Не определен', 'параметру #14'),
-			'click_param_value15' => array('Параметр перехода #15', 'Не определен', 'параметру #15'),/*
+			'click_param_value1'  => array('Параметр перехода #1', 'Не определен', 'Параметр перехода #1'),
+			'click_param_value2'  => array('Параметр перехода #2', 'Не определен', 'Параметр перехода #2'),
+			'click_param_value3'  => array('Параметр перехода #3', 'Не определен', 'Параметр перехода #3'),
+			'click_param_value4'  => array('Параметр перехода #4', 'Не определен', 'Параметр перехода #4'),
+			'click_param_value5'  => array('Параметр перехода #5', 'Не определен', 'параметр перехода #5'),
+			'click_param_value6'  => array('Параметр перехода #6', 'Не определен', 'Параметр перехода #6'),
+			'click_param_value7'  => array('Параметр перехода #7', 'Не определен', 'Параметр перехода #7'),
+			'click_param_value8'  => array('Параметр перехода #8', 'Не определен', 'Параметр перехода #8'),
+			'click_param_value9'  => array('Параметр перехода #9', 'Не определен', 'Параметр перехода #9'),
+			'click_param_value10' => array('Параметр перехода #10', 'Не определен', 'Параметр перехода #10'),
+			'click_param_value11' => array('Параметр перехода #11', 'Не определен', 'Параметр перехода #11'),
+			'click_param_value12' => array('Параметр перехода #12', 'Не определен', 'Параметр перехода #12'),
+			'click_param_value13' => array('Параметр перехода #13', 'Не определен', 'Параметр перехода #13'),
+			'click_param_value14' => array('Параметр перехода #14', 'Не определен', 'Параметр перехода #14'),
+			'click_param_value15' => array('Параметр перехода #15', 'Не определен', 'Параметр перехода #15'),/*
 			'cp1'  => array('Параметр перехода #1', 'Не определен', 'параметру #1'),
 			'cp2'  => array('Параметр перехода #2', 'Не определен', 'параметру #2'),
 			'cp3'  => array('Параметр перехода #3', 'Не определен', 'параметру #3'),
@@ -1469,27 +1597,35 @@
 		}
 
 		function t_profit($r, $wrap = true) {
-			return currencies_span(round2($r['income'] - $r['price']),$wrap);
+			return currencies_span(round2($r['income'] - $r['price']), $wrap);
 		}
 
 		function t_roi($r, $wrap = true) {
-			return round(($r['income'] - $r['price']) / $r['price'] * 100, 1);
+			$out = round(($r['income'] - $r['price']) / $r['price'] * 100, 1);
+			return $wrap ? $out . '%' : $out;
 		}
 
 		function t_conversion($r, $wrap = true) {
-			return round2($r['sale'] / $r['cnt'] * 100);
+			if($r['sale'] == 0) return $wrap ? '' : 0;
+			$out = round2($r['sale'] / $r['cnt'] * 100);
+			return $wrap ? $out . '%' : $out;
 		}
 
 		function t_conversion_l($r, $wrap = true) {
-			return round2($r['lead'] / $r['cnt'] * 100);
+			if($r['lead'] == 0) return $wrap ? '' : 0;
+			$out = round2($r['lead'] / $r['cnt'] * 100);
+			return $wrap ? $out . '%' : $out;
 		}
 		
 		function t_conversion_a($r, $wrap = true) {
-			return round2($r['sale_lead'] / $r['cnt'] * 100);
+			if($r['sale_lead'] == 0) return $wrap ? '' : 0;
+			$out = round2($r['sale_lead'] / $r['cnt'] * 100);
+			return $wrap ? $out . '%' : $out;
 		}
 							
 		function t_follow($r, $wrap = true) {
-			return round($r['out'] / $r['cnt'] * 100, 1);
+			$out = round($r['out'] / $r['cnt'] * 100, 1);
+			return $wrap ? $out . '%' : $out;
 		}
 
 		function t_cps($r, $wrap = true) {
@@ -1505,10 +1641,12 @@
 		}
 
 		function t_repeated($r, $wrap = true) {
+			
 			$repeated = $r['cnt'] - $r['unique'];
+			//if($repeated < 0 or $repeated == 0) return $wrap ? '' : 0;
 			if($repeated < 0) $repeated = 0;
 			$repeated = round($repeated / $r['cnt']  * 100, 1);
-			return $repeated;
+			return $wrap ? $repeated . '%' : $repeated;
 		}
 		
 		function t_cnt($r, $wrap = true) {
@@ -1516,14 +1654,17 @@
 		}
 		
 		function t_sale($r, $wrap = true) {
+			if($r['sale'] == 0) return $wrap ? '' : 0;
 			return $r['sale'];
 		}
 		
 		function t_lead($r, $wrap = true) {
+			if($r['lead'] == 0) return $wrap ? '' : 0;
 			return $r['lead'];
 		}
 		
 		function t_sale_lead($r, $wrap = true) {
+			if($r['sale_lead'] == 0) return $wrap ? '' : 0;
 			return $r['sale_lead'];
 		}
 
@@ -1561,41 +1702,107 @@
 			return array($param_name, $val);
 		}
 		
-		/**
-		* Получаем имя строки
-		* нам нужно обрабатывать рефереров, имена объявлений, специальные параметры
-		*/
+		
+		// Значение поля для рассчётов, например площадка
+		// http://site.ru/topic1/page1.html станет site.ru
+		
+		function param_key($row, $type) {
+			
+			if(trim($row[$type]) != '') {
+				// Обрезаем реферер до домена
+				if($type == 'referer') {
+					$url = parse_url($row[$type]);
+					$out = $url['host'];
+				
+				// Для объявления добавляем кампанию
+				} elseif($type == 'ads_name') {
+					if($row[$type] != '') {
+						$out = ($row['campaign_name'] . '-' . $row[$type]);
+					} else {
+						$out = '{empty}';
+					}
+				} else {
+					$out = $row[$type];
+				}
+			} else {
+				$out = '{empty}';
+			}
+			return $out;
+		}
+		
+		// Вливаем информацию о переходе в массив статистики 
+		
+		function stat_inc(&$arr, $r, $id, $name) {
+			if(!isset($arr)) {
+				$arr = array(
+					'id'     => $id,
+					'name'   => $name,
+					'price'  => 0,
+					'unique' => 0,
+					'income' => 0,
+					'sale'   => 0,
+					'lead'   => 0,
+					'out'    => 0,
+					'cnt'    => 0,
+					'sale_lead' => 0,
+				);
+			}
+			$arr['id']        =  $id;
+			$arr['name']      =  $name;
+			$arr['sale']      += $r['is_sale'];
+			$arr['lead']      += $r['is_lead'];
+			$arr['cnt']       += $r['cnt'];
+			$arr['price']     += $r['click_price'];
+			$arr['unique']    += $r['is_unique'];
+			$arr['income']    += $r['conversion_price_main'];
+			$arr['out']       += $r['is_connected'];
+			$arr['sale_lead'] += $r['sale_lead'];
+		}
+		
+		// Значение поля для отображения пользователю, например
+		// out_id "10" становится названием ссылки "Ссылка 1",
+		// а источник popunder станет Popunder.ru
+		// нам нужно обрабатывать рефереров, имена объявлений, специальные параметры
+		
 		function param_val($row, $type, $source_name = '') {
 			global $group_types, $source_config;
+			static $links = array();
+			
 			
 			$name = '';
 			if(is_array($row)) {
 				$v = $row[$type];
+				$source_name = $row['source_name'];
 			} else {
 				$v = $row;
 			}
 			
 			if($type == 'referer') {
-				/*
-				dmp($v);
+
 				$name = parse_url($v);
 				$name = $name['host'];
-				*/
-				$name = $v;
+				
 			} elseif($type == 'source_name') {
 				$name = empty($source_config[$v]['name']) ? $v : $source_config[$v]['name'];
 				
 			} elseif($type == 'ads_name') {
 				if($v != '') {
-					$name = ($row['campaign_name'] . '-' . $row['ads_name']);
+					$name = is_array($row) ? ($row['campaign_name'] . '-' . $row['ads_name']) : $row;
 				}
+				//$name = $v;
+				//dmp($v);
+				//dmp($row);
 			} elseif($type == 'out_id') {
-				$name = current(get_out_description($v));
+				if(isset($links[$v])) {
+					$name = $links[$v];
+				} else {
+					$name = current(get_out_description($v));
+					$links[$v] = $name;
+				}
 			} else {
 				// Специальные поля, определённые для источника в виде списка
 				if(!empty($source_config[$source_name]['params']) 
 					and strstr($type, 'click_param_value') !== false) {
-						
 					$n = intval(str_replace('click_param_value', '', $type));
 					$i = 1;
 					foreach($source_config[$source_name]['params'] as $param) {
@@ -1611,7 +1818,7 @@
 				}
 			}
 			
-			if(trim($name) == '') $name = $group_types[$type][1];
+			if(trim($name) == '' or $name == '{empty}') $name = $group_types[$type][1];
 			return $name;
 		}
 		
@@ -1636,7 +1843,7 @@
 					if($i == $n) {
 						$name = str_replace(' ', '&nbsp;', $v['name']);
 						if($only_name) {
-							return 'параметру ' . $name;
+							return $name;
 						}
 						return $name;
 					}
@@ -1646,7 +1853,7 @@
 			
 			if($only_name) {
 				if(strstr($type, 'click_param_value') !== false) {
-					return 'параметру #' . ($n - $named_params_cnt);
+					return 'Параметр #' . ($n - $named_params_cnt);
 				} else {
 					return $group_types[$type][2];
 				}
@@ -1663,14 +1870,21 @@
 		 * Название ведущей колонки в отчёте (для специальных настроек источников)
 		 */
 		function col_name($params, $only_name = false) {
-			return param_name($params['group_by'], $params['filter']['source_name'], $only_name);
+			return param_name($params['group_by'], $params['filter'][0]['source_name'], $only_name);
 		}
 		
 		/*
 		 * фрагмент данных для сортировки подчинённых офферов (режим lp_offers)
+		 * Вид: order|val|ln|offer|val_offer
+		 * order - 1 для офферов с прямыми переходами и 0 для всех остальных, офферы всегда внизу
+		 * val   - значение ячейки лэндинга (у оффера - значение родительской ячейки)
+		 * ln    - номер группы, одинаковый у лэндинга и всех его подчиненённых офферов
+		 * offer - флаг оффера, 0 для лэндинга, 1 для оффера, сортируется всегда так чтобы лэндинг был вверху
+		 * val_offer - значение ячейки оффера (для лэндинга пустое)
 		 */
 		function sortdata($col_name, $data) {
 			//dmp($data);
+			//print_r($data);
 			//static $l; // счётчик лэндингов
 			$r = $data['r'];
 			$parent = $data['parent'];
@@ -1680,11 +1894,16 @@
 				//empty($data['r']['sub']) ? 0 : 1 // есть ли подчинённые
 			);
 			
-			$val0 = $func($r, false);
+			$val0 = intval($func($r, false));
 			$val = $func($r);
 			
+			if($col_name == 'cnt' and $r['sale_lead'] > 0 and $data['part'] != 'all') {
+				$val = $val . ':' . $r['sale_lead'];
+				$val0 += ($r['sale_lead'] * 10000000);
+			}
+			
 			if(!empty($parent)) {
-				$tmp[] = $func($parent, false); // значение лэндинга
+				$tmp[] = intval($func($parent, false)); // значение лэндинга
 				$tmp[] = $data['r']['ln']; // номер лэндинга
 				$tmp[] = 1; // это оффер
 				$tmp[] = $val0;
@@ -1717,5 +1936,21 @@
 				$row = $rows[$id];
 			}
 			return empty($name) ?  $row : $row[$name];
+		}
+		
+		/*
+		 * Получаем самую первую ссылку из правила
+		 */
+		function get_first_rule_link($rule_id) {
+			$q="select `offer_tracking_url` 
+				from `tbl_rules_items`
+				left join `tbl_offers` on value = tbl_offers.id
+				where `rule_id` = '".intval($rule_id)."'
+					and `type` = 'redirect'
+				order by `tbl_rules_items`.`id`
+				limit 1";
+			$rs = db_query($q);
+			$r = mysql_fetch_assoc($rs);
+			return $r['offer_tracking_url'];
 		}
 ?>

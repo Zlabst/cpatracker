@@ -174,13 +174,21 @@
 	}
 	
 	if ($_REQUEST['ajax_act']=='get_source_link') {
-		$source = rq('source');
-		$name   = rq('name');
+		$source  = rq('source');
+		$name    = rq('name');
+		$rule_id = rq('id', 1);
 		
-		$lnk = 'http://' . $_SERVER['HTTP_HOST'] . '/track/' . $name . '/';
+		// Прямая ссылка без редиректа!
+		if($source == 'landing') {
+			$lnk = get_first_rule_link($rule_id);
+		} else {
+			$lnk = 'http://' . $_SERVER['HTTP_HOST'] . '/track/' . $name . '/';
+		}
 		
 		if(array_key_exists($source, $source_config)) {
-			$lnk .= $source . '/campaign-ads/';
+			if($source != 'landing') {
+				$lnk .= $source . '/campaign-ads/';
+			}
 			if(!empty($source_config[$source]['params'])) {
 				$tmp = array();
 				foreach($source_config[$source]['params'] as $param_name => $param_value) {
@@ -188,7 +196,7 @@
 					$tmp[] = $param_name . '=' . $param_value['url'];
 				}
 				if(count($tmp) > 0) {
-					$lnk .= '?' . join('&', $tmp);
+					$lnk .= (strstr($lnk, '?') === false ? '?' : '&') . join('&', $tmp);
 				}
 			}
 		} else {

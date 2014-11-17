@@ -8,3 +8,5 @@ echo '<form method="post" name="datachangeform" id="range_form">
     <div class="pull-right" style="margin-top:18px;">' . tpx('report_timestep', $var). '</div>
   </form>
 <div class="row"></div>';
+
+echo tpx('report_breadcrumbs');

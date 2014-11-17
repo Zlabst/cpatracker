@@ -93,8 +93,8 @@ $custom = new custom();
             $('#result-row').hide();
             $('#master-form').show();
         });
-
-        $('#master-form input[type=checkbox]').change(function() {
+        
+        var checkbox_change = function() {
             var cur_url = base_custom;
 
             $('#master-form input[type=checkbox]').each(function(i) {
@@ -104,7 +104,9 @@ $custom = new custom();
                 $('#custom-link-val').val(cur_url);
             });
 
-        });
+        };
+
+        $('#master-form input[type=checkbox]').change(checkbox_change);
 
         $('#master-form input[type=text]').change(function() {
             var cur_url = base_custom;
@@ -116,7 +118,9 @@ $custom = new custom();
             });
 
         });
-
+		
+		
+		checkbox_change();
     });
 
 

@@ -27,7 +27,6 @@ function modify_links(name, val) {
 }
 
 function update_cols(selected_option, mod_links) {
-	console.log(selected_option);
 	switch (selected_option) {
 		case 'sale_lead':
 			$('.col_s').hide();
@@ -65,7 +64,73 @@ function update_cols(selected_option, mod_links) {
 		break;
 	}
 }
+
+
+
+
+function update_stats2(selected_option, currency_show) {
+	$('.timetab.sdata').hide();
+	$('.timetab.sdata').removeClass('current');
+	$('.timetab.sdata.' + selected_option).show();
+	$('.timetab.sdata.' + selected_option).addClass('current');
 	
+	$('#type_selected').val(selected_option);
+	
+	$('#rt_currency_section').toggle(currency_show);
+}
+
+function show_currency(value) {
+	switch (value) {
+		case 'rub': 
+			$('.sdata.usd').hide();
+			$('.sdata.rub').show();
+			modify_links('currency', 'rub');
+		break;
+		case 'usd': 
+			$('.sdata.usd').show();
+			$('.sdata.rub').hide();
+			modify_links('currency', 'usd');
+		break;
+	}
+}
+
+function show_conv_mode(value, mod_links) {	
+	mod_links = true;
+	
+	// прячем все панели
+	$('.rt_types').hide(); 
+	
+	// показываем нужную
+	$('.rt_types.rt_type_' + value).show();
+	
+	switch (value) {
+		case 'sale_lead':
+			$('.col_s').hide();
+			$('.col_l').hide();
+			$('.col_a').show();
+			if(mod_links) {
+				modify_links('col', 'sale_lead');
+			}
+		break;
+		case 'sale':
+			$('.col_l').hide();
+			$('.col_a').hide();
+			$('.col_s').show();
+			if(mod_links) {
+				modify_links('col', 'sale');
+			}
+		break;
+		case 'lead':
+			$('.col_a').hide();
+			$('.col_s').hide();
+			$('.col_l').show();
+			if(mod_links) {
+				modify_links('col', 'lead');
+			}
+		break;
+	}
+}
+
 function update_stats(selected_option)
 {
 	switch (selected_option)

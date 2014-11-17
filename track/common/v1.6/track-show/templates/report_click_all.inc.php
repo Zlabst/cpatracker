@@ -18,7 +18,7 @@ if(!isset($table_n)) {
 	<div class="col-md-12">
 		<table class="table table-striped table-bordered table-condensed dataTableT dataTableT<?php echo $table_n;?> dataTable">
 			<thead>
-				<tr><th><?php echo col_name($var); ?></th><th>Переходы</th><th class="col_s">Продажи</th><th class="col_l">Лиды</th><th class="col_a">Действия</th><th class="col_s">Конверсия</th><th class="col_l">Конверсия</th><th class="col_a">Конверсия</th><th>Затраты</th><th class="col_s col_a">Доход</th><th class="col_s col_a">Прибыль</th><th class="col_s">EPC</th><th class="col_s col_a">ROI</th><th class="col_l">CPL</th></tr>
+				<tr><th><?php echo col_name($var); ?></th><th>Переходы</th><th class="col_s">Продажи</th><th class="col_l">Лиды</th><th class="col_a">Действия</th><th class="col_s">Конверсия</th><th class="col_l">Конверсия</th><th class="col_a">Конверсия</th><th>Затраты</th><th class="col_s col_a">Прибыль</th><th class="col_s">EPC</th><th class="col_s col_a">ROI</th><th class="col_l">CPL</th></tr>
 			</thead>
 			<tbody>
 				<?php
@@ -37,7 +37,8 @@ if(!isset($table_n)) {
 						
 						$group_link = $subtype == 'out_id' ? 'source_name' : 'out_id';
 						//dmp($var);
-						$name = param_val($r['name'], $var['group_by'], $var['filter'][0]['source_name']);
+						$name = $r['name'];
+						//$name = param_val($r['name'], $var['group_by'], $var['filter'][0]['source_name']);
 						
 						/*
 						if(trim($r['name']) == '' or $r['name'] == '{empty}') {
@@ -62,7 +63,7 @@ if(!isset($table_n)) {
 						
 						// Ограничиваем глубину фильтров
 						if(empty($var['report_params']['filter'][0]) or count($var['report_params']['filter'][0]) < 5) {
-							$lnk_arr = array('filter_str' => array_merge($var['report_params']['filter_str'], array($var['report_params']['group_by'] => _e($r['name']))));
+							$lnk_arr = array('filter_str' => array_merge($var['report_params']['filter_str'], array($var['report_params']['group_by'] => _e($r['id']))));
 							if(count($var['report_params']['filter'][0]) == 0) {
 								$lnk_arr['mode'] = 'popular';
 								$lnk_arr['group_by'] = '';
@@ -78,14 +79,13 @@ if(!isset($table_n)) {
 							$r['sale'].'</td><td class="col_l">'.
 							$r['lead'].'</td><td class="col_a">'.
 							$r['sale_lead'].'</td><td class="col_s">'.
-							t_conversion($r).'%</td><td class="col_l">'.
-							t_conversion_l($r).'%</td><td class="col_a">'.
-							t_conversion_a($r).'%</td><td>'.
+							t_conversion($r).'</td><td class="col_l">'.
+							t_conversion_l($r).'</td><td class="col_a">'.
+							t_conversion_a($r).'</td><td>'.
 							t_price($r).'</td><td class="col_s col_a">'.
-							t_income($r).'</td><td class="col_s col_a">'.
 							t_profit($r).'</td><td class="col_s">'.
 							t_epc($r).'</td><td class="col_s col_a">'.
-							t_roi($r).'%</td><td class="col_l">'.
+							t_roi($r).'</td><td class="col_l">'.
 							t_cpl($r).'</td></tr>';
 					}
 				?>
@@ -98,14 +98,13 @@ if(!isset($table_n)) {
 							$r['sale'].'</th><th class="col_l">'.
 							$r['lead'].'</th><th class="col_a">'.
 							$r['sale_lead'].'</th><th class="col_s">'.
-							t_conversion($r).'%</th><th class="col_l">'.
-							t_conversion_l($r).'%</th><th class="col_a">'.
-							t_conversion_a($r).'%</th><td>'.
-							t_price($r).'</th><td class="col_s col_a">'.
-							t_income($r).'</td><th class="col_s col_a">'.
+							t_conversion($r).'</th><th class="col_l">'.
+							t_conversion_l($r).'</th><th class="col_a">'.
+							t_conversion_a($r).'</th><td>'.
+							t_price($r).'</th><th class="col_s col_a">'.
 							t_profit($r).'</th><th class="col_s">'.
 							t_epc($r).'</th><th class="col_s col_a">'.
-							t_roi($r).'%</th><th class="col_l">'.
+							t_roi($r).'</th><th class="col_l">'.
 							t_cpl($r).'</th>'
 					
 					?></tr>
@@ -183,7 +182,6 @@ $(document).ready(function() {
             { "asSorting": [ "desc", "asc" ], "sType": "click-data" }, // Конверсия в лиды 
             { "asSorting": [ "desc", "asc" ], "sType": "click-data" }, // Конверсия в действия 
             { "asSorting": [ "desc", "asc" ], "sType": "click-data" }, // Затраты
-            { "asSorting": [ "desc", "asc" ], "sType": "click-data" }, // Доход
             { "asSorting": [ "desc", "asc" ], "sType": "click-data" }, // Прибыль
             { "asSorting": [ "desc", "asc" ], "sType": "click-data" }, // EPC	
             { "asSorting": [ "desc", "asc" ], "sType": "click-data" }, // ROI 

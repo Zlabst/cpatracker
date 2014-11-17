@@ -21,7 +21,7 @@ class common {
         $is_lead = (isset($data['is_lead']))?1:0;
         $is_sale = (isset($data['is_sale']))?1:0;
         unset($data['is_lead']);
-        unset($data['is_dale']);
+        unset($data['is_sale']);
         
         switch ($data['txt_param2']) {
             case 'uah':
@@ -39,14 +39,16 @@ class common {
         	
         	//to_log('data', $data);
         	
-        	$subid = $data['subid']; // мы скоро обнулим массив data, а subid нам ещё понадобится
+        	$subid  = $data['subid']; // мы скоро обнулим массив data, а subid нам ещё понадобится
+        	$status = $data['status'];
         	
             //Проверяем есть ли клик с этим SibID
             $r = mysql_query('SELECT `id` FROM `tbl_clicks` WHERE `subid` = "'.mysql_real_escape_string($subid).'"') or die(mysql_error());
             
             if (mysql_num_rows($r) > 0) {
                 $f = mysql_fetch_assoc($r);
-                mysql_query('UPDATE `tbl_clicks` SET `is_sale` = 1, `is_lead` = '.intval($is_lead).', `conversion_price_main` = "'.mysql_real_escape_string($data['profit']).'" WHERE `id` = '.$f['id']) or die(mysql_error());
+                $click_id = $f['id'];
+                mysql_query('UPDATE `tbl_clicks` SET `is_sale` = 1, `is_lead` = '.intval($is_lead).', `conversion_price_main` = "'.mysql_real_escape_string($data['profit']).'" WHERE `id` = '.$click_id) or die(mysql_error());
             }
             
             // ----------------------------
@@ -56,7 +58,9 @@ class common {
             $upd = array(); // Инициализируем массив для запроса на обновление
             
             // Дополнительные поля, которых нет в $params, но которые нам нужны в БД
-            $additional_fields = array('date_add', 'txt_status', 'status', 'network');
+            $additional_fields = array('date_add', 'txt_status', 'status', 'network', 'type');
+            
+            
             
             foreach ($data as $name => $value) {
                 if (array_key_exists($name, $this->params) or in_array($name, $additional_fields)) {
@@ -84,6 +88,11 @@ class common {
             	$conv_id = mysql_insert_id();
             }
             
+            // Нужно ли нам отменить продажу?
+		    if($status == 2) {
+		    	delete_sale($click_id, $conv_id, 'sale');
+		    	//return false;
+		    }
             
             // Пишем postback логи
             foreach ($data as $name => $value) {

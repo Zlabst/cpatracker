@@ -8,14 +8,18 @@ tr.sub td.name:before {
 tr.sub.last td.name:before {
 	content: '└';
 }
+.sdata {
+	display: none;
+}
 </style>
 <?php
 if (!$include_flag){exit();}
+
 // Таблица отчёта
 
 global $group_types;
 global $table_n;
-global $row_total_data;
+global $row_total_data, $column_total_data, $arr_sparkline, $sparkline;
 
 if(!isset($table_n)) {
 	$table_n = 0;
@@ -23,38 +27,34 @@ if(!isset($table_n)) {
 	$table_n++;
 }
 
-//dmp($var['arr_report_data']);
-
-
 echo "<div class='row'>";
 echo "<div class='col-md-12'>";
 echo "<table class='table table-condensed table-striped table-bordered dataTableT dataTableT".$table_n."' style='margin-bottom:15px !important;'>";
 	
 	// Заголовок 
 	
-	
-	
 	echo "<thead>";
-		echo "<tr>";
-		
-		if($var['report_params']['mode'] == 'popular') {
-			echo "<th>Популярные</th><th>Значение</th>";
-		} else {
-			echo "<th>" . _e(col_name($var)) . "</th>";
-		}
-		
-		foreach ($var['arr_dates'] as $cur_date) {
-			$d = $var['timestep'] == 'monthly' ? $cur_date : date('d.m', strtotime($cur_date));
-			echo "<th>"._e($d)."</th>";
-		}
-		echo "<th>Итого</th>";
-		echo "</tr>";
+	echo "<tr>";
+	
+	if($var['report_params']['mode'] == 'popular') {
+		echo "<th>Популярные</th><th>Значение</th>";
+	} else {
+		echo "<th>" . _e(col_name($var)) . "</th>";
+	}
+	
+	foreach ($var['arr_dates'] as $cur_date) {
+		$d = $var['timestep'] == 'monthly' ? $cur_date : date('d.m', strtotime($cur_date));
+		echo "<th>"._e($d)."</th>";
+	}
+	echo "<th>Итого</th>";
+	echo "</tr>";
 	echo "</thead>";
 	echo "<tbody>";
 	
 	$table_total_data  = array(); // суммирование 
 	$column_total_data = array(); // суммирование колонок
 	$arr_sparkline     = array();
+	$sparkline         = 0;
 	$i = 0;
 	
 	//dmp($var['arr_report_data']);
@@ -70,15 +70,16 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 		$var['class'] = '';
 		
 		echo tpx('report_daily_lp_row', $var);
+		$sparkline++;
 		
 		if(!empty($r['sub'])) {
-			
-			$row_total_data = array(); // суммирование по строкам
 			
 			$i = 1;
 			$cnt = count($r['sub']);
 			
 			foreach($r['sub'] as $r0) {
+				$row_total_data = array(); // суммирование по строкам
+				
 				$var['r'] = $r0;
 				$var['sub'] = 1;
 				$var['class'] = 'sub';
@@ -88,16 +89,14 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 					$var['class'] .= ' last';
 				}
 				
+				//dmp($r0);
 				echo tpx('report_daily_lp_row', $var);
+				$sparkline++;
 				$i++;
 				
 			}
 		}
 		
-		/*
-		//dmp($data);
-
-		*/
 	}
 	echo "</tbody>";
 	
@@ -105,18 +104,30 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 	
 	echo "<tfoot><tr><th ".($var['report_params']['mode'] == 'popular' ? ' colspan="2"' : '') ."><strong><i style='display:none;'>&#148257;</i>Итого</strong></th>";
 	foreach ($var['arr_dates'] as $cur_date) {
-			echo '<th>' . get_clicks_report_element($column_total_data[$cur_date]['click'], $column_total_data[$cur_date]['lead'], $column_total_data[$cur_date]['sale'], $column_total_data[$cur_date]['sale_lead']) . '</th>';
-	}	
-	echo '<th>' . get_clicks_report_element($table_total_data['click'], $table_total_data['lead'], $table_total_data['sale'], $table_total_data['sale_lead']) . '</th>';
+			$var['r'] = $column_total_data[$cur_date];
+			echo '<th>' . get_clicks_report_element2($var) . '</th>';
+	}
+	
+	echo '<th>' . get_clicks_report_element2($table_total_data) . '</th>';
 	echo "</tr></tfoot>";
 	echo "</table></div></div>";
-	
+	//dmp($arr_sparkline);
 	// Скрипты, отвечающие за сортировку и sparklines
 ?>
 <script>
-	/*
 $(document).ready(function() {
+	
+	window.lp_aftersort = function() { 
+		$('tr.sub').removeClass('last'); 
+		rows = $('#DataTables_Table_<?php echo $table_n; ?> tbody').children(); 
+		for(i = 0; i < rows.length; i++) {
+	    	if($(rows[i]).hasClass('sub') && ((i == rows.length - 1) || !$(rows[i + 1]).hasClass('sub'))) {
+	    		$(rows[i]).addClass('last');
+	    	}
+	    } 
+	}
 
+	
     $('.dataTableT<?php echo $table_n; ?>').dataTable
     ({    	
     	"fnDrawCallback":function(){
@@ -130,7 +141,7 @@ $(document).ready(function() {
 
 		},
     	"aoColumns": [
-            null,
+            { "bSortable": false }, // Название,
             <?php if($var['report_params']['mode'] == 'popular') { ?>null,<?php } ?>
             <?php echo str_repeat('{ "asSorting": [ "desc", "asc"], "sType": "click-data" },', count($var['arr_dates']))?>
 			{ "asSorting": [ "desc", "asc" ], "sType": "click-data" },            
@@ -140,9 +151,10 @@ $(document).ready(function() {
 	    "bFilter": false,
 	    "bSort": true,
 	    "bInfo": false,
-    "bAutoWidth": false
-	})
-} );*/
+    	"bAutoWidth": false,
+    	"fnDrawCallback": lp_aftersort
+	}).fnSort([ [<?php echo count($var['arr_dates'])+1;?>,'desc'] ]);; // //fnSort([ [<?php echo count($var['arr_dates'])+1; ?>,'desc'] ]);
+});
 </script>
 <script>
 	$(document).ready(function() 

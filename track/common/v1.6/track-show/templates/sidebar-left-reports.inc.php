@@ -2,9 +2,11 @@
 	
 	if($_REQUEST['act'] != 'reports') {
 		$reports_lnk = '?act=reports&type=basic';
+		$reports_lnk_lp = '?act=reports&type=basic&mode=lp';
 	} else {
 		$params = report_options();
-		$reports_lnk = report_lnk($params, array('filter_str' => array(), 'mode' => '', 'type' => 'basic', 'part' => 'all', 'col' => 'sale_lead'));
+		$reports_lnk = report_lnk($params, array('filter_str' => array(), 'mode' => '', 'type' => 'basic', 'part' => 'all', 'col' => 'sale_lead', 'conv' => 'all', 'group_by' => 'out_id'));
+		$reports_lnk_lp = report_lnk($params, array('filter_str' => array(), 'mode' => 'lp', 'type' => 'basic', 'part' => 'all', 'col' => 'sale_lead', 'conv' => 'all', 'group_by' => 'out_id'));
 	}
 ?>
 
@@ -13,7 +15,7 @@
 		<ul class="nav bs-sidenav">
 			<li <?php if ($_REQUEST['type']=='basic' and $_REQUEST['mode']!='lp' and $_REQUEST['mode']!='lp_offers'){echo 'class="active"';}?>><a href="<?php echo $reports_lnk; ?>">Отчёт по переходам</a></li>      
 			<li <?php if ($_REQUEST['type']=='sales'){echo 'class="active"';}?>><a href="?act=reports&type=sales&subtype=daily">Отчёт по продажам</a></li>
-            <li <?php if ($_REQUEST['mode']=='lp' or $_REQUEST['mode']=='lp_offers'){echo 'class="active"';}?>><a href="?act=reports&type=basic&mode=lp">Отчёт по целевым страницам</a></li>
+            <li <?php if ($_REQUEST['mode']=='lp' or $_REQUEST['mode']=='lp_offers') {echo 'class="active"';}?>><a href="<?php echo $reports_lnk_lp; ?>">Отчёт по целевым страницам</a></li>
 		</ul>
 	</div>
 </div>

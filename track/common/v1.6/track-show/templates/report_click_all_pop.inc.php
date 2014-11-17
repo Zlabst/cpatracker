@@ -17,9 +17,6 @@ if(!isset($table_n)) {
 if($var['report_params']['group_by'] != '')  {
 	$var['arr_report_data'] = current($var['arr_report_data']);
 }
-
-
-//dmp($var['arr_report_data']);
 ?>
 <div class="row">
 	&nbsp;
@@ -50,17 +47,7 @@ if($var['report_params']['group_by'] != '')  {
 							// Если конверсия по действию, а действий нет
 							if(in_array($var['report_params']['conv'], array('sale_lead', 'sale', 'lead')) and $r[$var['report_params']['conv']] == 0) continue;
 							
-							//dmp($r);
-							
-							if($r['name'] == 'out_id') {
-								$r['popular'] = current(get_out_description($r['popular']));
-							}
-							
-							$name = $group_types[$r['name']][0];
-							$name = str_replace('Параметр ссылки', 'ПС', $name);
-							$name = str_replace('Параметр перехода', 'ПП', $name);
-							
-							//if($r['cnt'] == $r['total'] or round($r['cnt'] / $r['total'] * 100) == 100) continue;
+							$name = param_name($r['name'], $var['report_params']['filter'][0]['source_name']);
 							
 							// Ограничиваем глубину фильтров
 							if(empty($var['report_params']['filter'][0]) or count($var['report_params']['filter'][0]) < 5) {
@@ -81,9 +68,9 @@ if($var['report_params']['group_by'] != '')  {
 							$r['sale'].'</td><td class="col_l">'.
 							$r['lead'].'</td><td class="col_a">'.
 							$r['sale_lead'].'</td><td class="col_s">'.
-							t_conversion($r).'%</td><td class="col_l">'.
-							t_conversion_l($r).'%</td><td class="col_a">'.
-							t_conversion_a($r).'%</td>';
+							t_conversion($r).'</td><td class="col_l">'.
+							t_conversion_l($r).'</td><td class="col_a">'.
+							t_conversion_a($r).'</td>';
 						}
 						
 						echo '<td>' . t_price($r).'</td>';
@@ -92,7 +79,7 @@ if($var['report_params']['group_by'] != '')  {
 							echo '<td class="col_s col_a">'.
 								t_profit($r).'</td><td>'.
 								t_epc($r).'</td><td>'.
-								t_roi($r).'%</td><td class="col_s">'.
+								t_roi($r).'</td><td class="col_s">'.
 								t_cps($r).'</td><td class="col_l">'.
 								t_cpl($r).'</td><td class="col_a">'.
 								t_cpa($r).'</td>';
@@ -194,8 +181,6 @@ $(document).ready(function() {
 	    "bInfo": false,
     	"bAutoWidth": false
 	});
-	
-	///"bPaginate": <?php echo (count($data) > 10) ? 'true' : 'false'; ?>,
 	window.table<?php echo $table_n; ?>.fnSortNeutral();
 } );
 </script>

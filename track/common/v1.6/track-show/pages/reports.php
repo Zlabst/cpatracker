@@ -7,9 +7,10 @@ $date1      = date('Y-m-d', strtotime('-6 days', strtotime(date('Y-m-d'))));
 $date2      = date('Y-m-d');
 $arr_dates  = getDatesBetween($date1, $date2);
 
+$conv       = rq('conv');
 $type       = rq('type', 0, 'daily_stats');
 $subtype    = rq('subtype'); // XSS ОПАСНО!!!
-$mode       = rq('mode');
+//$mode       = rq('mode');
 $limited_to = rq('limited_to');
 $group_by   = rq('group_by', 0, $subtype);
 $part       = rq('part', 0, 'all');
@@ -24,39 +25,10 @@ switch ($_REQUEST['type']) {
 	// Параметры отчёта
 	$params = report_options();
 	
-	// Хлебные крошки
-	if(!empty($params['filter_str'])) {
-		
-		//$breadcrumbs = array(report_lnk($params, array('filter' => array())) => 'Все данные');
-		$i = 1;
-		echo '<div><ol class="breadcrumb">
-			<li><a href="' . report_lnk($params, array('filter' => array())) . '">Все данные</a></li>';
-		// Для ссылок преобразуем ID в название	
-		foreach($params['filter_str'] as $k => $v) {
-			$source_type = param_name($k, $params['filter'][0]['source_name']) . ': ';
-			list($v, $type) = explode(':', $v);
-			$source_name = param_val($v, $k, $params['filter'][0]['source_name']);
-				
-			// Текущая ссылка
-			if($i == count($params['filter_str'])) {
-				if($params['group_by'] != '') {
-					echo '<li class="active">' . $source_type . '<a href="' . report_lnk($params, array('group_by' => '', 'mode' => 'popular')) . '">' . _e($source_name) . '</a></li>
-						<li class="active">' . col_name($params) . '</a></li>'; //$group_types[$params['group_by']][0]
-				} else {
-					echo '<li class="active">' . $source_type . _e($source_name) . '</li>';
-				}
-			} else {
-				echo '<li class="active">' . $source_type . '<a href="' . report_lnk($params, array('filter_str' => array_slice($params['filter_str'], 0, $i))) . '">' . _e($source_name) . '</a></li>';
-			}
-			$i++;
-		}
-		echo '</ol></div>';
-	}
-	
 	//$params['where'] = "`is_connected` = '0'"; // только лэндинги
 	//$params['mode'] = 'lp';
 	
-	if($mode == 'popular') {
+	if($params['mode'] == 'popular') {
 		$params['mode'] = 'popular';
 		$assign['report_name'] = 'Популярные параметры за ';
 		$assign['report_params'] = $params;
@@ -64,14 +36,15 @@ switch ($_REQUEST['type']) {
 		
 		$report = get_clicks_report_grouped2($params);
 		
+		$assign['click_params'] = $report['click_params'];
 		$assign['arr_report_data'] = $report['data'];
 		$assign['arr_dates'] = $report['dates'];
 		
 		// Заголовок отчета
 		echo tpx('report_name', $assign);
 
-		// Фильтры
-		echo tpx('report_conv', $assign);
+		// Фильтры конвертации
+		//echo tpx('report_conv', $assign);
 		
 		// Фильтры
 		echo tpx('report_groups', $assign);
@@ -79,23 +52,28 @@ switch ($_REQUEST['type']) {
 		// Таблица отчета
 		echo tpx('report_table', $assign);
 		
-	} elseif($mode == 'lp' or $mode == 'lp_offers') { 
+	} elseif($params['mode'] == 'lp' or $params['mode'] == 'lp_offers') { 
 		
 		$group_types['out_id'][0] = 'Целевая страница';
 		$params['mode'] = 'lp_offers';
 		
 		$assign = $params;
 		$assign['report_params'] = $params;
-		$assign['report_name'] = 'Целевые страницы за ';
 		
+		$assign['report_name'] = 'Целевые страницы за ';
 		$report = get_clicks_report_grouped2($params);
 		
 		$assign['timestep'] = ($params['part'] == 'month' ? 'monthly' : 'daily');
+		
 		$assign['arr_report_data'] = $report['data'];
+		$assign['click_params'] = $report['click_params'];
 		$assign['arr_dates'] = $report['dates'];
 		
 		// Заголовок отчета
 		echo tpx('report_name', $assign);
+		
+		// Фильтры
+		//echo tpx('report_conv', $assign);
 		
 		if(!empty($report['data'])) {
 			// Фильтры
@@ -133,15 +111,13 @@ switch ($_REQUEST['type']) {
 		
 	} else {
 		$report = get_clicks_report_grouped2($params);
-		
-		//dmp($report);
 
 		// Собираем переменные в шаблон
 		$assign = $params;
 		$assign['campaign_params'] = $report['campaign_params'];
 		$assign['click_params'] = $report['click_params'];
 		$assign['report_params'] = $params;
-		$assign['report_name'] = 'Отчёт по ' . col_name($params, true) . ' за ';
+		$assign['report_name'] = col_name($params, true) . ' за ';
 		$assign['timestep'] = ($params['part'] == 'month' ? 'monthly' : 'daily');
 		$assign['arr_report_data'] = $report['data'];
 		$assign['arr_dates'] = $report['dates'];
@@ -151,7 +127,8 @@ switch ($_REQUEST['type']) {
 		// Заголовок отчета
 		echo tpx('report_name', $assign);
 		
-		
+		// Фильтры
+		//echo tpx('report_conv', $assign);
 		
 		// Фильтры
 		echo tpx('report_groups', $assign);
@@ -159,18 +136,24 @@ switch ($_REQUEST['type']) {
 		// Таблица отчета
 		echo tpx('report_table', $assign);
 		
-		/*
-		$params['where'] = '';
-		$params['mode'] = 'lp';
-		$assign['report_params'] = $params;
-		$report = get_clicks_report_grouped2($params);
-		$assign['arr_report_data'] = $report['data'];
+		// Если в Отчете по переходам выбран разрез Источник, то выводим таблицу Целевые страницы, добавляем к ней столбец Целевая страница и делаем источники кликабельными. 
+		if(in_array($params['group_by'], array('source_name', 'ads_name', 'campaign_name', 'referer'))) {
 		
-		echo '<div class="col-sm-9"><h3>Целевые страницы</h3></div>';
+			$params['where'] = '';
+			$params['mode'] = 'lp';
+			$assign['report_params'] = $params;
+			$report = get_clicks_report_grouped2($params);
+			$assign['arr_report_data'] = $report['data'];
+			
+			if(!empty($report['data'])) {
+			
+				echo '<div class="col-sm-9"><h3>Целевые страницы</h3></div>';
+			
+				// Таблица отчета
+				echo tpx('report_table', $assign);
+			}
 		
-		// Таблица отчета
-		echo tpx('report_table', $assign);
-		*/
+		}
 	}
 	
 	
@@ -274,9 +257,44 @@ switch ($_REQUEST['type']) {
 	        $('#cur_day_range').text(start.format('DD.MM.YYYY') + ' - ' + end.format('DD.MM.YYYY'));
 	        $('#sStart').val(start.format('YYYY-MM-DD'));
 	        $('#sEnd').val(end.format('YYYY-MM-DD'));
+	        
+	        hashes = window.location.href.split('&');
+	        for(var i = 0; i < hashes.length; i++) {
+			    hash = hashes[i].split('=');
+			    if(hash[0] == 'from') {
+			    	hashes[i] = 'from=' + start.format('YYYY-MM-DD');
+			    }
+			    if(hash[0] == 'to') {
+			    	hashes[i] = 'to=' + end.format('YYYY-MM-DD');
+			    }
+			}
+			history.pushState(null, null, hashes.join('&'));
+			
+	        //console.log($('#range_form').serialize());
 	        $('#range_form').submit();
 	    }
     );
+    
+    // Многомерная сортировка
+	srt_data = function(a, b, i, asc) {
+		asc_work = (i == 3 || i == 0) ? 1 : asc; // порядок лэндинга и оффера одинаковый всегда
+		maxlen = a.length;
+		x = parseFloat(a[i]);
+		y = parseFloat(b[i]);
+		if(x < y) {
+			return asc_work * -1;
+		} else if(x > y) {
+			return asc_work * 1;
+		} else {
+			if(i < maxlen - 1) {
+				i++;
+				return srt_data(a, b, i, asc);
+			} else {
+				return 0;
+			}
+		}
+	}
+    
     function cnv2(m) {
     	n = $('.clicks', $('<div>' + m + '</div>')).text();
         if(n != '') {
@@ -293,20 +311,126 @@ switch ($_REQUEST['type']) {
         }
         return [parseFloat(n0), parseFloat(n1)];
     }
+    
     jQuery.fn.dataTableExt.oSort['click-data-asc'] = function(a, b) {
-		x = cnv2(a);
-    	y = cnv2(b);
-        return ((x[0] < y[0]) ? -1 : ((x[0] > y[0]) ? 1 : ((x[1] < y[1]) ? -1 : ((x[1] > y[1]) ? 1 : 0))));
+		if(a.indexOf('sortdata') + 1) {
+			a = $('.' + $('#type_selected').val() + ' .sortdata', $('<div>' + a + '</div>')).text().split('|');
+			b = $('.' + $('#type_selected').val() + ' .sortdata', $('<div>' + b + '</div>')).text().split('|');
+			return srt_data(a, b, 0, 1);
+		} else {
+			x = cnv2(a);
+			y = cnv2(b);
+			return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+		}
     };
+
     jQuery.fn.dataTableExt.oSort['click-data-desc'] = function(a, b) {
-    	x = cnv2(a);
-    	y = cnv2(b);
-        return ((x[0] < y[0]) ? 1 : ((x[0] > y[0]) ? -1 : ((x[1] < y[1]) ? 1 : ((x[1] > y[1]) ? -1 : 0))));
+    	if(a.indexOf('sortdata') + 1) {
+    		a = $('.' + $('#type_selected').val() + ' .sortdata', $('<div>' + a + '</div>')).text().split('|');
+			b = $('.' + $('#type_selected').val() + ' .sortdata', $('<div>' + b + '</div>')).text().split('|');
+			return srt_data(a, b, 0, -1);
+    	} else { 
+    		x = cnv2(a);
+			y = cnv2(b);
+			return ((x < y) ? 1 : ((x > y) ? -1 : 0));
+		}
     };
 </script>
 <?php 
+
+// Нижние кнопки 
+$currency = rq('currency', 0, 'usd');
+$col      = rq('col', 0, 'all_actions');
+
+if($params['conv'] == 'lead') {
+	$col == 'leads';
+};
+	
+$option_leads_type = array(
+	'sale_lead' => 'Все действия',
+	'sale' => 'Продажи',
+	'lead' => 'Лиды'
+);
+
+$option_currency = array(
+	'currency_rub' => '<i class="fa fa-rub"></i>',
+	'currency_usd' => '$',
+);	
+
+// Проверяем на соответствие существующим типам
+
+if(empty($option_leads_type[$col])) 
+	$col = 'sale_lead';
+
+if(empty($option_currency['currency_' . $currency])) 
+	$currency = 'usd';
+
+echo tpx('report_toolbar');
+/*
 if(!empty($report['data'])) {
-if($type != 'targetreport' and $type != 'all_stats' and $part != 'all') { ?>
+if($type != 'all_stats' and $part != 'all') {
+	if($params['mode'] == 'lp_offers') {
+		if($conv != 'none') {
+			$group_actions = array(
+				'sale_lead' => array('cnt', 'repeated', 'lpctr', 'sale_lead', 'conversion_a', 'price', 'profit', 'cpa'),
+				'sale' => array('cnt', 'repeated', 'lpctr', 'sale', 'conversion', 'price', 'profit', 'epc', 'roi'),
+				'lead' => array('cnt', 'repeated', 'lpctr', 'lead', 'conversion_l', 'price', 'cpl')
+			);
+			
+			$panels = array(
+				'sale_lead' => 'Все действия',
+				'sale'      => 'Продажи',
+				'lead'      => 'Лиды'
+			);
+		} else {
+			$group_actions = array(
+				'sale_lead' => array('cnt', 'repeated', 'lpctr', 'price'),
+				'sale'      => array('cnt', 'repeated', 'lpctr', 'price'),
+				'lead'      => array('cnt', 'repeated', 'lpctr', 'price')
+			);
+			$panels = array();
+		}
+		?>
+		<div class="row" id='report_toolbar'>
+    <div class="col-md-12">
+        <div class="form-group">
+            	<?php
+            		$i = 0;
+            		foreach($group_actions as $group => $actions) {
+            			echo '<div class="btn-group rt_types rt_type_'.$group.'" data-toggle="buttons" style="'.($i > 0 ? 'display: none' : '').'">';
+            			foreach($actions as $action) {
+            				echo '<label class="btn btn-default '.($i == 0 ? 'active' : '').'" onclick="update_stats2(\''.$action.'\', '.($report_cols[$action]['money'] == 1 ? 'true' : 'false' ).');"><input type="radio" name="option_report_type">'.$report_cols[$action]['name'].'</label>';
+            			$i++;
+            			}
+            			
+            			echo '</div>';
+            		}
+            		
+            		if(!empty($panels)) {
+	            		echo '<div class="btn-group" id="rt_sale_section" data-toggle="buttons" >';
+	            		
+	            		$i = 0;
+	            		foreach($panels as $value => $name) {
+	            			echo '<label class="btn btn-default '.($i == 0 ? 'active' : '').'" onclick="show_conv_mode(\''.$value.'\')"><input type="radio" name="option_leads_type">' . $name . '</label>';
+	            			$i++;
+	            		}
+	            		echo '</div>';
+            		}
+            	?>
+            <div class="btn-group pull-right" id="rt_currency_section" data-toggle="buttons" style="display: none">
+                <label class="btn btn-default" onclick='show_currency("rub");'><input type="radio" name="option_currency">руб.</label>
+                <label class="btn btn-default active" onclick='show_currency("usd");'><input type="radio" name="option_currency">$</label>	
+            </div>
+        </div>
+    </div> <!-- ./col-md-12 -->
+</div> <!-- ./row -->
+<script><?php 
+		echo "show_conv_mode('" . $col . "', 0);";  // вкладка "Все действия"
+		echo "update_stats2('cnt', false);";        // кнопка "Переходы"
+		echo "show_currency('" . $currency . "');"; // валюта
+		?>
+	</script>		
+<?php	} else { ?>
 <div class="row" id='report_toolbar'>
     <div class="col-md-12">
         <div class="form-group">
@@ -331,40 +455,16 @@ if($type != 'targetreport' and $type != 'all_stats' and $part != 'all') { ?>
         </div>
     </div> <!-- ./col-md-12 -->
 </div> <!-- ./row -->
-<?php } elseif($part == 'all') { 
-				
-	$currency = rq('currency', 0, 'usd');
-	$col      = rq('col', 0, 'all_actions');
-	
-	if($params['conv'] == 'lead') {
-		$col == 'leads';
-	};
-		
-	$option_leads_type = array(
-		'sale_lead' => 'Все действия',
-		'sale' => 'Продажи',
-		'lead' => 'Лиды'
-	);
-	
-	$option_currency = array(
-		'currency_rub' => 'руб.',
-		'currency_usd' => '$',
-	);
-	
-	// Проверяем на соответствие существующим типам
-	
-	if(empty($option_leads_type[$col])) 
-		$col = 'sale_lead';
-	
-	if(empty($option_currency['currency_' . $currency])) 
-		$currency = 'usd';
+<?php } } elseif($part == 'all') { 
 ?>
 <div id="report_toolbar" class="row">
 	<div class="col-md-12">
 		<div class="form-group">
-	  		<div id="rt_sale_section" class="btn-group" <?php if($mode != 'popular') { ?>data-toggle="buttons"<?php } ?>>
+	  		<div id="rt_sale_section" class="btn-group" <?php if($params['mode'] != 'popular' and 0) { ?>data-toggle="buttons"<?php } ?>>
 	  			<?php
-					if($mode == 'popular') {
+	  				// Изначально этот фильтр позволял переключать колонки без перезагрузки страницы, потому что они они все уже были на странице.
+	  				// Но с появлением режима "Популярные" появляется необходимость перезагружать страницу, а с появлением фильтров конверсии (Все, Только продажи, и.т.д.) эта необходимость переходит на все отчёты
+					if($params['mode'] == 'popular' or 1) {
 						foreach($option_leads_type as $k => $v) {
 							$new_params = array('col' => $k);
 							if(in_array($params['conv'], array('sale', 'lead', 'sale_lead'))) {
@@ -394,16 +494,23 @@ if($type != 'targetreport' and $type != 'all_stats' and $part != 'all') { ?>
 	  				}
 				?>
 			</div>
-			<script><?php 
-				echo "update_cols('" . $col . "', ".($mode == 'popular' ? '0' : '1').");";
-				echo "update_cols('currency_" . $currency . "', 1);";
-				?>
-			</script>
+			
+			
 		</div>
 	</div>
 </div>
 <?php }
-} ?>
+} // !empty($data) 
+*/
+
+
+if($part == 'all') { ?>
+	<script><?php 
+		echo "update_cols('" . $col . "', 0);";
+		echo "update_cols('currency_" . $currency . "', 1);";
+		?>
+	</script>
+<?php } ?>
 <input type='hidden' id='usd_selected' value='1'>
-<input type='hidden' id='type_selected' value='clicks'>
+<input type='hidden' id='type_selected' value='cnt'>
 <input type='hidden' id='sales_selected' value='1'>

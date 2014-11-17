@@ -2,6 +2,19 @@
 if (!$include_flag){exit();}
 // Таблица отчёта
 
+$paginate = 'false'; // Постраничность в таблица. Это текстовое, а не булево значение!
+
+if(isset($var['filter'][1]['out_id'])) {
+	$out_ids = array_keys($var['arr_report_data']);
+	if(isset($var['arr_report_data'][$out_ids[0]]['sub']) and count($var['arr_report_data'][$out_ids[0]]['sub']) > 50) {
+		$paginate = 'true';
+	}
+}
+
+//$
+
+//dmp($var['arr_report_data'] );;
+
 global $group_types;
 global $column_total_data;
 global $table_n;
@@ -161,8 +174,8 @@ $(document).ready(function() {
             { "asSorting": [ "desc", "asc" ], "sType": "click-data" }, // СPL
             { "asSorting": [ "desc", "asc" ], "sType": "click-data" }  // СPA
         ],
-		"bPaginate": false,
-	    "bLengthChange": false,
+		"bPaginate": <?php echo $paginate;?>,
+	    "bLengthChange": <?php echo $paginate;?>,
 	    "bFilter": false,
 	    "bSort": true,
 	    "bInfo": false,
