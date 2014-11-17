@@ -252,6 +252,8 @@
 					
 				if(array_key_exists($param_name, $click_get_params)) {
 					$param_value = $click_get_params[$param_name];
+					if($param_info['url'] == $param_value) $param_value = ''; // Пришло site_id={site_id}, то есть значение пустое
+						
 					$sql_click_params[]="click_param_name{$i}='"._str($param_name)."', click_param_value{$i}='"._str($param_value)."'";
 					
 					// Adwords передает в одном параметре и то что это спецразмещение и то, что это реклама в сайдбаре и сразу же позицию объявления. Поэтому мы разбиваем это значение на два параметра, Размещение (если t - Спецразмещение, если s - Реклама справа, если o или что-то другое - Не определено) и Позиция (где выводим значения как есть, то есть 1t1, 1s2 и т.д.) 
