@@ -38,7 +38,7 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 	echo "</thead>";
 	echo "<tbody>";
 	
-	$table_total_data  = array(); // суммирование 
+	$table_total_data  = array(); // суммирование всего
 	$column_total_data = array(); // суммирование колонок
 	$arr_sparkline     = array();
 	$i = 0;
@@ -109,6 +109,7 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 			$arr2 = array('cnt', 'cost', 'earnings');
 			foreach($arr1 as $k1) {
 				foreach($arr2 as $k2) {
+					$table_total_data[$k1][$k2] += $data[$cur_date][$k1][$k2];
 					$row_total_data[$k1][$k2] += $data[$cur_date][$k1][$k2];
 					$column_total_data[$cur_date][$k1][$k2] += $data[$cur_date][$k1][$k2];
 				}

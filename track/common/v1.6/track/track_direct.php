@@ -1,86 +1,12 @@
 <?php
+	// Скрипт, формирующий запись о переходе на основе уже осуществлённого на лэндинг перехода
+	
+	
+	// Этот скрипт можно вызывать аяксом с любого адреса
+	header('Access-Control-Allow-Origin: *');
+	
 	ob_start();
 	
-	/*
-	 * Проверка правила IP
-	 * Примеры верных диапазонов: 8.8.8.9 - 8.8.10.255, 212.11.92.*, 212.11.*.*, 212.10.*.100 
-	 */
-	 
-	function check_ip($mask, $ip) {
-		// Убираем пробелы рядом с дефисом
-		$mask = str_replace(' -', '-', $mask);
-		$mask = str_replace('- ', '-', $mask);
-		
-		// Заменяем все разделители запятыми
-		$mask = str_replace(';', ' ', $mask);
-		$mask = str_replace(',', ' ', $mask);
-		$mask = preg_replace("/\s+/", ' ', $mask);
-		
-		$mask = explode(' ', $mask);
-		foreach($mask as $current_mask) {
-			// Имеем дело с диапазоном IP
-			if(strstr($current_mask, '-') !== false) {
-				list($ip_start, $ip_end) = explode('-', $current_mask);
-				if(ip_in_range($ip, $ip_start, $ip_end)) {
-					return true;
-				}
-			// Одиночный IP, возможно с * 
-			} else {
-				if(ip_in_range($ip, $current_mask)) {
-					return true;
-				}
-			}
-		}
-		
-		return false;
-	}
-
-	/*
-	 * Преобразуем строковый IP в массив из 4-х элементов
-	 */
-	function ip2arr($ip) {
-		if(empty($ip)) return array();
-		$ip_arr = explode('.', $ip);
-		return count($ip_arr) == 4 ? $ip_arr : array();
-	}
-
-	/*
-	 * Проверка принадлежности IP диапазону
-	 * Либо явно задан диапазон с дефисом, либо звёдочка
-	 */
-	function ip_in_range($ip, $ip_start, $ip_end = '') {
-
-		// Обычный IP
-		if(empty($ip_end) and strstr($ip_start, '*') === false) {
-			return $ip == $ip_start;
-			
-		// Диапазон или маска со звёздочкой
-		} else {
-			$ip_arr = ip2arr($ip);
-			$ip_start_arr = ip2arr($ip_start);
-			
-			// Диапазон
-			if(!empty($ip_end)) {
-				$ip_end_arr = ip2arr($ip_end);
-			
-			// Маска со звёздочкой
-			} else {
-				for ($i=0; $i<4; $i++) {
-					if ($ip_start_arr[$i]=='*') {
-						$ip_start_arr[$i]='0';
-						$ip_end_arr[$i]='255';
-					} else {
-						$ip_end_arr[$i]=$ip_start_arr[$i]; 
-					}
-				}
-			}
-			
-			$ip_num = ip2long($ip);
-			return ($ip_num >= ip2long(join('.', $ip_start_arr)) && $ip_num <= ip2long(join('.', $ip_end_arr)));
-		}
-		return false;
-	}
-
 	$settings_file=_CACHE_PATH.'/settings.php';
  
 	$str=file_get_contents($settings_file);
@@ -294,17 +220,16 @@
 	}
 
 	// Remove trailing slash
-	$track_request=rtrim($_REQUEST['track_request'], '/');
-	$track_request=explode ('/', $track_request);
+	$track_request = rtrim($_REQUEST['track_request'], '/');
+	$track_request = explode ('/', $track_request);
 
-	$str='';
+	$str=''; // Эту строку мы запишем в лог
 
 	// Date
 	$str.=date("Y-m-d H:i:s")."\t";
 
-	switch ($_SERVER_TYPE)
-	{
-		case 'apache': 
+	switch ($_SERVER_TYPE) {
+		case 'apache':
 			$ip=$_SERVER['REMOTE_ADDR'];
 		break;
 
@@ -314,20 +239,16 @@
 	}
 
 	// Check if we have several ip addresses
-	if (strpos($ip, ',')!==false)
-	{
-		$arr_ips=explode (',', $ip);
-		if (trim($arr_ips[0])!='127.0.0.1')
-		{
-			$ip=trim($arr_ips[0]);
-		}
-		else
-		{
-			$ip=trim($arr_ips[1]);
+	if (strpos($ip, ',') !== false) {
+		$arr_ips=explode(',', $ip);
+		if (trim($arr_ips[0]) != '127.0.0.1') {
+			$ip = trim($arr_ips[0]);
+		} else {
+			$ip = trim($arr_ips[1]);
 		}
 	}
 	
-	$str.=remove_tab($ip)."\t";
+	$str .= remove_tab($ip)."\t";
 	
 	// Country and city
 	$geo_data=get_geodata($ip);
@@ -340,31 +261,37 @@
     $user_lang =  substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
                 
 	// User-agent
-	$str.=remove_tab($_SERVER['HTTP_USER_AGENT'])."\t";
+	$str .= remove_tab($_SERVER['HTTP_USER_AGENT'])."\t";
 	
 	// Referer
-	$str.=remove_tab($_SERVER['HTTP_REFERER'])."\t";
+	$str .= remove_tab($_POST['referrer'])."\t";
 	
 	// Link name
-	$link_name=$track_request[0];
-	$str.=$link_name."\t";
+	//$link_name = $track_request[0];
+	$link_name = 'landing';
+	$str .= $link_name."\t";
 
 	// Link source
-	$link_source=$track_request[1];	
-	$str.=$link_source."\t";
+	//$link_source = $track_request[1];	
+	$link_source = 'landing';
+	$str .= $link_source."\t";
 
 	// Link ads name
-	$link_ads_name=$track_request[2];
-	$str.=$link_ads_name."\t";
+	$link_ads_name = $track_request[2];
+	$link_ads_name = 'landing';
+	$str .= $link_ads_name."\t";
 
 	// Subid
-	$subid=date("YmdHis").'x'.sprintf ("%05d",rand(0,99999));
-	$str.=$subid."\t";
+	$subid=date("YmdHis") . 'x' . sprintf ("%05d",rand(0,99999));
+	$str .= $subid."\t";
 
 	// Subaccount
-	$str.=$subid."\t";
+	$str .= $subid."\t";
+	
+	
 	
 	// Apply rules and get out id for current click
+	/*
 	$arr_rules = get_rules ($link_name); 
 	if (count($arr_rules)==0)
 	{
@@ -467,8 +394,16 @@
             }
           }       
 	} 
-
-	$redirect_link=str_ireplace('[SUBID]', $subid, get_out_link ($out_id));
+	*/
+	
+	$out_id  = 0;
+	$rule_id = 0;
+	
+	
+	//$redirect_link = str_ireplace('[SUBID]', $subid, $_POST['redirect_link']);
+	$redirect_link = '';
+	
+	//$redirect_link=str_ireplace('[SUBID]', $subid, get_out_link ($out_id));
 
 	// Add rule id
 	$str.=$rule_id."\t";
@@ -499,7 +434,7 @@
 	// Additional GET params
 	$request_params=$_GET;
 	$get_request=array();
-	foreach ($request_params as $key=>$value)
+	foreach ($request_params as $key => $value)
 	{
 		if ($key=='track_request'){continue;}
         if (strtoupper(substr($key, 0, 3)) == 'IN_') 
@@ -518,10 +453,10 @@
 	$is_unique = add_parent_subid($url['host'], $subid);
 	
 	// Add unique user
-	$str.=$is_unique."\t";
+	$str .= $is_unique."\t";
 	
 	// Possibly last value, don't add \t to the end
-	$str.=$link_params;
+	$str .= $link_params;
 	
 	// Last value, don't add \t
 	$request_string=implode ('&', $get_request);
@@ -535,10 +470,6 @@
 	// Save click information in file	
 	file_put_contents(_CACHE_PATH.'/clicks/'.'.clicks_'.date('Y-m-d-H-i'), $str, FILE_APPEND | LOCK_EX);
 	
-	
-	
-	// Redirect
-	header("Location: ".$redirect_link);
-
+	echo $subid;
 	exit();
 ?>

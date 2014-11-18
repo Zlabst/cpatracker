@@ -26,6 +26,64 @@ function cpatracker_add_lead(profit) {
 	}
 }
 
+<?php if(isset($_GET['direct_click'])) { ?>
+// Simple AJAX
+function SendRequest(r_path, r_args, r_handler) {
+    var Request = CreateRequest();
+    if (!Request) return;
+    
+    Request.onreadystatechange = function() {
+        if (Request.readyState == 4) {
+            r_handler(Request);
+        }
+    }
+    
+    Request.open('POST', r_path, true);
+    Request.setRequestHeader("Content-Type","application/x-www-form-urlencoded; charset=utf-8");
+    Request.send(r_args);
+} 
+
+function CreateRequest() {
+    var Request = false;
+    if (window.XMLHttpRequest) {
+        Request = new XMLHttpRequest();
+    } else if (window.ActiveXObject) {
+        try {
+             Request = new ActiveXObject("Microsoft.XMLHTTP");
+        } catch (CatchException) {
+             Request = new ActiveXObject("Msxml2.XMLHTTP");
+        }
+    }
+    if (!Request) {
+        console.log("Невозможно создать XMLHttpRequest");
+    }
+    return Request;
+} 
+<?php } ?>
+
+function _modufy_links(subid) {
+	var domain_name = domain_name=window.location.hostname;
+	if (domain_name.split('.')[0]=='www') {
+		domain_name = domain_name.substring(4);
+	}
+
+	var exp = new Date();
+	var cookie_time=exp.getTime() + (365*10*24*60*60*1000);
+	document.cookie = "cpa_subid="+subid+";path=/;domain=."+domain_name+";expires="+cookie_time;
+
+	var host = '<?php echo $_SERVER['HTTP_HOST']?>';
+	var node = document.getElementsByTagName("body")[0];
+	var els = node.getElementsByTagName("a");
+
+	for(var i=0,j=els.length; i<j; i++) {
+		href = els[i].href;
+		if(href.indexOf(host) != -1 && href.indexOf('_subid=') == -1) {
+			divider = href.indexOf('?') == -1 ? '?' : '&';
+			els[i].href = els[i].href + divider + '_subid=' + subid;
+		}
+	}
+}
+
 function modufy_links() {
 	var subid = '';
 	var vars = [], hash;
@@ -74,28 +132,32 @@ function modufy_links() {
 		}
 	}
 	
+	<?php if(isset($_GET['direct_click'])) {
+?>// "Direct click" mode
+	
+	if(subid == '') {
+		params = 'redirect_link=' + window.location.href + '&referrer=' + document.referrer;
+		if(vars['utm_source']) {
+			params = params + '&utm_source=' + encodeURIComponent(vars['utm_source']);
+		}
+		if(vars['utm_term']) {
+			params = params + '&utm_term=' + encodeURIComponent(vars['utm_term']);
+		}
+		if(vars['utm_campaign']) {
+			params = params + '&utm_campaign=' + encodeURIComponent(vars['utm_campaign']);
+		}
+		
+		SendRequest('http://<?php echo $_SERVER['HTTP_HOST']?>/track/track_direct.php', params, function(data) {
+			if(data.status = 200 && data.response != '') {
+				_modufy_links(data.response);
+				return;
+			}
+		});
+	}
+	<? } ?>
+	
 	if(subid != '') {
-		
-		var domain_name = domain_name=window.location.hostname;
-		if (domain_name.split('.')[0]=='www') {
-			domain_name = domain_name.substring(4);
-		}
-		
-		var exp = new Date();
-		var cookie_time=exp.getTime() + (365*10*24*60*60*1000);
-		document.cookie = "cpa_subid="+subid+";path=/;domain=."+domain_name+";expires="+cookie_time;
-		
-		var host = '<?php echo $_SERVER['HTTP_HOST']?>';
-		var node = document.getElementsByTagName("body")[0];
-		var els = node.getElementsByTagName("a");
-
-		for(var i=0,j=els.length; i<j; i++) {
-		  href = els[i].href;
-		  if(href.indexOf(host) != -1 && href.indexOf('_subid=') == -1) {
-		    divider = href.indexOf('?') == -1 ? '?' : '&';
-		    els[i].href = els[i].href + divider + '_subid=' + subid;
-		  }
-		}
+		_modufy_links(subid)
 	}
 }
 
