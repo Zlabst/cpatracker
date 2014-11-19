@@ -30,11 +30,11 @@ $currencies = array(
 	'rub' => 30,
 );
 
-
+// Группы источников
 $source_types = array(
 	0 => array(
 		'name' => '',
-		'values' => array('landing', 'yadirect', 'adwords')
+		'values' => array('yadirect', 'adwords') //'landing', 
 	),
 	1 => array(
 		'name' => 'Социальные сети',

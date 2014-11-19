@@ -86,7 +86,7 @@ function _modufy_links(subid) {
 
 function modufy_links() {
 	var subid = '';
-	var vars = [], hash;
+	var vars = [], hash, vars2 = [];
 	var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
 	var parents = <? 
 		if(array_key_exists('cpa_parents', $_COOKIE)) {
@@ -98,6 +98,7 @@ function modufy_links() {
 	?>;
 	
 	for(var i = 0; i < hashes.length; i++) {
+		vars2.push(hashes[i]);
 	    hash = hashes[i].split('=');
 	    vars.push(hash[0]);
 	    vars[hash[0]] = hash[1];
@@ -135,7 +136,10 @@ function modufy_links() {
 	<?php if(isset($_GET['direct_click'])) {
 ?>// "Direct click" mode
 	
-	if(subid == '') {
+	if(subid == '' || 1) {
+		vars2.push('redirect_link=' + window.location.href);
+		vars2.push('referrer=' + document.referrer);
+		/*
 		params = 'redirect_link=' + window.location.href + '&referrer=' + document.referrer;
 		if(vars['utm_source']) {
 			params = params + '&utm_source=' + encodeURIComponent(vars['utm_source']);
@@ -146,8 +150,19 @@ function modufy_links() {
 		if(vars['utm_campaign']) {
 			params = params + '&utm_campaign=' + encodeURIComponent(vars['utm_campaign']);
 		}
-		
-		SendRequest('http://<?php echo $_SERVER['HTTP_HOST']?>/track/track_direct.php', params, function(data) {
+		*/
+		tmp = [];
+		i = 0;
+		console.log(vars);
+		for(var key in vars) {
+			tmp[i] = key + '=' + vars[key];
+			i++;
+        }
+        console.log(tmp);
+        
+		params = vars2.join('&');
+		console.log(params);
+		SendRequest('http://<?php echo $_SERVER['HTTP_HOST']?>/track/track_direct.php?' + params, '', function(data) {
 			if(data.status = 200 && data.response != '') {
 				_modufy_links(data.response);
 				return;

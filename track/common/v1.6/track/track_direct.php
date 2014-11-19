@@ -8,6 +8,7 @@
 	ob_start();
 	
 	$settings_file=_CACHE_PATH.'/settings.php';
+	include _TRACK_SHOW_PATH . "/functions_general.php";
  
 	$str=file_get_contents($settings_file);
 	$str=str_replace('<?php exit(); ?>', '', $str);
@@ -273,7 +274,7 @@
 
 	// Link source
 	//$link_source = $track_request[1];	
-	$link_source = 'landing';
+	$link_source = (empty($_GET['utm_source']) or empty($source_config[$_GET['utm_source']])) ? 'landing' : $_GET['utm_source'];
 	$str .= $link_source."\t";
 
 	// Link ads name

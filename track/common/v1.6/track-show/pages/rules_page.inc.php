@@ -6,7 +6,7 @@
 <script src="<?php echo _HTML_LIB_PATH;?>/clipboard/ZeroClipboard.min.js"></script>
 <style>
 	.rule-link-text {
-		width: 345px;
+		width: 550px; /* 345px; */
 		border: none;
 		margin-top: 10px;
 	}
@@ -306,11 +306,15 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                 $(this).select2("val", $(this).attr('data-selected-value'));
             });
             
+            $('label.checkbox.direct').each(function() {
+            	$(this).on('change', function(e) {change_source(e, false)});
+            });
+            
             $('input.select-sources').each(function()
             {
                 $(this).select2({data: {results: dictionary_sources}, width: 'copy', containerCssClass: 'form-control select2'});
                 $(this).select2("val", $(this).attr('data-selected-value'));
-                $(this).on("select2-selecting", function(e) {change_source(e)});
+                $(this).on("select2-selecting", function(e) {change_source(e, true)});
             });
             
             var dictionary_countries = [];
@@ -346,23 +350,31 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
         });
     });
 	
-	function change_source(obj) {
-		
-		//val = obj.val;
-		
-		var table = $(obj.target).parent().parent().parent().parent().parent();
-		var id = table.find('.btnsave').attr('id');
+	function change_source(obj, select2) {
+		if(select2) {
+			var source = obj.val;
+			obj = obj.target;
+			var table = $(obj).parent().parent().parent().parent().parent();
+			var id = table.find('.btnsave').attr('id');
+		} else {
+			obj = obj.target;
+			var table = $(obj).parent().parent().parent().parent().parent();
+			var id = table.find('.btnsave').attr('id');
+			var source = $('#rule-link-select2-' + id).val();
+		}
+		var direct = $('#rule-link-direct-' + id).prop("checked") ? 1 : 0;
 		table.find('.rule-link').each(function() {
 			lnk = $(this).val();
 			parts = lnk.split('/');
-//			parts[5] = val;
 		});
 		
 		$.ajax({
             type: "POST",
             url: "index.php",
-            data: 'ajax_act=get_source_link&source=' + obj.val + '&name=' + parts[4] + '&id=' + id
+            data: 'ajax_act=get_source_link&source=' + source + '&name=' + parts[4] + '&id=' + id + '&direct=' + direct
         }).done(function(msg) {
+        	console.log(msg);
+        	console.log(table);
         	table.find('.rule-link-text').val(msg);
 	    });
 	}
@@ -831,9 +843,22 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                 </td></tr>
                 <tr>
                 	<td>
-                		<div style='width:200px; margin: 5px 5px 5px 0;' class="pull-left"><input type=hidden name='source_id[]' class='select-sources toSave' data-selected-value='source'><br /></div>
+                		<div style='width:200px; margin: 5px 5px 5px 0;' class="pull-left"><input type=hidden name='source_id[]' class='select-sources toSave' data-selected-value='source' id="rule-link-select2-{{id}}">
+                		
+                	</div>
+            		<label class="checkbox pull-left direct" >
+						<input type="checkbox" id="rule-link-direct-{{id}}"> Без редиректа
+					</label>
+					
+                    <button type='button' id='copy-button-text-{{id}}' class='btn-rule-copy for_text' role="button" data-clipboard-target='rule-link-text-{{id}}'><i class="fa fa-copy" title="Скопировать ссылку в буфер"></i></button>
+                    <button type='button' class='btn-rule-copy for_text' onclick="$('#rule-link-row-{{id}}').toggle()" style="margin-right: 5px;"><i class="fa fa-link"></i></button>
+                    </td>
+                </tr>
+               	<tr id="rule-link-row-{{id}}" style="display: none">
+                    <td>
+                    	<button type='button' class='btn-rule-copy for_text' onclick="window.open('http://anonym.to/' + $('#rule-link-text-{{id}}').val());"><i class="fa fa-external-link"></i></button>
                     	<input type="text" class="rule-link-text" id="rule-link-text-{{id}}" value="{{url}}" />
-                    	<button type='button' id='copy-button-text-{{id}}' class='btn-rule-copy for_text' role="button" data-clipboard-target='rule-link-text-{{id}}'><i class="fa fa-copy" title="Скопировать ссылку в буфер"></i></button>
+                    	
                     </td>
                 </tr>
             </tbody>
