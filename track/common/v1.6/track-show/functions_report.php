@@ -247,15 +247,18 @@
 					$pop_sort_order = -1;
 				}
 			} else {
+				/*
 				if($params['conv'] == 'sale') {
 					$params['where'] = '`is_sale` = 1';
 				} elseif($params['conv'] == 'lead') {
-					$params['where'] = '`is_lead` = 1';
+					//$params['where'] = '`is_lead` = 1';
 				} elseif($params['conv'] == 'sale_lead') {
-					$params['where'] = '(`is_sale` = 1 or `is_lead` = 1)';
+					//$params['where'] = '(`is_sale` = 1 or `is_lead` = 1)';
 				} elseif($params['conv'] == 'none') {
-					$params['where'] = '`is_sale` = 0 and `is_lead` = 0';
+					//$params['where'] = ''; 
+					//$params['where'] = '`is_sale` = 0 and `is_lead` = 0';
 				}
+				*/
 			}
 		}
 		
@@ -567,6 +570,12 @@
 							$k1 = $r['name'] = $url['host'];
 						}
 						
+						
+						$data[$k1]['sale'] += $r['is_sale'];
+						$data[$k1]['lead'] += $r['is_lead'];
+						$data[$k1]['sale_lead'] += $r['is_sale'];
+						$data[$k1]['sale_lead'] += $r['is_lead'];
+						
 						$data[$k1][$k2][$k3]['cnt'] += 1;
 						$data[$k1][$k2][$k3]['cost'] += $r['clicks_price'];
 						$data[$k1][$k2][$k3]['earnings'] += $r['conversions_sum'];
@@ -575,9 +584,6 @@
 				}
 			} // Стандартный режим
 		} // Цикличный сбор данных из БД
-		
-		
-		//dmp($data);
 		
 		// ----------------------------------------
 		// Постобработка, когда ВСЕ данные получены
@@ -640,6 +646,26 @@
 				}
 				unset($data2);
 				$data = $data3;
+			}
+		} else {
+	
+			// Убираем строчки с конверсиями
+			if($params['conv'] == 'none') {
+				foreach($data as $k => $v) {
+					if($v['sale_lead'] > 0) unset($data[$k]);
+				}
+			} elseif($params['conv'] == 'sale_lead') {
+				foreach($data as $k => $v) {
+					if($v['sale_lead'] == 0) unset($data[$k]);
+				}
+			} elseif($params['conv'] == 'sale') {
+				foreach($data as $k => $v) {
+					if($v['sale'] == 0) unset($data[$k]);
+				}
+			} elseif($params['conv'] == 'lead') {
+				foreach($data as $k => $v) {
+					if($v['lead'] == 0) unset($data[$k]);
+				}
 			}
 		}
 		//}
