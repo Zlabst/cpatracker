@@ -1929,7 +1929,13 @@
 			}
 			
 			if(!empty($parent)) {
-				$tmp[] = intval($func($parent, false)); // значение лэндинга
+				//dmp($parent);
+				if($col_name == 'cnt' and $data['part'] != 'all') {
+					// В дневном режиме особый режим переноса родительских переходов
+					$tmp[] = intval($func($parent, false) + ($parent['sale_lead'] * 10000000) ); // значение лэндинга
+				} else {
+					$tmp[] = intval($func($parent, false)); // значение лэндинга
+				}
 				$tmp[] = $data['r']['ln']; // номер лэндинга
 				$tmp[] = 1; // это оффер
 				$tmp[] = $val0;
