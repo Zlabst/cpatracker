@@ -171,7 +171,6 @@
 			}
 		}
 		
-		//dmp($rows);
 		return array($total, $rows, $campaign_params, $click_params);
 	}
 	
@@ -738,7 +737,8 @@
 		return array(
 			'data' => $data, 
 			'dates' => $arr_dates, 
-			'click_params' => $click_params
+			'click_params' => $click_params,
+			'campaign_params' => $campaign_params
 		);
 	} 
 	

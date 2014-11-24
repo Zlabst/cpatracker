@@ -1,6 +1,8 @@
 <?php
 	// Скрипт, формирующий запись о переходе на основе уже осуществлённого на лэндинг перехода
 	
+	$cookie_time = $_SERVER['REQUEST_TIME'] + (60 * 60 * 24 * 31);
+	setcookie("cpa_parents_test", '123', $cookie_time, "/", $_SERVER['HTTP_HOST']);
 	
 	// Этот скрипт можно вызывать аяксом с любого адреса
 	header('Access-Control-Allow-Origin: *');
@@ -39,7 +41,7 @@
 			$parents[$domain] = $subid;
 			
 			// Parent click
-			$cookie_time = $_SERVER['REQUEST_TIME'] + 60;
+			$cookie_time = $_SERVER['REQUEST_TIME'] + 3600;
 			
 			// Unique user
 			$cookie_name = 'cpa_was_here_' . str_replace('.', '_', $domain);
@@ -48,8 +50,10 @@
 				setcookie($cookie_name, 1, $cookie_time, "/", $_SERVER['HTTP_HOST']);
 				$unique = 1;
 			}
-			
+
 			setcookie("cpa_parents", json_encode($parents), $cookie_time, "/", $_SERVER['HTTP_HOST']);
+			//dmp($parents);
+			//dmp($_SERVER['HTTP_HOST']);
 			return $unique;
 		}
 	}
@@ -264,22 +268,24 @@
 	// User-agent
 	$str .= remove_tab($_SERVER['HTTP_USER_AGENT'])."\t";
 	
-	// Referer
-	$str .= remove_tab($_POST['referrer'])."\t";
+	// 3 Referer
+	$str .= remove_tab($_GET['referrer'])."\t";
 	
-	// Link name
+	// 4 Link name
 	//$link_name = $track_request[0];
 	$link_name = 'landing';
 	$str .= $link_name."\t";
 
-	// Link source
+	// 5 Link source
 	//$link_source = $track_request[1];	
 	$link_source = (empty($_GET['utm_source']) or empty($source_config[$_GET['utm_source']])) ? 'landing' : $_GET['utm_source'];
 	$str .= $link_source."\t";
 
-	// Link ads name
-	$link_ads_name = $track_request[2];
-	$link_ads_name = 'landing';
+	// 6 Link ads name
+	//
+	
+	$link_ads_name = empty($_GET['utm_campaign']) ? 'landing' : $_GET['utm_campaign'];
+	//$link_ads_name = 'landing';
 	$str .= $link_ads_name."\t";
 
 	// Subid
@@ -401,8 +407,8 @@
 	$rule_id = 0;
 	
 	
-	//$redirect_link = str_ireplace('[SUBID]', $subid, $_POST['redirect_link']);
-	$redirect_link = '';
+	$redirect_link = str_ireplace('[SUBID]', $subid, $_GET['redirect_link']);
+	//$redirect_link = '';
 	
 	//$redirect_link=str_ireplace('[SUBID]', $subid, get_out_link ($out_id));
 
@@ -445,13 +451,13 @@
         }
 		$get_request[]="{$key}={$value}";
 	}
+    
+    // Write cookie with parent SubID
+	$url = parse_url($redirect_link);
+	$is_unique = add_parent_subid($url['host'], $subid);
         
     // Cleaning not used []-params
     $redirect_link = preg_replace('/(\[[a-z\_0-9]+\])/i', '', $redirect_link);
-	
-	// Write cookie with parent SubID
-	$url = parse_url($redirect_link);
-	$is_unique = add_parent_subid($url['host'], $subid);
 	
 	// Add unique user
 	$str .= $is_unique."\t";

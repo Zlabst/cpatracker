@@ -6,7 +6,7 @@
 		
 		$i = 1;
 		echo '<div><ol class="breadcrumb">
-			<li><a href="' . report_lnk($params, array('filter' => array())) . '">Все данные</a></li>';
+			<li><a href="' . report_lnk($params, array('filter' => array(), 'group_by' => 'out_id', 'subgroup_by' => 'out_id', 'conv' => 'all')) . '">Все данные</a></li>';
 
 		// Для ссылок преобразуем ID в название	
 		foreach($params['filter_str'] as $k => $v) {

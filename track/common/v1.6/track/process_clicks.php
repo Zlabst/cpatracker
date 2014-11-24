@@ -204,14 +204,11 @@
 		$click_link_source=$arr_click_info[5];
 		
 		// Allow to use - as campaign/ads delimiter
-		$link_ads_name=$arr_click_info[6];
-		if (strpos($link_ads_name, '-')!==false)
-		{
+		$link_ads_name = $arr_click_info[6];
+		if (strpos($link_ads_name, '-')!==false) {
 			$click_link_campaign=current(explode('-', $link_ads_name));
 			$click_link_ads=substr($link_ads_name, strpos($link_ads_name, '-')+1);			
-		}
-		else
-		{
+		} else {
 			$click_link_campaign=$link_ads_name;
 			$click_link_ads='';
 		}

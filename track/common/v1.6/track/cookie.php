@@ -38,7 +38,7 @@ function SendRequest(r_path, r_args, r_handler) {
         }
     }
     
-    Request.open('POST', r_path, true);
+    Request.open('GET', r_path, true);
     Request.setRequestHeader("Content-Type","application/x-www-form-urlencoded; charset=utf-8");
     Request.send(r_args);
 } 
@@ -97,7 +97,9 @@ function modufy_links() {
 		echo json_encode($parents);
 	?>;
 	
-	for(var i = 0; i < hashes.length; i++) {
+	//console.log(parents);
+	
+	for(var i = 1; i < hashes.length; i++) {
 		vars2.push(hashes[i]);
 	    hash = hashes[i].split('=');
 	    vars.push(hash[0]);
@@ -111,7 +113,7 @@ function modufy_links() {
 	// try get SubID from tracker cookie
 	} else if(parents[window.location.host]) {
 		subid = parents[window.location.host];
-	
+		
 	// try get SubID from our cookie
 	} else {
 		
@@ -136,32 +138,15 @@ function modufy_links() {
 	<?php if(isset($_GET['direct_click'])) {
 ?>// "Direct click" mode
 	
-	if(subid == '' || 1) {
+	console.log(subid);
+	
+	if(subid == '') {
 		vars2.push('redirect_link=' + window.location.href);
 		vars2.push('referrer=' + document.referrer);
-		/*
-		params = 'redirect_link=' + window.location.href + '&referrer=' + document.referrer;
-		if(vars['utm_source']) {
-			params = params + '&utm_source=' + encodeURIComponent(vars['utm_source']);
-		}
-		if(vars['utm_term']) {
-			params = params + '&utm_term=' + encodeURIComponent(vars['utm_term']);
-		}
-		if(vars['utm_campaign']) {
-			params = params + '&utm_campaign=' + encodeURIComponent(vars['utm_campaign']);
-		}
-		*/
-		tmp = [];
-		i = 0;
-		console.log(vars);
-		for(var key in vars) {
-			tmp[i] = key + '=' + vars[key];
-			i++;
-        }
-        console.log(tmp);
-        
+		
+		
+		
 		params = vars2.join('&');
-		console.log(params);
 		SendRequest('http://<?php echo $_SERVER['HTTP_HOST']?>/track/track_direct.php?' + params, '', function(data) {
 			if(data.status = 200 && data.response != '') {
 				_modufy_links(data.response);
