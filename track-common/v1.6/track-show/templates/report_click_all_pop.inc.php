@@ -164,7 +164,7 @@ $(document).ready(function() {
             { "asSorting": [ "desc", "asc" ], "sType": "click-data" }, // Конверсия в лиды 
             { "asSorting": [ "desc", "asc" ], "sType": "click-data" }, // Конверсия в действия 
             { "asSorting": [ "desc", "asc" ], "sType": "click-data" }, // Затраты
-            <? } ?>
+            <?php } ?>
             { "asSorting": [ "desc", "asc" ], "sType": "click-data" } // Прибыль
             <?php if($var['report_params']['conv'] != 'none') { ?>
             ,{ "asSorting": [ "desc", "asc" ], "sType": "click-data" }, // EPC	

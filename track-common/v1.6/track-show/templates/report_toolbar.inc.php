@@ -1,8 +1,6 @@
 <?php
 global $option_leads_type, $col, $params, $option_currency, $currency, $report, $group_actions, $panels, $assign, $report_cols;
-	
-	
-	
+
 // Есть данные
 if(!empty($report['data']) or $params['conv'] != 'all') {
 	if($params['type'] != 'all_stats' and $params['part'] != 'all') {
@@ -136,7 +134,7 @@ if(!empty($report['data']) or $params['conv'] != 'all') {
 	  				}
 	  			?>
 			</div>
-			<? } ?>
+			<?php } ?>
 			<div id="rt_currency_section" class="btn-group pull-right margin5rb" data-toggle="buttons">
 				<?php
 					// Переключение валют
@@ -151,6 +149,6 @@ if(!empty($report['data']) or $params['conv'] != 'all') {
 		</div>
 	</div>
 </div>
-<?	}
+<?php	}
 } // !empty($data)
 ?>	

@@ -12,11 +12,7 @@
 	$str = file_get_contents($settings_file);
 	$str = str_replace('<?php exit(); ?>', '', $str);
 	$arr_settings = unserialize($str);
-
-	$_DB_LOGIN    = $arr_settings['login'];
-	$_DB_PASSWORD = $arr_settings['password'];
-	$_DB_NAME     = $arr_settings['dbname'];
-	$_DB_HOST     = $arr_settings['dbserver'];
+	
 	$_SERVER_TYPE = $arr_settings['server_type'];
 	if ($_SERVER_TYPE==''){exit();}
 

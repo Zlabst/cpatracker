@@ -250,7 +250,7 @@ $(document).ready(function() {
 				</tr>
 			</thead>
 			<tbody>
-				<?
+				<?php
 					foreach($data as $r) {
 						if(!$limited_to and !$r['out']) continue;
 						

@@ -88,7 +88,7 @@ function modufy_links() {
 	var subid = '';
 	var vars = [], hash, vars2 = [];
 	var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-	var parents = <? 
+	var parents = <?php 
 		if(array_key_exists('cpa_parents', $_COOKIE)) {
 			$parents = json_decode($_COOKIE['cpa_parents'], true);
 		} else {
@@ -154,7 +154,7 @@ function modufy_links() {
 			}
 		});
 	}
-	<? } ?>
+	<?php } ?>
 	
 	if(subid != '') {
 		_modufy_links(subid)

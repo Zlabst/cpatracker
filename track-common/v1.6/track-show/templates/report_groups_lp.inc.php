@@ -114,7 +114,7 @@ function glink($v, $li = false, $name = '') {
 			</button>
 			<ul class="dropdown-menu">
 			
-			<?
+			<?php
 			echo $campaign_params_html;
 			
 			// Разделитель, если присутствуют оба раздела

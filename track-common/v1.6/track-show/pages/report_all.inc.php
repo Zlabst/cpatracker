@@ -249,7 +249,7 @@ $(document).ready(function() {
 				<tr><th><?php echo $group_types[$group_by][0]; ?></th><th>Переходы</th><th>Повторные</th><th class="col_s">Продажи</th><th class="col_s">Конверсия</th><th>Затраты</th><th class="col_s">Прибыль</th><th class="col_s">EPC</th><th class="col_s">ROI</th><th class="col_l">Лиды</th><th class="col_l">Конверсия</th><th class="col_l">CPL</th></tr>
 			</thead>
 			<tbody>
-				<?
+				<?php
 					function currencies_span($v) {
 						$rub_rate = 30;
 						$style = '';
