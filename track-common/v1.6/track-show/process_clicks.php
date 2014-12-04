@@ -22,21 +22,61 @@
 	$_DB_HOST=$arr_settings['dbserver'];
 
 	// Connect to DB
+	
 	mysql_connect($_DB_HOST, $_DB_LOGIN, $_DB_PASSWORD) or die("Could not connect: " .mysql_error());
 	mysql_select_db($_DB_NAME);
 	mysql_query('SET NAMES utf8');
 	
 	include _TRACK_SHOW_PATH . "/functions_general.php";
+	
+	// Collector
+	
+	function api_get_files($url) {
+		foreach(array('clicks', 'postback') as $type) {
+			$url_params = $url['path'] . '/api.php?act=data_get&type=' . $type. '&key=' . $url['key'];
+			$files = json_decode(file_get_contents($url_params), true);
+			
+			foreach($files['data'] as $f => $data) {
+				$path = _CACHE_PATH . '/' . $type . '/' . $f;
+				
+				if(!file_exists($path)) {
+					$fp = fopen($path, 'w');
+					if($fp && fwrite($fp, $data) && fclose($fp)) {
+						$url_params = $url['path'] . '/api.php?act=data_get_confirm&type=' . $type. '&key=' . $url['key'];
+						file_get_contents($url_params);
+					}
+				}
+			}
+		}
+	}
 
+	foreach($tracklist as $n => $track) {
+		if($n == 0) continue; // не трогаем первый трекер, это мастер
+		
+		// Remote tracker
+		if(substr($track['path'], 0, 5) == 'http:') {
+			
+			$files = api_get_files($track);
+			
+		// Local tracker
+		} else {
+			foreach(array('clicks', 'postback') as $type) {
+				$files = dir_files($track['path'] . '/cache/' . $type, $type);
+				foreach($files as $f) {
+					rename($track['path'] . '/cache/' . $type . '/' . $f, _CACHE_PATH . '/' . $type . '/' . $f . '_' . $n);
+				}
+			}
+		}
+	}
+	
+	// Process clicks
+	
 	$arr_files=array();
 	$process_at_once=60;
 	$iCnt=0;
-	if ($handle = opendir(_CACHE_PATH.'/clicks/')) 
-	{
-	    while (false !== ($entry = readdir($handle))) 
-	    {
-	        if ($entry != "." && $entry != ".." && $entry != ".empty") 
-	        {
+	if ($handle = opendir(_CACHE_PATH . '/clicks/')) {
+	    while (false !== ($entry = readdir($handle))) {
+	        if ($entry != "." && $entry != ".." && $entry != ".empty") {
 		        if (
 				        // Check if file starts with dot,  
 			        	(strpos($entry, '.')===0) && 

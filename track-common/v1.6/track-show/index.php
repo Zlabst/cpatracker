@@ -205,10 +205,18 @@
 					if(empty($param_value['url']) or strstr($lnk, $param_value['url']) !== false) continue;
 					$tmp[] = $param_name . '=' . $param_value['url'];
 				}
+				
+				
+				
 				if(count($tmp) > 0) {
 					$lnk .= (strstr($lnk, '?') === false ? '?' : '&') . join('&', $tmp);
 				}
 			}
+			
+			if($direct and strstr($lnk, 'utm_campaign') === false) {
+				$lnk .= '&utm_campaign=campaign-ads';
+			}
+			
 		} elseif(!$direct) {
 			$lnk .= 'source/campaign-ads';
 		}

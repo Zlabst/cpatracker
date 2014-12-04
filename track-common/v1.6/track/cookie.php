@@ -62,10 +62,7 @@ function CreateRequest() {
 <?php } ?>
 
 function _modufy_links(subid) {
-	var domain_name = domain_name=window.location.hostname;
-	if (domain_name.split('.')[0]=='www') {
-		domain_name = domain_name.substring(4);
-	}
+	var domain_name = window.location.hostname.split('.').slice(2).join('.');
 
 	var exp = new Date();
 	var cookie_time=exp.getTime() + (365*10*24*60*60*1000);

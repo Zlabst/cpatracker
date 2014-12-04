@@ -17,7 +17,7 @@ function api_error($error = '') {
 	return $out;
 }
 
-if($track_key != _TRACK_KEY) {
+if($track_key != _SELF_TRACK_KEY) {
 	api_error('Invalid track key');
 }
 
@@ -73,9 +73,7 @@ if($act == 'data_get') {
 	
 	foreach($rules_cache as $rule_name => $str_rules) {
 		$path = $rules_path . '/.' . $rule_name;
-		$fp = fopen($path, 'w');
-		fwrite($fp, $str_rules);
-		fclose($fp);
+		file_put_contents($path, $str_rules, LOCK_EX);
 		chmod ($path, 0777);
 	}
 	
@@ -101,9 +99,7 @@ if($act == 'data_get') {
 	
 	foreach($links_cache as $id => $link) {
 		$path = $outs_path . '/.' . $id;
-		$fp = fopen($path, 'w');
-		fwrite($fp, $link);
-		fclose($fp);
+		file_put_contents($path, $link, LOCK_EX);
 		chmod ($path, 0777);
 	}
 	

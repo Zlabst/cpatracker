@@ -2401,9 +2401,7 @@ function send2trackers($name, $data) {
 					// Записываем новые хеши
 					foreach($rules_cache as $rule_name => $str_rules) {
 						$path = $rules_path . '/.' . $rule_name;
-						if($fp = fopen($path, 'w')) {
-							fwrite($fp, $str_rules);
-							fclose($fp);
+						if(file_put_contents($path, $str_rules, LOCK_EX)) {
 							chmod ($path, 0777);
 						} else {
 							$error[] = 'Can\'t create file ' . $path;
@@ -2445,9 +2443,7 @@ function send2trackers($name, $data) {
 					
 					foreach($data as $id => $link) {
 						$path = $outs_path . '/.' . $id;
-						if($fp = fopen($path, 'w')) {
-							fwrite($fp, $link);
-							fclose($fp);
+						if(file_put_contents($path, $link, LOCK_EX)) {
 							chmod ($path, 0777);
 						} else {
 							$error[] = 'Can\'t create file ' . $path;

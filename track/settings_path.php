@@ -21,5 +21,5 @@
 	define('_HTML_ROOT_PATH',      rtrim(str_replace (end(explode('/', $_SERVER['PHP_SELF'])), '', $url), '/'));
 	define('_HTML_TRACK_PATH',     strrev(preg_replace(strrev('/track-show/'), strrev('track'), strrev(_HTML_ROOT_PATH), 1)));
 	
-	define('_TRACK_KEY',           'key123');
+	define('_SELF_TRACK_KEY',      'key123');
 ?>
