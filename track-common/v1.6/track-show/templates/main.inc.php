@@ -25,6 +25,7 @@
                     ?>
                     <div class="<?php echo $main_container_class?>">
                         <?php
+                        	echo load_plugin('payreminder');
                             if (in_array($page_content, $page_content_allowed))
                             {
                                 include (_TRACK_SHOW_PATH.'/pages/'.$page_content);
