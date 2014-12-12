@@ -25,10 +25,10 @@
 </style>
 <script>
     var last_removed = 0;
+	window.path_level = <?php echo count(explode('/', tracklink())); ?>;
     $(document).ready(function()
     {
         $('input[name=rule_name]').focus();
-
         $.ajax({
             type: "POST",
             url: "index.php",
@@ -375,10 +375,8 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
 		$.ajax({
             type: "POST",
             url: "index.php",
-            data: 'ajax_act=get_source_link&source=' + source + '&name=' + parts[4] + '&id=' + id + '&direct=' + direct
+            data: 'ajax_act=get_source_link&source=' + source + '&name=' + parts[path_level] + '&id=' + id + '&direct=' + direct
         }).done(function(msg) {
-        	console.log(msg);
-        	console.log(table);
         	table.find('.rule-link-text').val(msg);
 	    });
 	}

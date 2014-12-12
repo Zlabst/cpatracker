@@ -188,7 +188,7 @@
 		if($source == 'landing' or $direct) {
 			$lnk = get_first_rule_link($rule_id);
 		} else {
-			$lnk = tracklink() . $name . '/';
+			$lnk = tracklink() . '/' . $name . '/';
 		}
 		
 		if(array_key_exists($source, $source_config)) {
