@@ -22,7 +22,6 @@ function cpatracker_add_lead(profit) {
 	if(setStr) {
 		var img= document.createElement('img');
 	    img.src = '<?php echo _HTML_TRACK_PATH; ?>/p.php?n=custom&ak=' + api_key + '&subid=' + encodeURIComponent(setStr) + '&profit=' + profit;
-	    /* http://dev1.cpatracker.yyzz.ru/track */
 	}
 }
 

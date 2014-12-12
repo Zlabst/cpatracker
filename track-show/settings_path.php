@@ -1,8 +1,6 @@
 <?php
 	define('_TRACK_VER',           'v1.6');
 
-	//define('_TRACK_SETTINGS_PATH', _TRACK_PATH . '/../track-common'); 
-	
 	define('_TRACK_STATIC_PATH',   dirname (__FILE__) . '/../track-common/static');
 	define('_TRACK_SETTINGS_PATH', dirname (__FILE__) . '/../track/cache');
 	
@@ -27,11 +25,11 @@
 	
 	define('_TRACK_MASTER_PATH',   dirname (__FILE__) . '/../track');
 	
-	// Slave trackers
+	// Âñïîìîãàòåëüíûå òğåêåğû
 	$tracklist = array(
 		/*
 		array(
-			'path' =>  dirname (__FILE__) . '/../track_slave', // can be 'http://host.com/track_slave',
+			'path' =>  dirname (__FILE__) . '/../track_slave', // Ìîæåò áûòü 'http://www.ÏÓÒÜ_Ê_ÒĞÅÊÅĞÓ.ru/track',
 			'key'  => 'key123'
 		),
 		*/
