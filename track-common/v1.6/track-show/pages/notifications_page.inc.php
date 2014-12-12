@@ -34,7 +34,7 @@
 		        </a>
 		      </h4>
 		    </div>
-		    <div id="collapse<?php echo $i;?>" class="panel-collapse collapse <?php f ($i==1){echo "in";}?>">
+		    <div id="collapse<?php echo $i;?>" class="panel-collapse collapse <?php if ($i==1){echo "in";}?>">
 		      <div class="panel-body">
 		      	<?php echo $description;?>
 		      </div>
