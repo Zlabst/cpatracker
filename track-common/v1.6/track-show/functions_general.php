@@ -1915,6 +1915,20 @@ function convert_to_usd($from_currency, $amount)
 function send_post_request($url, $data)
 {
 	$result=array(false, 'Unknown error');
+	$c = curl_init();
+	curl_setopt($c, CURLOPT_URL, $url);
+    curl_setopt($c, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($c, CURLOPT_TIMEOUT, 10);
+    curl_setopt($c, CURLOPT_POST, true);
+    curl_setopt($c, CURLOPT_POSTFIELDS, http_build_query($data));
+    
+    if($out = curl_exec($c)) {
+    	$result = array('true', $out);	
+    } else {
+    	$result = array('false', curl_error($c));
+    }
+	curl_close($c);
+	/*
 	try 
 	{
 		$options = array(
@@ -1924,8 +1938,8 @@ function send_post_request($url, $data)
 		        'content' => http_build_query($data),
 		    ),
 		);
-		$context  = stream_context_create($options);
-		$result = file_get_contents($url, false, $context);
+		$context = stream_context_create($options);
+		$result  = file_get_contents($url, false, $context);
 		if ($result===false)
 		{
 			$result=array('false', "Can't connect to host");	
@@ -1939,6 +1953,7 @@ function send_post_request($url, $data)
 	{
 	    $result=array(false, $e->getMessage());
 	}
+	*/
 	return $result;
 }
 
@@ -2270,7 +2285,13 @@ function db_query($q, $die_on_error = false) {
 }
 
 function to_log($name, $data) {
-	$fp = fopen(_TRACK_SHOW_PATH . '/log/' . $name. '.log', 'a');
+	$log_dir = _CACHE_PATH . '/log';
+	if(!is_dir($log_dir)) {
+		mkdir ($log_dir);
+		chmod ($log_dir, 0777);
+	}
+	
+	$fp = fopen($log_dir . '/.' . $name. '.log', 'a');
 	if(is_array($data)) $data = print_r($data, true);
 	fwrite($fp, date('Y-m-d H:i:s') . "\n" . $data . "\n\n");
 	fclose($fp);
@@ -2390,7 +2411,7 @@ function send2trackers($name, $data) {
 			}
 			
 			foreach($tracklist as $track) {
-				$type = substr($track['path'], 0, 5) == 'http:' ? 'remote' : 'local';
+				$type = substr($track['path'], 0, 4) == 'http' ? 'remote' : 'local';
 				if($type == 'local') {
 					$rules_path  = $track['path'] . '/cache/rules';
 					if (!is_dir($rules_path)) {
@@ -2418,12 +2439,28 @@ function send2trackers($name, $data) {
 					
 				} else {
 					$url = $track['path'] . '/api.php?act=ping&key=' . $track['key'];
-					$answer = json_decode(api_send($url), true);
+					$answer_text = api_send($url);
+					$answer = json_decode($answer_text, true);
 					if($answer['status'] == 1) {
 						$url = $track['path'] . '/api.php?act=rules_update&key=' . $track['key'];
-						api_send($url, array('rules' => $rules_cache));
+						$answer_text = api_send($url, array('rules' => $rules_cache));
+						$answer = json_decode($answer_text, true);
+						
+						if($answer['status'] != 1) {
+							if(empty($answer['error'])) {
+								$error[] = $answer['error'];
+							} else {
+								$error[] = 'Unknown error';
+							}
+						}
 					} else {
-						$error[] = 'Don\'t have access to host ' . $url;
+						$str_error = 'Don\'t have access to host ' . $url;
+						
+						if($answer_text != '') {
+							$str_error .= ' Answer: ' . $answer_text;
+						}
+						
+						$error[] = $str_error;
 					}
 				}
 			}
@@ -2433,7 +2470,7 @@ function send2trackers($name, $data) {
 		case 'links_update':
 
 			foreach($tracklist as $track) {
-				$type = substr($track['path'], 0, 5) == 'http:' ? 'remote' : 'local';
+				$type = substr($track['path'], 0, 4) == 'http' ? 'remote' : 'local';
 				if($type == 'local') {
 					$outs_path = $track['path'] . '/cache/outs';
 					if (!is_dir($outs_path)) {
@@ -2459,12 +2496,28 @@ function send2trackers($name, $data) {
 					}
 				} else {
 					$url = $track['path'] . '/api.php?act=ping&key=' . $track['key'];
-					$answer = json_decode(api_send($url), true);
+					$answer_text = api_send($url);
+					$answer = json_decode($answer_text, true);
 					if($answer['status'] == 1) {
 						$url = $track['path'] . '/api.php?act=links_update&key=' . $track['key'];
-						api_send($url, array('links' => $data));
+						$answer_text = api_send($url, array('links' => $data));
+						$answer = json_decode($answer_text, true);
+						
+						if($answer['status'] != 1) {
+							if(empty($answer['error'])) {
+								$error[] = $answer['error'];
+							} else {
+								$error[] = 'Unknown error';
+							}
+						}
 					} else {
-						$error[] = 'Don\'t have access to host ' . $url;
+						$str_error = 'Don\'t have access to host ' . $url . '.';
+							
+						if($answer_text != '') {
+							$str_error .= ' Answer: ' . $answer_text;
+						}
+						
+						$error[] = $str_error;
 					}
 				}
 			}
@@ -2484,7 +2537,7 @@ function send2trackers($name, $data) {
 
 function load_plugin($name) {
 	$html = '';
-	$plugin_path = _TRACK_SHOW_PATH . '/plugins/' . $name . '/index.php';
+	$plugin_path = _TRACK_SHOW_PATH . '/../../plugins/' . $name . '/index.php';
 	if(file_exists($plugin_path)) {
 		ob_start();
 		require $plugin_path;
@@ -2493,4 +2546,28 @@ function load_plugin($name) {
 	}
 	return $html;
 }
+
+// Convert tracklist
+$tracklist = array_merge(
+	array(
+		array(
+			'path' => realpath(_TRACK_MASTER_PATH),
+			'key'  => '',
+		),
+	),
+	$tracklist
+);
+
+/**
+* Ссылка на трекер
+*/
+function tracklink() {
+	global $tracklist;
+	if(count($tracklist) > 1) {
+		return $tracklist[1]['path'];
+	} 
+	return _HTML_TRACK_PATH;
+}
+
+//dmp($tracklist);
 ?>

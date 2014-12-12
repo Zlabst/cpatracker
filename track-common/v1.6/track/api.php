@@ -4,6 +4,14 @@ require _TRACK_COMMON_PATH . '/functions.php';
 $act       = rq('act');
 $track_key = rq('key');
 
+if(get_magic_quotes_gpc()) {
+	$_REQUEST = stripslashes2($_REQUEST);
+}
+/*
+if($act != 'ping') {
+	dmp($_REQUEST);
+}*/
+
 $out = array(
 	'status' => 1, // Всё хорошо
 	'data'   => array(),
@@ -65,6 +73,7 @@ if($act == 'data_get') {
 } elseif($act == 'rules_update') {
 	$rules_cache = rq('rules');
 	$rules_path  = _CACHE_PATH . '/rules';
+	$errors = array();
 	
 	if (!is_dir($rules_path)) {
 		mkdir ($rules_path);
@@ -73,8 +82,11 @@ if($act == 'data_get') {
 	
 	foreach($rules_cache as $rule_name => $str_rules) {
 		$path = $rules_path . '/.' . $rule_name;
-		file_put_contents($path, $str_rules, LOCK_EX);
-		chmod ($path, 0777);
+		if(file_put_contents($path, $str_rules, LOCK_EX)) { 
+			chmod ($path, 0777);
+		} else {
+			$errors[] = 'Ошибка записи в файл ' . $path;
+		}
 	}
 	
 	
@@ -86,12 +98,18 @@ if($act == 'data_get') {
 		}
 	}
 	
-	$out['data'] = 'success';
+	if(!empty($errors)) {
+		$out = api_error(join("\n", $errors));
+	} else {
+		$out['data'] = 'success';
+	}
 	
 // Обновление кэша ссылок
 } elseif($act == 'links_update') {
 	$links_cache = rq('links');
 	$outs_path = _CACHE_PATH . '/outs';
+	$errors = array();
+	
 	if (!is_dir($outs_path)) {
 		mkdir ($outs_path);
 		chmod ($outs_path, 0777);
@@ -99,10 +117,12 @@ if($act == 'data_get') {
 	
 	foreach($links_cache as $id => $link) {
 		$path = $outs_path . '/.' . $id;
-		file_put_contents($path, $link, LOCK_EX);
-		chmod ($path, 0777);
+		if(file_put_contents($path, $link, LOCK_EX)) {
+			chmod ($path, 0777);
+		} else {
+			$errors[] = 'Ошибка записи в файл ' . $path;
+		}
 	}
-	
 	
 	// Удаляем неактуальные кэши
 	$files = dir_files($outs_path);
@@ -112,7 +132,11 @@ if($act == 'data_get') {
 		}
 	}
 	
-	$out['data'] = 'success';
+	if(!empty($errors)) {
+		$out = api_error(join("\n", $errors));
+	} else {
+		$out['data'] = 'success';
+	}
 }
 
 echo json_encode($out);

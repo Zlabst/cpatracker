@@ -2,7 +2,7 @@
 	define('_TRACK_VER',           'v1.6');
 
 	define('_TRACK_PATH',          dirname (__FILE__));
-	define('_TRACK_SETTINGS_PATH', _TRACK_PATH . '/../track-common');
+	define('_TRACK_SETTINGS_PATH', _TRACK_PATH . '/cache');
 	define('_TRACK_COMMON_PATH',   dirname (__FILE__) . '/../track-common/' . _TRACK_VER . '/track');
 	define('_TRACK_STATIC_PATH',   dirname (__FILE__) . '/../track-common/static');
 

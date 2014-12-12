@@ -2,12 +2,14 @@
 	define('_TRACK_VER',           'v1.6');
 
 	//define('_TRACK_SETTINGS_PATH', _TRACK_PATH . '/../track-common'); 
-	define('_TRACK_SETTINGS_PATH', dirname (__FILE__) . '/../track-common/');
+	
 	define('_TRACK_STATIC_PATH',   dirname (__FILE__) . '/../track-common/static');
-
+	define('_TRACK_SETTINGS_PATH', dirname (__FILE__) . '/../track/cache');
+	
 	define('_CACHE_PATH',          dirname (__FILE__) . '/../track/cache');
+	define('_TRACK_PATH',          dirname (__FILE__) . '/../track-common/' . _TRACK_VER . '/track');
 	define('_TRACK_SHOW_PATH',     dirname (__FILE__) . '/../track-common/' . _TRACK_VER . '/track-show');
-	define('_TRACK_LIB_PATH',      _TRACK_SHOW_PATH . '/lib');
+	define('_TRACK_LIB_PATH',      _TRACK_PATH . '/lib');
 	
 	define('_HTML_LIB_PATH',       '../track-common/' . _TRACK_VER . '/track-show/lib');
 	define('_HTML_TEMPLATE_PATH',  '../track-common/' . _TRACK_VER . '/track-show/templates');
@@ -23,11 +25,15 @@
 	define('_HTML_ROOT_PATH',      rtrim(str_replace (end(explode('/', $_SERVER['PHP_SELF'])), '', $url), '/'));
 	define('_HTML_TRACK_PATH',     strrev(preg_replace(strrev('/track-show/'), strrev('track'), strrev(_HTML_ROOT_PATH), 1)));
 	
-	// First tracker is MASTER, next is slave
+	define('_TRACK_MASTER_PATH',   dirname (__FILE__) . '/../track');
+	
+	// Slave trackers
 	$tracklist = array(
+		/*
 		array(
-			'path' =>  dirname (__FILE__) . '/../track', // can be 'http://dev1.cpatracker.yyzz.ru/track',
+			'path' =>  dirname (__FILE__) . '/../track_slave', // can be 'http://host.com/track_slave',
 			'key'  => 'key123'
 		),
+		*/
 	);
 ?>

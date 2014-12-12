@@ -101,7 +101,14 @@ function ip_in_range($ip, $ip_start, $ip_end = '') {
  */
 function track_error($error) {
 	if($error == '') return false;
-	$path = _TRACK_PATH . '/log/' . date('Y-m-d') . '.txt';
+	
+	$log_dir = _CACHE_PATH . '/log';
+	if(!is_dir($log_dir)) {
+		mkdir ($log_dir);
+		chmod ($log_dir, 0777);
+	}
+	
+	$path = $log_dir . '/.' . date('Y-m-d') . '.txt';
 	$fp = fopen($path, 'a');
 	fwrite($fp, date("Y-m-d H:i:s") . ' ' . $error . "\n");
 	fclose($fp);
@@ -158,10 +165,20 @@ function rq($name, $num = 0, $df = null, $type = 'r') {
 	return false;
 }
 
+function stripslashes2($v) {
+	if(is_array($v)) {
+		$v = array_map('stripslashes2', $v);
+	} else {
+		$v = stripslashes($v);
+	}
+	return $v;
+}
+
 /**
  * Отладочная информация
  */	
 function dmp(&$v) {
 	echo '<pre>'.print_r($v, true).'</pre>';
 }
+
 ?>

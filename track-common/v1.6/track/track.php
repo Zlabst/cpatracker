@@ -103,8 +103,8 @@
 		{
 			$rule_hash=md5 ($rule_name);
 
-			$rules_path=_CACHE_PATH."/rules";
-			$rule_path="{$rules_path}/.{$rule_hash}";
+			$rules_path=_CACHE_PATH . "/rules";
+			$rule_path= "{$rules_path}/.{$rule_hash}";
 
 			if (is_file($rule_path))
 			{
@@ -299,9 +299,10 @@
 	
 	// Apply rules and get out id for current click
 	$arr_rules = get_rules ($link_name); 
+	
 	if (count($arr_rules)==0)
 	{
-		 exit();
+		 exit('Rule not found');
 	}
 	else
 	{ 
@@ -465,10 +466,14 @@
 
 	$str.="\n";
 
-	// Save click information in file	
-	file_put_contents(_CACHE_PATH.'/clicks/'.'.clicks_'.date('Y-m-d-H-i'), $str, FILE_APPEND | LOCK_EX);
+	// Save click information in file
 	
+	if(!is_dir(_CACHE_PATH.'/clicks')) {
+		mkdir (_CACHE_PATH.'/clicks');
+		chmod (_CACHE_PATH.'/clicks', 0777);
+	}
 	
+	file_put_contents(_CACHE_PATH . '/clicks/' . '.clicks_'.date('Y-m-d-H-i'), $str, FILE_APPEND | LOCK_EX);
 	
 	// Redirect
 	header("Location: ".$redirect_link);

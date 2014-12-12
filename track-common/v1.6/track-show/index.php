@@ -25,7 +25,7 @@
 	$page_content_allowed = array('reports.php', 'sales.php', 'stats-flow.php','links_page.inc.php','rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'import_page_postback.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'register.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php', 'landing_page.inc.php');
 
 	// Include main functions
-	include _TRACK_SHOW_PATH."/functions_general.php";
+	require _TRACK_SHOW_PATH . "/functions_general.php";
 
 	// Disable excess quoting for unusual hosting environments
 	disable_magic_quotes();
@@ -188,7 +188,7 @@
 		if($source == 'landing' or $direct) {
 			$lnk = get_first_rule_link($rule_id);
 		} else {
-			$lnk = 'http://' . $_SERVER['HTTP_HOST'] . '/track/' . $name . '/';
+			$lnk = tracklink() . $name . '/';
 		}
 		
 		if(array_key_exists($source, $source_config)) {
@@ -222,6 +222,12 @@
 		}
 		
 		echo $lnk;
+		exit();
+	}
+	
+	if ($_REQUEST['ajax_act']=='sync_slaves') {
+		dmp(cache_rules_update());
+		dmp(cache_links_update());
 		exit();
 	}
 
@@ -260,11 +266,9 @@
 				$arr=array();
 				$i=0;
 				
-				//dmp($arr_rules);
-
 				foreach($arr_rules as $cur)
 				{
-					$arr['rules'][$i]=array('id'=>$cur['id'], 'name'=>$cur['name'], 'url'=>_HTML_TRACK_PATH."/{$cur['name']}/source/campaign-ads");
+					$arr['rules'][$i]=array('id'=>$cur['id'], 'name'=>$cur['name'], 'url'=> tracklink() . "/{$cur['name']}/source/campaign-ads");
 
 					$arr_destinations=array(); $default_destination_id='';
 					foreach ($cur['items'] as $cur_item_val)
@@ -503,9 +507,10 @@
 			break;
 			
 			case 'update_rule_name':                          
-			    $rule_id=$_REQUEST['rule_id'];
-			    $rule_name=trim($_REQUEST['rule_name']); 
-	                    $old_rule_name=trim($_REQUEST['old_rule_name']);
+			    $rule_id   = rq('rule_id', 2);
+			    $rule_name = trim(rq('rule_name')); 
+	            $old_rule_name = trim(rq('old_rule_name'));
+	            
 				if ($rule_id==0 || $rule_id=='' || $rule_name=='' || $old_rule_name=='' ||  $old_rule_name == $rule_name)
 				{
 					exit();
@@ -518,6 +523,11 @@
 
 				exit();
 			break;
+			
+			case 'sync_slaves':
+				cache_rules_update();
+				cache_links_update();
+				break;
 
 			case 'update_rule':                 
 			    $rule_id   = $_REQUEST['rule_id'];
@@ -669,7 +679,7 @@
 
 			case 'send_support_message': 
 				$installation_guid=md5($_SERVER['HTTP_HOST']).md5(_TRACK_SHOW_PATH);
-				$url = 'http://www.cpatracker.ru/system/tickets.php';
+				$url = 'https://www.cpatracker.ru/system/tickets.php';
 				$data = array('act' => 'send_support_message', 'message'=>$_REQUEST['message'], 'email'=>$_REQUEST['user_email'] ,'installation_guid' => $installation_guid);
 
 				$result=send_post_request($url, $data);

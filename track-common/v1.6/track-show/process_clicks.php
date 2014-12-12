@@ -31,13 +31,13 @@
 	
 	// Collector
 	
-	function api_get_files($url) {
+	function api_get_files($url, $n = 0) {
 		foreach(array('clicks', 'postback') as $type) {
 			$url_params = $url['path'] . '/api.php?act=data_get&type=' . $type. '&key=' . $url['key'];
 			$files = json_decode(file_get_contents($url_params), true);
 			
 			foreach($files['data'] as $f => $data) {
-				$path = _CACHE_PATH . '/' . $type . '/' . $f;
+				$path = _CACHE_PATH . '/' . $type . '/' . $f . '_' . $n;
 				
 				if(!file_exists($path)) {
 					$fp = fopen($path, 'w');
@@ -54,9 +54,9 @@
 		if($n == 0) continue; // не трогаем первый трекер, это мастер
 		
 		// Remote tracker
-		if(substr($track['path'], 0, 5) == 'http:') {
+		if(substr($track['path'], 0, 4) == 'http') {
 			
-			$files = api_get_files($track);
+			$files = api_get_files($track, $n);
 			
 		// Local tracker
 		} else {
@@ -437,6 +437,6 @@
 				campaign_param4='"._str($click_param4)."', 
 				campaign_param5='"._str($click_param5)."'
 				{$sql_click_params}";
-		mysql_query($sql);
+		mysql_query($sql) or die(mysql_error());
 	}
 ?>
