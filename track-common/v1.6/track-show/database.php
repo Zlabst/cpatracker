@@ -222,4 +222,7 @@
 
     $arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_postback_params` ( `id` INT( 11 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `conv_id` INT( 11 ) NOT NULL , `name` VARCHAR( 255 ) NOT NULL , `value` TEXT NOT NULL) ENGINE = MYISAM ;";
     
+    $arr_sql[]="ALTER TABLE `tbl_clicks` ADD `is_unique` TINYINT( 1 ) NOT NULL DEFAULT '0' AFTER `parent_id` ;";
+	
+	$arr_sql[]="ALTER TABLE `tbl_conversions` ADD UNIQUE (`subid` , `profit`);";
 ?>
