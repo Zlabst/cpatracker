@@ -181,4 +181,8 @@ function dmp(&$v) {
 	echo '<pre>'.print_r($v, true).'</pre>';
 }
 
+
+function onlyword($v) {
+	return preg_replace("/[^a-zA-Z0-9_-]/u", '', $v);
+}
 ?>

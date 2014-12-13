@@ -7,7 +7,8 @@
 	ob_start();
 	
 	$settings_file= _TRACK_SETTINGS_PATH.'/settings.php';
-	require _TRACK_SHOW_PATH . "/functions_general.php";
+	require _TRACK_COMMON_PATH . '/functions.php'; 
+	//require _TRACK_SHOW_COMMON_PATH . "/functions_general.php";
  
 	$str = file_get_contents($settings_file);
 	$str = str_replace('<?php exit(); ?>', '', $str);
@@ -142,11 +143,11 @@
 	$str .= remove_tab($_GET['referrer'])."\t";
 	
 	// 4 Link name
-	$link_name = 'landing';
+	$link_name = empty($_GET['rule_name']) ? '' : onlyword($_GET['rule_name']);
 	$str .= $link_name."\t";
 
 	// 5 Link source
-	$link_source = (empty($_GET['utm_source']) or empty($source_config[$_GET['utm_source']])) ? 'landing' : $_GET['utm_source'];
+	$link_source = empty($_GET['utm_source']) ? 'landing' : onlyword($_GET['utm_source']);
 	$str .= $link_source."\t";
 
 	// 6 Link ads name
@@ -161,8 +162,8 @@
 	// Subaccount
 	$str .= $subid."\t";
 	
-	$out_id  = 0;
-	$rule_id = 0;
+	$out_id  = empty($_GET['out_id']) ? 0 : intval($_GET['out_id']);;
+	$rule_id = empty($_GET['rule_id']) ? '' : intval($_GET['rule_id']);
 	
 	
 	$redirect_link = str_ireplace('[SUBID]', $subid, $_GET['redirect_link']);

@@ -8,7 +8,8 @@
 
 	define('_TRACK_LIB_PATH',      _TRACK_COMMON_PATH . '/lib');
 	define('_CACHE_PATH',          _TRACK_PATH . '/cache');
-	define('_TRACK_SHOW_PATH',     dirname (__FILE__) . '/../track-common/' . _TRACK_VER . '/track-show');
+	define('_TRACK_SHOW_COMMON_PATH', dirname (__FILE__) . '/../track-common/' . _TRACK_VER . '/track-show');
+	
 	
 	// Get full HTML url 
 	$s = (empty($_SERVER["HTTPS"]) && empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) ? '' : ((!empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") || $_SERVER['HTTP_X_FORWARDED_PROTO']=='https' ) ? "s" : "";

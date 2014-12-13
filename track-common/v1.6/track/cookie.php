@@ -95,7 +95,7 @@ function modufy_links() {
 	
 	//console.log(parents);
 	
-	for(var i = 1; i < hashes.length; i++) {
+	for(var i = 0; i < hashes.length; i++) {
 		vars2.push(hashes[i]);
 	    hash = hashes[i].split('=');
 	    vars.push(hash[0]);
@@ -139,8 +139,6 @@ function modufy_links() {
 	if(subid == '') {
 		vars2.push('redirect_link=' + window.location.href);
 		vars2.push('referrer=' + document.referrer);
-		
-		
 		
 		params = vars2.join('&');
 		SendRequest('http://<?php echo $_SERVER['HTTP_HOST']?>/track/track_direct.php?' + params, '', function(data) {

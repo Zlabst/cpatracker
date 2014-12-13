@@ -1974,7 +1974,7 @@
 		 * Получаем самую первую ссылку из правила
 		 */
 		function get_first_rule_link($rule_id) {
-			$q="select `offer_tracking_url` 
+			$q="select `tbl_offers`.`id`, `offer_tracking_url` 
 				from `tbl_rules_items`
 				left join `tbl_offers` on value = tbl_offers.id
 				where `rule_id` = '".intval($rule_id)."'
@@ -1983,6 +1983,6 @@
 				limit 1";
 			$rs = db_query($q);
 			$r = mysql_fetch_assoc($rs);
-			return $r['offer_tracking_url'];
+			return array($r['id'], $r['offer_tracking_url']);
 		}
 ?>

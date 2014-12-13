@@ -25,7 +25,7 @@
 	$page_content_allowed = array('reports.php', 'sales.php', 'stats-flow.php','links_page.inc.php','rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'import_page_postback.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'register.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php', 'landing_page.inc.php');
 
 	// Include main functions
-	require _TRACK_SHOW_PATH . "/functions_general.php";
+	require _TRACK_SHOW_COMMON_PATH . "/functions_general.php";
 
 	// Disable excess quoting for unusual hosting environments
 	disable_magic_quotes();
@@ -73,7 +73,7 @@
 				}
 
 				// Create tables
-				if (!is_file(_TRACK_SHOW_PATH.'/database.php'))
+				if (!is_file(_TRACK_SHOW_COMMON_PATH.'/database.php'))
 				{
 					echo json_encode(array(false, 'schema_not_found', $dbname));
 					exit();
@@ -85,7 +85,7 @@
 				chmod ($settings_file, 0777);
 
 				// Create tables and run mysql updates
-				require_once (_TRACK_SHOW_PATH.'/database.php');
+				require_once (_TRACK_SHOW_COMMON_PATH.'/database.php');
 				foreach ($arr_sql as $sql)
 				{
 					mysql_query($sql);
@@ -121,7 +121,7 @@
 	    		$bHideTopMenu=true;
 	    		$bHideBottomMenu=true;
 	        	$page_content="system-message-cache.php";
-        		include _TRACK_SHOW_PATH."/templates/main.inc.php";
+        		include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
         		exit();
 			break;
 			
@@ -130,14 +130,14 @@
 	    		$bHideTopMenu=true;
 	    		$bHideBottomMenu=true;
 	        	$page_content="system-first-run.php";	    		
-				include _TRACK_SHOW_PATH."/templates/main.inc.php";
+				include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
 				exit();	
 			break;
 		}
 		exit();
 	}
 
-	include _TRACK_SHOW_PATH."/functions_report.php";
+	include _TRACK_SHOW_COMMON_PATH."/functions_report.php";
 
 	// Connect to DB
 	mysql_connect($_DB_HOST, $_DB_LOGIN, $_DB_PASSWORD) or die("Could not connect: " .mysql_error());
@@ -186,7 +186,7 @@
 		
 		// Прямая ссылка без редиректа!
 		if($source == 'landing' or $direct) {
-			$lnk = get_first_rule_link($rule_id);
+			list($out_id, $lnk) = get_first_rule_link($rule_id);
 		} else {
 			$lnk = tracklink() . '/' . $name . '/';
 		}
@@ -196,7 +196,7 @@
 				$lnk .= $source . '/campaign-ads/';
 			}
 			if($direct) {
-				$lnk .= (strstr($lnk, '?') === false ? '?' : '&') . 'utm_source=' . $source; // это безопасно потому что мы проверили наличие $source в нашем $source_config
+				$lnk .= (strstr($lnk, '?') === false ? '?' : '&') . 'utm_source=' . $source . '&rule_name=' . onlyword($name). '&out_id=' . intval($out_id); // это безопасно потому что мы проверили наличие $source в нашем $source_config
 			}
 			
 			if(!empty($source_config[$source]['params'])) {
@@ -317,7 +317,7 @@
 			break;
 
 			case 'excel_export': 
-				include(_TRACK_SHOW_PATH.'/lib/excel_writer/ExcelWriterXML.php');
+				include(_TRACK_SHOW_COMMON_PATH.'/lib/excel_writer/ExcelWriterXML.php');
 				$xml = new ExcelWriterXML('report.xls');
 
 				$sheet = $xml->addSheet('Report');
@@ -678,7 +678,7 @@
 			break;
 
 			case 'send_support_message': 
-				$installation_guid=md5($_SERVER['HTTP_HOST']).md5(_TRACK_SHOW_PATH);
+				$installation_guid=md5($_SERVER['HTTP_HOST']).md5(_TRACK_SHOW_COMMON_PATH);
 				$url = 'https://www.cpatracker.ru/system/tickets.php';
 				$data = array('act' => 'send_support_message', 'message'=>$_REQUEST['message'], 'email'=>$_REQUEST['user_email'] ,'installation_guid' => $installation_guid);
 
@@ -766,13 +766,13 @@
 		case 'landing':
 			
 			$page_content='landing_page.inc.php';
-			include _TRACK_SHOW_PATH."/templates/main.inc.php";
+			include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
 			exit();
 		break;
 		case 'links': 
 			$page_sidebar='sidebar-left-links.inc.php';
 			$page_content="links_page.inc.php";
-			include _TRACK_SHOW_PATH."/templates/main.inc.php";
+			include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
 			exit();
 		break;
 
@@ -784,7 +784,7 @@
 			$js_countries_data=get_countries_data_js();
 			$js_langs_data=get_langs_data_js();         
 			$page_content='rules_page.inc.php';
-			include _TRACK_SHOW_PATH."/templates/main.inc.php";
+			include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
 			exit();
 		break;
 		
@@ -794,37 +794,37 @@
 			$arr_ads=get_ads();
 
 			$page_content='costs_page.inc.php';
-			include _TRACK_SHOW_PATH."/templates/main.inc.php";
+			include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
 			exit();
 		break;
 		
 		case 'import':
 			$page_content='import_page.inc.php';
-			include _TRACK_SHOW_PATH."/templates/main.inc.php";
+			include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
 			exit();
 		break;
 		
 		case 'postback':
 			$page_content='import_page_postback.inc.php';
-			include _TRACK_SHOW_PATH."/templates/main.inc.php";
+			include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
 			exit();
 		break;
 		
 		case 'pixel':
 			$page_content='pixel_page.inc.php';
-			include _TRACK_SHOW_PATH."/templates/main.inc.php";
+			include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
 			exit();
 		break;
 
 		case 'support':
 			$page_content='support_page.inc.php';
-			include _TRACK_SHOW_PATH."/templates/main.inc.php";
+			include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
 			exit();
 		break;
 
 		case 'notifications':
 			$page_content='notifications_page.inc.php';
-			include _TRACK_SHOW_PATH."/templates/main.inc.php";
+			include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
 			exit();
 		break;
 
@@ -834,7 +834,7 @@
 					$page_content='timezone_settings_page.inc.php';
 				break;
 			}
-			include _TRACK_SHOW_PATH."/templates/main.inc.php";
+			include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
 			exit();
 		break;
 
@@ -862,7 +862,7 @@
 		    		$bHideTopMenu=true;
 		    		$bHideBottomMenu=true;
 		        	$page_content="login.php";
-					include _TRACK_SHOW_PATH."/templates/main.inc.php";
+					include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
 					exit();		        	
 				break;
 	    	}
@@ -898,7 +898,7 @@
 		    		$bHideTopMenu=true;
 		    		$bHideBottomMenu=true;
 		        	$page_content="register.php"; 
-					include _TRACK_SHOW_PATH."/templates/main.inc.php";
+					include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
 					exit();			        	
 				break;
     		}
@@ -925,7 +925,7 @@
 	        		}
 
 	        		$page_sidebar='sidebar-left-reports.inc.php';
-                	include _TRACK_SHOW_PATH."/templates/main.inc.php";
+                	include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
                     exit();		        		
 				break;
 
@@ -971,7 +971,7 @@
 	            	$page_sidebar='sidebar-left-reports.inc.php';
 	            	$page_content="stats-flow.php";
 
-					include _TRACK_SHOW_PATH."/templates/main.inc.php";
+					include _TRACK_SHOW_COMMON_PATH."/templates/main.inc.php";
 					exit();		            	
 	        	break;
 	    	}			

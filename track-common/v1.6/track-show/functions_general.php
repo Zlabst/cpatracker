@@ -2142,7 +2142,7 @@ function ap($arr, $n = 0) {
 function tpx($page, $var = null) {
 	$include_flag = true;
 	ob_start();
-	require _TRACK_SHOW_PATH . '/templates/' . $page . '.inc.php';
+	require _TRACK_SHOW_COMMON_PATH . '/templates/' . $page . '.inc.php';
 	if (isset($vars)) {
 		foreach ($vars as $k => $v) {
 			if (!isset($var[$k])) {
@@ -2537,7 +2537,7 @@ function send2trackers($name, $data) {
 
 function load_plugin($name) {
 	$html = '';
-	$plugin_path = _TRACK_SHOW_PATH . '/../../plugins/' . $name . '/index.php';
+	$plugin_path = _TRACK_SHOW_COMMON_PATH . '/../../plugins/' . $name . '/index.php';
 	if(file_exists($plugin_path)) {
 		ob_start();
 		require $plugin_path;
@@ -2545,6 +2545,10 @@ function load_plugin($name) {
 		ob_end_clean();
 	}
 	return $html;
+}
+
+function onlyword($v) {
+	return preg_replace("/[^a-zA-Z0-9_-]/u", '', $v);
 }
 
 // Convert tracklist

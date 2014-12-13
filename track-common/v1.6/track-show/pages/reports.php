@@ -208,7 +208,7 @@ switch ($_REQUEST['type']) {
 
     case 'daily_grouped':
         // Show report data
-        include _TRACK_SHOW_PATH."/pages/report_daily_grouped.inc.php";
+        include _TRACK_SHOW_COMMON_PATH."/pages/report_daily_grouped.inc.php";
     break;
     
     case 'all_stats':
@@ -241,7 +241,7 @@ switch ($_REQUEST['type']) {
                 <div class="pull-right" style="margin-top:18px;">' . type_subpanel() . '</div>
               </form>';
     	
-    	include _TRACK_SHOW_PATH."/pages/report_all.inc.php";
+    	include _TRACK_SHOW_COMMON_PATH."/pages/report_all.inc.php";
     break;
     
     case 'targetreport':
@@ -249,7 +249,7 @@ switch ($_REQUEST['type']) {
     	$from = empty($_REQUEST['from']) ? date('Y-m-d', time() - 3600*24*6) : date('Y-m-d', strtotime($_REQUEST['from']));
     	$to =   empty($_REQUEST['to']) ? date('Y-m-d') :  date('Y-m-d', strtotime($_REQUEST['to']));
     	
-    	include _TRACK_SHOW_PATH."/pages/targetreport.php";
+    	include _TRACK_SHOW_COMMON_PATH."/pages/targetreport.php";
    	break;
 }
 ?>

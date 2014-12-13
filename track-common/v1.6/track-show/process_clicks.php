@@ -27,7 +27,7 @@
 	mysql_select_db($_DB_NAME);
 	mysql_query('SET NAMES utf8');
 	
-	include _TRACK_SHOW_PATH . "/functions_general.php";
+	include _TRACK_SHOW_COMMON_PATH . "/functions_general.php";
 	
 	// Collector
 	
@@ -279,17 +279,18 @@
 		// Save this source params
 		
 		global $source_config;
-		
+		/*
 		to_log('src', $click_link_source);
 		to_log('src', $source_config);
 		to_log('src', $click_get_params);
+		*/
+		$i = 1;
 		
 		// Source config exists
 		if(array_key_exists($click_link_source, $source_config) 
 			and array_key_exists('params', $source_config[$click_link_source])) {
 			
 			// Выбираем именованные параметры из того, что пришло
-			$i = 1;
 			foreach($source_config[$click_link_source]['params'] as $param_name => $param_info) {
 				
 				if(empty($param_info['url'])) continue; // "виртуальный" параметр, он определяется не ссылкой, а через другие параметры, см ниже
@@ -346,7 +347,8 @@
 		}
 		
 		// Пользовательские параметры
-		//$i=1;
+		
+		
 		$is_connected=false; 
 		$connected_subid='';
 		foreach ($click_get_params as $param_name => $param_value)
@@ -437,6 +439,6 @@
 				campaign_param4='"._str($click_param4)."', 
 				campaign_param5='"._str($click_param5)."'
 				{$sql_click_params}";
-		mysql_query($sql) or die(mysql_error());
+		mysql_query($sql) or die($sql . '<br >' . mysql_error());
 	}
 ?>

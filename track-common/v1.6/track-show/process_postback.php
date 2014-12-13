@@ -23,7 +23,7 @@
 
     include _TRACK_LIB_PATH . "/class/common.php";
     include _TRACK_LIB_PATH . "/class/custom.php";
-    include _TRACK_SHOW_PATH . "/functions_general.php";
+    include _TRACK_SHOW_COMMON_PATH . "/functions_general.php";
 
 
     function net_loader($class) 
