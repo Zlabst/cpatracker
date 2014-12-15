@@ -224,7 +224,7 @@
 
 	$str.="\n";
 
-	// Save click information in file	
+	// Save click information in file
 	file_put_contents(_CACHE_PATH.'/clicks/'.'.clicks_'.date('Y-m-d-H-i'), $str, FILE_APPEND | LOCK_EX);
 	
 	echo $subid;

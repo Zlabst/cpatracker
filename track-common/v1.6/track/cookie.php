@@ -141,7 +141,7 @@ function modufy_links() {
 		vars2.push('referrer=' + document.referrer);
 		
 		params = vars2.join('&');
-		SendRequest('http://<?php echo $_SERVER['HTTP_HOST']?>/track/track_direct.php?' + params, '', function(data) {
+		SendRequest('<?php echo _HTML_TRACK_PATH; ?>/track_direct.php?' + params, '', function(data) {
 			if(data.status = 200 && data.response != '') {
 				_modufy_links(data.response);
 				return;
