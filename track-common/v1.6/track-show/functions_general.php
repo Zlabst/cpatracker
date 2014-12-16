@@ -1975,7 +1975,7 @@ function get_sources_data_js() {
 		$arr_data[] = array('text' => $type_val['name'] . ' ', 'children' => $tmp);
 		
 	}
-	return json_encode($arr_data, JSON_UNESCAPED_UNICODE);
+	return json_encode($arr_data); //, JSON_UNESCAPED_UNICODE
 }
 
 function get_offers_data_js($arr_offers)
