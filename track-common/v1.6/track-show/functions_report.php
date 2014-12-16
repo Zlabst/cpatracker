@@ -1094,119 +1094,6 @@
 			*/
 		}
 		return join('', $out);
-		/*
-		$clicks_data    = $data['click'];
-		$leads_data     = $data['lead'];
-		$sales_data     = $data['sale'];
-		$saleleads_data = $data['sale_lead'];
-		
-		// Выходные данные
-		$out = array();
-		
-		if ((isset($clicks_data)) || (isset($leads_data)) || (isset($sales_data)) || isset($saleleads_data))
-		{
-			$clicks_count = array_sum (array($clicks_data['cnt'], $leads_data['cnt'], $sales_data['cnt'], $saleleads_data['cnt']));
-			$leads_count  = array_sum (array($leads_data['cnt'], $saleleads_data['cnt']));
-			$sales_count  = array_sum (array($sales_data['cnt'], $saleleads_data['cnt']));
-
-			$clicks_cost  = array_sum (array($clicks_data['cost'], $leads_data['cost'], $sales_data['cost'], $saleleads_data['cost']));			
-			
-			$sales_amount = array_sum (array($sales_data['earnings'], $saleleads_data['earnings']));
-			$sales_amount_rub = $sales_amount * 30;
-			
-			$profit_amount = $sales_amount-$clicks_cost;
-			$profit_amount_rub = $profit_amount*30;
-
-			if ($sales_count>0) {
-				$conversion=round2($sales_count/$clicks_count*100).'%';
-				$epc=$sales_amount/$clicks_count;
-				$epc_rub=$epc*30;
-			}
-			else
-			{
-				$conversion="0%";
-			}
-
-			if ($leads_count>0)
-			{
-				$conversion_leads='<b>'.round2($leads_count/$clicks_count).'%</b>';
-				$leads_clicks="<b>{$clicks_count}:{$leads_count}</b>";
-				$lead_price=$clicks_cost/$leads_count;
-				$lead_price_rub=($clicks_cost/$leads_count)*30;
-			}
-			else
-			{
-				$leads_clicks="{$clicks_count}:{$leads_count}";
-				$conversion_leads="0%";
-				$lead_price='';
-				$lead_price_rub='';
-			}
-
-			// Round and format values
-			$sales_amount=round($sales_amount, 2);
-			$sales_amount_rub=round($sales_amount_rub, 2);
-			$profit_amount=round($profit_amount, 2);
-			$profit_amount_rub=round($profit_amount_rub, 2);
-			
-			if ($profit_amount==0)
-			{
-				$profit_amount="<span style='color:lightgray; font-weight:normal;'>$0</span>";
-				$profit_amount_rub="<span style='color:lightgray; font-weight:normal;'>0р.</span>";
-			}
-			else
-			{
-				if ($profit_amount<0)
-				{
-					$profit_amount='<span style="color:red;">-$'.abs($profit_amount)."</span>";
-					$profit_amount_rub="<span style='color:red;'>{$profit_amount_rub} р.</span>";						
-				}
-				else
-				{
-					$profit_amount='$'.$profit_amount;
-					$profit_amount_rub=$profit_amount_rub.' р.';
-				}
-			}
-			
-			if (is_numeric ($lead_price)) {$lead_price='$'.round($lead_price, 2);}
-			if (is_numeric ($lead_price_rub)) {$lead_price_rub=round($lead_price_rub, 2).'р.';}
-			
-			if ($epc>=0.01){$epc=round($epc, 2);}else{$epc=round($epc, 3);}
-			if ($epc_rub>=0.01){$epc_rub=round($epc_rub, 2);}else{$epc_rub=round($epc_rub, 3);}
-
-
-			if ($clicks_cost>0)
-			{
-				$roi=round(($sales_amount-$clicks_cost)/$clicks_cost*100).'%';
-				if ($roi<=0){$roi="<span style='color:red;'>{$roi}</span>";}
-			}
-			else
-			{
-				$roi='';
-			}
-
-			if ($sales_count>0)
-			{
-				return "<span class='sdata leads leads_clicks'>{$leads_clicks}</span>
-						<span class='sdata leads leads_conversion'>{$conversion_leads}</span> 
-						<span class='sdata leads leads_price usd'>{$lead_price}</span>
-						<span class='sdata leads leads_price rub'>{$lead_price_rub}</span>
-						<b><span class='sdata clicks'>{$clicks_count}:{$sales_count}</span><span class='sdata conversion'>{$conversion}</span><span class='sdata sales usd'>{$profit_amount}</span><span class='sdata sales rub'>{$profit_amount_rub}</span><span class='sdata epc usd'>\${$epc}</span><span class='sdata epc rub'>{$epc_rub} р.</span><span class='sdata roi'>{$roi}</span></b>";				
-			}
-			else
-			{
-				return "<span class='sdata leads leads_clicks'>{$leads_clicks}</span>
-						<span class='sdata leads leads_conversion'>{$conversion_leads}</span> 
-						<span class='sdata leads leads_price'>{$lead_price}</span>
-						<span class='sdata clicks'>{$clicks_count}</span><span class='sdata conversion'>{$conversion}</span><span class='sdata roi' style='color:lightgray;'>-</span>
-						<span style='color:lightgray;' class='sdata epc usd'>$0</span><span style='color:lightgray;' class='sdata epc rub'>0 р.</span>
-						<span class='sdata sales usd' style='font-weight:bold;'>{$profit_amount}</span><span class='sdata sales rub' style='font-weight:bold;'>{$profit_amount_rub}</span>";
-			}
-		}
-		else
-		{
-			return '';
-		}
-		*/
 	}
 	/* /v2 */
 	
@@ -1221,15 +1108,15 @@
 			$clicks_cost  = array_sum (array($clicks_data['cost'], $leads_data['cost'], $sales_data['cost'], $saleleads_data['cost']));			
 			
 			$sales_amount = array_sum (array($sales_data['earnings'], $saleleads_data['earnings']));
-			$sales_amount_rub = $sales_amount * 30;
+			$sales_amount_rub = cur_conv($sales_amount, 'RUB');
 			
 			$profit_amount = $sales_amount-$clicks_cost;
-			$profit_amount_rub = $profit_amount*30;
+			$profit_amount_rub = cur_conv($profit_amount, 'RUB');
 
 			if ($sales_count>0) {
 				$conversion=round2($sales_count/$clicks_count*100).'%';
 				$epc=$sales_amount/$clicks_count;
-				$epc_rub=$epc*30;
+				$epc_rub=cur_conv($epc, 'RUB');
 			}
 			else
 			{
@@ -1241,7 +1128,7 @@
 				$conversion_leads='<b>'.round2($leads_count/$clicks_count).'%</b>';
 				$leads_clicks="<b>{$clicks_count}:{$leads_count}</b>";
 				$lead_price=$clicks_cost/$leads_count;
-				$lead_price_rub=($clicks_cost/$leads_count)*30;
+				$lead_price_rub=cur_conv($clicks_cost/$leads_count, 'RUB');
 			}
 			else
 			{
@@ -1693,10 +1580,22 @@
 			if($r['sale_lead'] == 0) return $wrap ? '' : 0;
 			return $r['sale_lead'];
 		}
+		
+		function cur_conv($n, $currency = 'RUB') {
+			$curr_rates = array(
+				'RUB' => 56,
+			);
+			// Нет такой валюты
+			
+			if(array_key_exists($currency, $curr_rates)) {
+				return 0;
+			}
+			return $n * $curr_rates[$currency];
+		}
 
 		function currencies_span($v, $wrap = true) {
 			if(!$wrap) return $v;
-			$rub_rate = 30;
+			$rub_rate = 56;
 			$style = '';
 			if(empty($v)) {
 				$style = 'style="color:lightgray;font-weight:normal;"';

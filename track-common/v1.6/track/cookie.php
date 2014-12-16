@@ -25,7 +25,6 @@ function cpatracker_add_lead(profit) {
 	}
 }
 
-<?php if(isset($_GET['direct_click'])) { ?>
 // Simple AJAX
 function SendRequest(r_path, r_args, r_handler) {
     var Request = CreateRequest();
@@ -57,8 +56,7 @@ function CreateRequest() {
         console.log("Невозможно создать XMLHttpRequest");
     }
     return Request;
-} 
-<?php } ?>
+}
 
 function _modufy_links(subid) {
 	var domain_name = window.location.hostname.split('.').slice(2).join('.');
@@ -130,13 +128,11 @@ function modufy_links() {
 			}
 		}
 	}
+
+	console.log(vars);
+	//console.log(subid);
 	
-	<?php if(isset($_GET['direct_click'])) {
-?>// "Direct click" mode
-	
-	console.log(subid);
-	
-	if(subid == '') {
+	if(vars['rule_name'] !== undefined && subid == '') {
 		vars2.push('redirect_link=' + window.location.href);
 		vars2.push('referrer=' + document.referrer);
 		
@@ -148,7 +144,6 @@ function modufy_links() {
 			}
 		});
 	}
-	<?php } ?>
 	
 	if(subid != '') {
 		_modufy_links(subid)

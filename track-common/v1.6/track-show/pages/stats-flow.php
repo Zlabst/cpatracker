@@ -158,18 +158,20 @@ if(!empty($arr_data)) {
 	
 	//echo _HTML_TEMPLATE_PATH . '../pages/stats-flow-row.php';
 	
-	echo "<table class='table table-striped' id='stats-flow'>";
+	echo "<table class='table table-striped' id='stats-flow'><thead>
+			<tr><th></th><th></th><th>Ссылка</th><th>Источник</th><th>Кампания</th><th>Реферер</th></tr>
+		</thead>";
 	echo "<tbody>";
 	foreach ($arr_data as $row) {
 		include _HTML_TEMPLATE_PATH . '/../pages/stats-flow-row.php';
 	}
 	echo "</tbody></table>";
 	if($total > 20) {
-		echo '<a href="#" onclick="return load_flow()" class="center-block text-center">Показать больше</a>';
+		echo '<a href="#" onclick="return load_flow(this)" class="center-block text-center">Показать больше</a>';
 		
 		?>
 <script type="text/javascript">
-	function load_flow() {
+	function load_flow(obj) {
 		$.post(
             'index.php?ajax_act=a_load_flow', {
                 offset: $('#stats-flow tbody').children().length / 2 ,
@@ -181,7 +183,11 @@ if(!empty($arr_data)) {
             }
         ).done(
         	function(data) {
-            	$('#stats-flow tbody').children().last().after(data);
+        		if(data == '') {
+        			$(obj).hide();
+        		} else {
+            		$('#stats-flow tbody').children().last().after(data);
+            	}
             }
         ); 
 		return false;

@@ -10,8 +10,17 @@
 		border: none;
 		margin-top: 10px;
 	}
+	.btn-rule-copy.direct {
+		background: none !important;
+		min-width: 40px !important;
+	}
+	.btn-rule-copy.direct.active {
+		font-weight: bold;
+		color: black !important;
+	}
+	
 	.btn-rule-copy.for_text.active {
-		color: black;
+		color: black !important;
 	}
 	.btn-rule-copy.for_text {
 		border: medium none;
@@ -854,12 +863,9 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                 		<div style='width:200px; margin: 5px 5px 5px 0;' class="pull-left"><input type=hidden name='source_id[]' class='select-sources toSave' data-selected-value='landing' id="rule-link-select2-{{id}}">
                 		
                 	</div>
-            		<label class="checkbox pull-left direct" >
-						<!-- <input type="checkbox" id="rule-link-direct-{{id}}"> Без редиректа -->
-					</label>
-					
                     <button type='button' id='copy-button-text-{{id}}' class='btn-rule-copy for_text' role="button" data-clipboard-target='rule-link-text-{{id}}'><i class="fa fa-copy" title="Скопировать ссылку в буфер"></i></button>
                     <button type='button' class='btn-rule-copy for_text' onclick="$('#rule-link-row-{{id}}').toggle()" style="margin-right: 5px;"><i class="fa fa-link"></i></button>
+                    <button type="button" id="rule-link-direct-{{id}}" class="btn-rule-copy direct" role="button" style="margin-right: 5px;">LP</button>
                     </td>
                 </tr>
                	<tr id="rule-link-row-{{id}}" style="display: none">
@@ -867,7 +873,6 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                     	
                     	
                     	<button type='button' class='btn-rule-copy for_text' onclick="window.open('http://anonym.to/' + $('#rule-link-text-{{id}}').val());"><i class="fa fa-external-link"></i></button>
-                    	<button type="button" id="rule-link-direct-{{id}}" class="btn-rule-copy direct for_text" role="button" style="margin-right: 5px;">LP</button>
                     		
                     	<input type="text" class="rule-link-text" id="rule-link-text-{{id}}" value="{{url}}" />
                     	
