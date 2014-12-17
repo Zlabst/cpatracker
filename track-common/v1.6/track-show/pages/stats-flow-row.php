@@ -11,6 +11,7 @@
 			}
 			
 			$source_name = empty($source_config[$row['source_name']]['name']) ? $row['source_name'] : $source_config[$row['source_name']]['name'];
+			if($source_name == 'source') $source_name = 'Не определен';
 			
 			$rule_decs = get_rule_description($row['rule_id']);
 			

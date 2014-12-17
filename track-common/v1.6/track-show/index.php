@@ -181,8 +181,10 @@
 		$rule_id = rq('id', 1);
 		$direct  = rq('direct', 1);
 		
-		if($direct == 0 and $source == 'landing')  
+		/*
+		if($source == 'landing')  
 			$source = 'source';
+			*/
 		
 		// Прямая ссылка без редиректа!
 		if($source == 'landing' or $direct) {
@@ -195,8 +197,12 @@
 			if($source != 'landing' and !$direct) {
 				$lnk .= $source . '/campaign-ads/';
 			}
+			
 			if($direct) {
-				$lnk .= (strstr($lnk, '?') === false ? '?' : '&') . 'utm_source=' . $source . '&rule_name=' . onlyword($name). '&out_id=' . intval($out_id); // это безопасно потому что мы проверили наличие $source в нашем $source_config
+				$source_text  = ($source == 'landing') ? 'source' : $source;
+				
+				$lnk .= (strstr($lnk, '?') === false ? '?' : '&') . 'utm_source=' . $source_text . '&rule_name=' . onlyword($name); // это безопасно потому что мы проверили наличие $source в нашем $source_config
+				//. '&out_id=' . intval($out_id) 
 			}
 			
 			if(!empty($source_config[$source]['params'])) {
@@ -213,7 +219,7 @@
 				}
 			}
 			
-			if($direct and strstr($lnk, 'utm_campaign') === false) {
+			if($direct and strstr($lnk, 'utm_campaign=') === false) {
 				$lnk .= '&utm_campaign=campaign-ads';
 			}
 			

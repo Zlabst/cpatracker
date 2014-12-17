@@ -59,7 +59,7 @@ function CreateRequest() {
 }
 
 function _modufy_links(subid) {
-	var domain_name = window.location.hostname.split('.').slice(2).join('.');
+	var domain_name = window.location.hostname.split('.').slice(-2).join('.');
 
 	var exp = new Date();
 	var cookie_time=exp.getTime() + (365*10*24*60*60*1000);
@@ -105,7 +105,7 @@ function modufy_links() {
 		subid = vars['subid'];
 		
 	// try get SubID from tracker cookie
-	} else if(parents[window.location.host]) {
+	} else if(parents != null && parents[window.location.host]) {
 		subid = parents[window.location.host];
 		
 	// try get SubID from our cookie

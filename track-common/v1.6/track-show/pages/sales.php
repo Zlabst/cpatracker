@@ -94,7 +94,7 @@ krsort($sales);
                     <?php else : ?>
                         <?php foreach ($sales as $sale => $d) :?>
                             <tr>
-                                <td><?php if($sale == '_') echo 'Не определен'; else echo $sale;?></td>
+                                <td><?php if($sale == '_') echo 'Не определен'; else { if(!empty($source_config[$sale])) { echo $source_config[$sale]['name']; } else echo $sale;} ?></td>
                                 <?php foreach ($days as $day) : ?>
                                     <?php $dkey = (!$month)?date('d.m', strtotime($day)):$day;?>
                                     <td>

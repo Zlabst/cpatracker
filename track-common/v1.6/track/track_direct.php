@@ -5,7 +5,7 @@
 	header('Access-Control-Allow-Origin: *');
 	
 	ob_start();
-	
+
 	$settings_file= _TRACK_SETTINGS_PATH.'/settings.php';
 	require _TRACK_COMMON_PATH . '/functions.php'; 
 	//require _TRACK_SHOW_COMMON_PATH . "/functions_general.php";
@@ -94,6 +94,25 @@
 			return array ('country'=>$cur_country, 'state'=>$GEOIP_REGION_NAME[$record->country_code][$record->region], 'city'=>$record->city, 'region'=>$record->region,'isp'=>$isp);
 		}
 	}
+	
+	if (!function_exists('get_rules')) {
+		function get_rules($rule_name) {
+			$rule_hash=md5 ($rule_name);
+
+			$rules_path=_CACHE_PATH . "/rules";
+			$rule_path= "{$rules_path}/.{$rule_hash}";
+
+			if (is_file($rule_path)) {
+				$str_rules=file_get_contents($rule_path);
+				$arr_rules=unserialize($str_rules);
+				return $arr_rules;
+			} else {
+				//track_error('Rule ' . $rule_name. ' not found');
+			}
+			return false;
+		}
+		
+	}
 
 	// Remove trailing slash
 	$track_request = rtrim($_REQUEST['track_request'], '/');
@@ -165,6 +184,14 @@
 	$out_id  = empty($_GET['out_id']) ? 0 : intval($_GET['out_id']);;
 	$rule_id = empty($_GET['rule_id']) ? '' : intval($_GET['rule_id']);
 	
+	// Если id оффера не определен - берем первый из правила
+	if($out_id == 0) {
+		$rules = get_rules($link_name);
+		if($rules and is_array($rules)) {
+			$rules_keys = array_keys($rules);
+			$out_id = $rules[$rules_keys[0]][0]['out_id'];
+		}
+	}
 	
 	$redirect_link = str_ireplace('[SUBID]', $subid, $_GET['redirect_link']);
 

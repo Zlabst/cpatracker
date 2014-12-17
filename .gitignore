@@ -4,4 +4,4 @@ track/cache/postback/*
 track/cache/rules/*
 track/cache/wurfl-persistence/*
 track/cache/settings.php
-track-common/v1.6/track-show/plugins/*
+track-common/plugins/*

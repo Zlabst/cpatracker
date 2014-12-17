@@ -157,7 +157,7 @@ if(!empty($arr_data)) {
 	echo "<h4>Лента переходов за ".sdate($date).'<span style="float:right;">'."<a title='Экспорт в Excel' href='?csrfkey="._e(CSRF_KEY)."&ajax_act=excel_export&date="._e($date)."'><img src='"._HTML_TEMPLATE_PATH."/img/icons/table-excel.png'></a></span><span style='float:right; margin-right:16px;'><a title='Экспорт в TSV' href='?csrfkey="._e(CSRF_KEY)."&ajax_act=tsv_export&date="._e($date)."'><img src='"._HTML_TEMPLATE_PATH."/img/icons/table-tsv.png'></a></span>".'<div class="col-xs-4" style="float: right; margin-bottom: 7px;"><form action="" method="get"><input type="hidden" name="filter_by" value="search"/><input type="hidden" name="date" value="'.$date.'"/><input name="search" class="form-control" " type="text" value="'._e($search).'" placeholder="поиск" /></form></div>'."</h4>";
 
 	echo "<table class='table table-striped' id='stats-flow'><thead>
-			<tr><th></th><th></th><th>Ссылка</th><th>Источник</th><th>Кампания</th><th>Реферер</th></tr>
+			<tr><th></th><th></th><th>Ссылка</th><th>Источник</th><th>Кампания</th><th colspan=\"6\">Реферер</th><th></th></tr>
 		</thead>";
 	echo "<tbody>";
 	foreach ($arr_data as $row) {
