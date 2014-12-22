@@ -507,7 +507,8 @@
 					// Remove rule from tracker cache
 					cache_remove_rule ($rule_name);
 				}
-
+				
+				cache_rules_update();
 				header ('Location: '.full_url()."?page=rules");
 				exit();
 			break;
@@ -526,6 +527,7 @@
                 $sql="update tbl_rules set link_name='".mysql_real_escape_string($rule_name)."' where id='".mysql_real_escape_string($rule_id)."'";        		
                 mysql_query($sql);
                 cache_remove_rule ($old_rule_name);
+                cache_rules_update();
 
 				exit();
 			break;
