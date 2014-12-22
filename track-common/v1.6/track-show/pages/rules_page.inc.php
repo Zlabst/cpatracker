@@ -860,7 +860,7 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                 </td></tr>
                 <tr>
                 	<td>
-                		<div style='width:200px; margin: 5px 5px 5px 0;' class="pull-left"><input type=hidden name='source_id[]' class='select-sources toSave' data-selected-value='landing' id="rule-link-select2-{{id}}">
+                		<div style='width:200px; margin: 5px 5px 5px 0;' class="pull-left"><input type=hidden name='source_id[]' class='select-sources toSave' data-selected-value='source' id="rule-link-select2-{{id}}">
                 		
                 	</div>
                     <button type='button' id='copy-button-text-{{id}}' class='btn-rule-copy for_text' role="button" data-clipboard-target='rule-link-text-{{id}}'><i class="fa fa-copy" title="Скопировать ссылку в буфер"></i></button>

@@ -26,20 +26,16 @@
     include _TRACK_SHOW_COMMON_PATH . "/functions_general.php";
 
 
-    function net_loader($class) 
-    {
+    function net_loader($class) {
         include_once _TRACK_LIB_PATH.'/postback/'.$class.'.php';
     }
 
     spl_autoload_register('net_loader');
 
     $arr_files = array();
-    if ($handle = opendir(_CACHE_PATH . '/postback')) 
-    {
-        while (false !== ($entry = readdir($handle))) 
-        {
-            if ($entry != "." && $entry != ".." && $entry != ".empty") 
-            {
+    if ($handle = opendir(_CACHE_PATH . '/postback')) {
+        while (false !== ($entry = readdir($handle))) {
+            if ($entry != "." && $entry != ".." && $entry != ".empty") {
                 if (
                 // Check if file starts with dot,  
                         (strpos($entry, '.') === 0) &&
@@ -47,8 +43,7 @@
                         (strpos($entry, '+') === false) &&
                         // and was not processed before
                         (strpos($entry, '*') === false)
-                ) 
-                {
+                ) {
                     // Also check that there were at least 2 minutes from creation date
                     if ($entry != '.postback_' . date('Y-m-d-H-i', strtotime('-1 minutes')) &&
                             $entry != '.postback_' . date('Y-m-d-H-i')

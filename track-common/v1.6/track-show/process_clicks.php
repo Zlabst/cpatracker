@@ -124,8 +124,14 @@
         $wurflManager = $wurflManagerFactory->create();
     }
 
-	foreach ($arr_files as $cur_file)
-	{
+	foreach ($arr_files as $cur_file) {
+		$name_parts = explode('_', $cur_file);
+		if(count($name_parts) > 2 && !empty($tracklist[$name_parts[2]]['timeshift'])) {
+			$slave_timeshift = $tracklist[$name_parts[2]]['timeshift'];
+		} else {
+			$slave_timeshift = 0;
+		}
+		
 		$file_name=_CACHE_PATH."/clicks/{$cur_file}+";
 		rename (_CACHE_PATH."/clicks/$cur_file", $file_name);
 		$handle = fopen($file_name, "r");
@@ -133,7 +139,7 @@
 	    {
 		    $arr_click=array();
 	        $arr_click=explode ("\t", rtrim($buffer, "\n"));
-	        save_click_info ($arr_click);
+	        save_click_info ($arr_click, $slave_timeshift);
 	    }
 	    fclose($handle);
 		rename ($file_name, _CACHE_PATH."/clicks/{$cur_file}*");
@@ -176,7 +182,7 @@
 		return array ('country'=>$cur_country, 'state'=>$GEOIP_REGION_NAME[$record->country_code][$record->region], 'city'=>$record->city, 'region'=>$record->region, 'isp'=>$isp);
 	}
 	
-	function save_click_info ($arr_click_info)
+	function save_click_info ($arr_click_info, $timeshift = 0)
 	{
 		// User-agent parser
 		require_once (_TRACK_LIB_PATH."/ua-parser/uaparser.php");
@@ -184,8 +190,11 @@
 
 		// WURFL mobile database
 		global $wurflManager;
-		
-		$click_date=$arr_click_info[0];
+		if($timeshift != 0) {
+			$click_date=date("Y-m-d H:i:s", strtotime($arr_click_info[0]) + $timeshift);
+		} else {
+			$click_date=$arr_click_info[0];
+		}
 		$click_day=current(explode(' ', $click_date));
 		$click_hour=get_hour_by_date ($click_date);
 		

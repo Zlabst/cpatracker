@@ -63,7 +63,7 @@ $source_config = array(
 		)
 	),
 	*/
-	'landing' => array(
+	'source' => array(
 		'name' => 'Целевая страница',
 		'params' => array(
 			'source'       => array('name' => 'Источник',       'url' => '{utm_source}'),
@@ -1964,7 +1964,7 @@ function get_sources_data_js() {
 	
 	foreach($source_types as $type_val) {
 		if($type_val['name'] == '') {
-		$tmp = array(array('id' => 'landing', 'text' => 'Основная ссылка'));
+		$tmp = array(array('id' => 'source', 'text' => 'Основная ссылка'));
 		} else {
 			$tmp = array();
 		}

@@ -187,7 +187,8 @@
 			*/
 		
 		// Прямая ссылка без редиректа!
-		if($source == 'landing' or $direct) {
+		//$source == 'landing' or 
+		if($direct) {
 			list($out_id, $lnk) = get_first_rule_link($rule_id);
 		} else {
 			$lnk = tracklink() . '/' . $name . '/';
@@ -205,7 +206,7 @@
 				//. '&out_id=' . intval($out_id) 
 			}
 			
-			if(!empty($source_config[$source]['params'])) {
+			if($source != 'source' and !empty($source_config[$source]['params'])) {
 				$tmp = array();
 				foreach($source_config[$source]['params'] as $param_name => $param_value) {
 					if(empty($param_value['url']) or strstr($lnk, $param_value['url']) !== false) continue;
@@ -488,8 +489,8 @@
 
 				// Check if we already have rule with this name
 				$sql="select id from tbl_rules where link_name='".mysql_real_escape_string($rule_name)."' and status=0";
-				$result=mysql_query($sql);
-				$row=mysql_fetch_assoc($result);
+				$rs=mysql_query($sql);
+				$row=mysql_fetch_assoc($rs);
 				
 				if ($row['id']>0){;}else
 				{
@@ -653,8 +654,8 @@
 				
 				$sql="select count(id) as cnt from tbl_clicks where CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."') BETWEEN '".mysql_real_escape_string($date_start)." 00:00:00' AND '".mysql_real_escape_string($date_end)." 23:59:59' and source_name='".mysql_real_escape_string($source_name)."' {$where}";
 
-				$result=mysql_query($sql);
-				$row=mysql_fetch_assoc($result);
+				$rs=mysql_query($sql);
+				$row=mysql_fetch_assoc($rs);
 				if ($row['cnt']>0)
 				{
 					$click_price=$costs_value/$row['cnt'];
@@ -705,6 +706,7 @@
             case 'postback_info':
                     require(_TRACK_LIB_PATH.'/class/common.php');
                     $net = $_POST['net'];
+                    $result = array();
                     if (!is_file(_TRACK_LIB_PATH.'/postback/'.$net.'.php')) {
                         $result['status'] = 'ERR';
                         echo json_encode($result);
