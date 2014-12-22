@@ -8,6 +8,7 @@
 
 	define('_TRACK_LIB_PATH',      _TRACK_COMMON_PATH . '/lib');
 	define('_CACHE_PATH',          _TRACK_PATH . '/cache');
+	define('_CACHE_COMMON_PATH',   _TRACK_PATH . '/cache');
 	define('_TRACK_SHOW_COMMON_PATH', dirname (__FILE__) . '/../track-common/' . _TRACK_VER . '/track-show');
 
 	$html_delta_path = explode('/',substr($_SERVER['SCRIPT_FILENAME'], strlen($_SERVER['DOCUMENT_ROOT'])));

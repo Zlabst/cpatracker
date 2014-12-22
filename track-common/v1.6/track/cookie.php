@@ -133,7 +133,7 @@ function modufy_links() {
 	//console.log(subid);
 	
 	if(vars['rule_name'] !== undefined && subid == '') {
-		vars2.push('redirect_link=' + window.location.href);
+		//vars2.push('redirect_link=' + window.location.href);
 		vars2.push('referrer=' + document.referrer);
 		
 		params = vars2.join('&');

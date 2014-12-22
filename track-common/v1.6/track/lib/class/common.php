@@ -43,12 +43,19 @@ class common {
         	$status = $data['status'];
         	
             //Проверяем есть ли клик с этим SibID
-            $r = mysql_query('SELECT `id` FROM `tbl_clicks` WHERE `subid` = "'.mysql_real_escape_string($subid).'"') or die(mysql_error());
+            $r = mysql_query('SELECT `id`, `is_sale`, `is_lead` FROM `tbl_clicks` WHERE `subid` = "'.mysql_real_escape_string($subid).'"') or die(mysql_error());
             
             if (mysql_num_rows($r) > 0) {
                 $f = mysql_fetch_assoc($r);
                 $click_id = $f['id'];
-                mysql_query('UPDATE `tbl_clicks` SET `is_sale` = 1, `is_lead` = '.intval($is_lead).', `conversion_price_main` = "'.mysql_real_escape_string($data['profit']).'" WHERE `id` = '.$click_id) or die(mysql_error());
+                if($data['profit'] > 0) {
+                	$is_lead = $f['is_lead'] > 0 ? 1 : 0;
+                	$is_sale = 1;
+                } else {
+                	$is_lead = 1;
+                	$is_sale = $f['is_sale'] > 0 ? 1 : 0;
+                }
+                mysql_query('UPDATE `tbl_clicks` SET `is_sale` = ' . $is_sale . ', `is_lead` = '.intval($is_lead).', `conversion_price_main` = "'.mysql_real_escape_string($data['profit']).'" WHERE `id` = '.$click_id) or die(mysql_error());
             }
             
             // ----------------------------

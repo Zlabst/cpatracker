@@ -320,6 +320,13 @@
 				}
 				$i++;
 			}
+			
+			// Удаляем дополнительные параметры "прямого перехода"
+			$direct_params = array('utm_source', 'rule_name', 'utm_campaign');
+			foreach($direct_params as $param_name) {
+				unset($click_get_params[$param_name]);
+			}
+			
 			/*
 			foreach($click_get_params as $param_name => $param_value) {
 				if(!empty($source_config[$click_link_source]['params'][$param_name]['n'])) {
