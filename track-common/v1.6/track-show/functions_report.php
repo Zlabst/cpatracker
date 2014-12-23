@@ -1080,18 +1080,7 @@
 		$out = array();
 		foreach($report_cols as $col => $options) {
 			$func = 't_' . $col;
-			//$out[] = '<span class="timetab sdata ' . $col . '">' . $func($data) . '</span>';
 			$out[] = '<span class="timetab sdata ' . $col . '">' . sortdata($col, $data) . '</span>';
-			/*
-			if($options['money']) {
-				// Для денежных колонок добавляем все возможные значения
-				foreach($currencies as $currency => $rate) {
-					$out[] = '<span class="sdata ' . $col . '">'.$func($data).'</span>';
-				}
-			} else {
-				
-			}
-			*/
 		}
 		return join('', $out);
 	}

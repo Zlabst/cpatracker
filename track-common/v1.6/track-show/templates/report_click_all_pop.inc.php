@@ -49,11 +49,13 @@ if($var['report_params']['group_by'] != '')  {
 							
 							$name = param_name($r['name'], $var['report_params']['filter'][0]['source_name']);
 							
+							$popular_str = substr($r['popular'], 0, 50);
+							
 							// Ограничиваем глубину фильтров
 							if(empty($var['report_params']['filter'][0]) or count($var['report_params']['filter'][0]) < 5) {
-								$r['popular'] = '<a href="'.report_lnk($var['report_params'], array('filter_str' => array_merge($var['report_params']['filter_str'], array($r['name'] => _e($r['popular']))))).'">' . _e($r['popular']) . '</a>';
+								$r['popular'] = '<a href="'.report_lnk($var['report_params'], array('filter_str' => array_merge($var['report_params']['filter_str'], array($r['name'] => _e($r['popular']))))).'" title="' . _e($r['popular']) . '">' . _e($popular_str) . '</a>';
 							} else {
-								$r['popular'] = _e($r['popular']);
+								$r['popular'] = _e($popular_str);
 							}
 							
 							echo '<tr><td nowrap=""><b><a href="' . report_lnk($var['report_params'], array('mode' => '', 'group_by' => $r['name'])) . '">' . $name . '</a></b></td><td>' . $r['popular'] . '</td>';

@@ -1,5 +1,10 @@
 <?php if (!$include_flag){exit();} ?>
 <script src="<?php echo _HTML_TEMPLATE_PATH;?>/js/report_toolbar.js"></script>
+<style>
+.sortdata {
+    display: none;
+}
+</style>
 <?php
 	$date = rq('date', 4, get_current_day());
 	$hour = rq('hour', 2);
@@ -20,24 +25,21 @@
 	{
 		foreach ($row_data as $cur_hour=>$data)
 		{
-			$clicks_data=$data['click'];
-			$leads_data=$data['lead'];
-			$sales_data=$data['sale'];
-			$saleleads_data=$data['sale_lead'];
+			$clicks_data    = $data['click'];
+			$leads_data     = $data['lead'];
+			$sales_data     = $data['sale'];
+			$saleleads_data = $data['sale_lead'];
 
-			$arr_hourly[$row_name][$cur_hour]=get_clicks_report_element ($clicks_data, $leads_data, $sales_data, $saleleads_data);
+			$arr_hourly[$row_name][$cur_hour] = get_clicks_report_element ($clicks_data, $leads_data, $sales_data, $saleleads_data);
 		}			
 	}
 
 	echo "<div class='row'>";
 	echo "<div class='col-md-12'>";
 	echo "<p align=center>";
-	if ($date != get_current_day())
-	{
+	if ($date != get_current_day()) {
 		echo "<a style='float:right;' href='?date={$next_date}&report_type={$main_type}'>".mysqldate2string($next_date)." &rarr;</a>";
-	}
-	else
-	{
+	} else {
 		echo "<a style='float:right; visibility:hidden;' href='?date={$next_date}&report_type={$main_type}'>".mysqldate2string($next_date)." &rarr;</a>";
 	}
 	echo "<b>".mysqldate2string($date)."</b>";
@@ -128,8 +130,9 @@ echo "</div> <!-- ./row -->";
 			</div>
 
 			<div class="btn-group invisible" id='rt_sale_section' data-toggle="buttons">
-				<label class="btn btn-default active" onclick='update_stats("sales");'><input type="radio" name="option_leads_type">Продажи</label>
-				<label class="btn btn-default" onclick='update_stats("leads");'><input type="radio" name="option_leads_type">Лиды</label>	
+				<!--<label class="btn btn-default active" onclick='update_stats("sale_lead");'><input type="radio" name="option_leads_type">Все действия</label>-->
+				<label class="btn btn-default" onclick='update_stats("sale");'><input type="radio" name="option_leads_type">Продажи</label>
+				<label class="btn btn-default" onclick='update_stats("lead");'><input type="radio" name="option_leads_type">Лиды</label>	
 			</div>
 
 			<div class="btn-group invisible" id='rt_currency_section' data-toggle="buttons">
@@ -189,8 +192,9 @@ if(!empty($arr_data)) {
             }
         ); 
 		return false;
-	}
+	}	
 </script><?php 
 	}
 }
 ?>
+<script>show_conv_mode('sale', 0);update_stats2('cnt', false);show_currency('usd');</script>

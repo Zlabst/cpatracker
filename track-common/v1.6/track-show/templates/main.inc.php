@@ -25,10 +25,11 @@
                     ?>
                     <div class="<?php echo $main_container_class?>">
                         <?php
-                        	echo load_plugin('payreminder');
-                    		echo load_plugin('expiry');
-                            if (in_array($page_content, $page_content_allowed))
-                            {
+                        	if($_REQUEST['page']!='login') {
+	                        	echo load_plugin('payreminder');
+	                    		echo load_plugin('expiry');
+                    		}
+                            if (in_array($page_content, $page_content_allowed)) {
                                 include (_TRACK_SHOW_COMMON_PATH.'/pages/'.$page_content);
                             }
                         ?>

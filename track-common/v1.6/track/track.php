@@ -9,12 +9,7 @@
 	$str=file_get_contents($settings_file);
 	$str=str_replace('<?php exit(); ?>', '', $str);
 	$arr_settings=unserialize($str);
-	/*
-	$_DB_LOGIN    = $arr_settings['login'];
-	$_DB_PASSWORD = $arr_settings['password'];
-	$_DB_NAME     = $arr_settings['dbname'];
-	$_DB_HOST     = $arr_settings['dbserver'];
-	*/
+
 	$_SERVER_TYPE = $arr_settings['server_type'];
 	if ($_SERVER_TYPE==''){exit();}
 
@@ -115,55 +110,6 @@
 			else
 			{	
 				track_error('Rule ' . $rule_name. ' not found');
-				/*
-				global $_DB_LOGIN, $_DB_PASSWORD, $_DB_NAME, $_DB_HOST;
-				
-				// Connect to DB
-				mysql_connect($_DB_HOST, $_DB_LOGIN, $_DB_PASSWORD) or die("Could not connect: " .mysql_error());
-				mysql_select_db($_DB_NAME);
-				mysql_query('SET NAMES utf8');
-
-				$sql="select tbl_rules.id as rule_id, tbl_rules_items.id, tbl_rules_items.parent_id, tbl_rules_items.type, tbl_rules_items.value from tbl_rules left join tbl_rules_items on tbl_rules_items.rule_id=tbl_rules.id where tbl_rules.link_name='".mysql_real_escape_string($rule_name)."' and tbl_rules.status=0 and tbl_rules_items.status=0 order by tbl_rules_items.parent_id, tbl_rules_items.id";
-				$result=mysql_query($sql);
-				
-				$arr_items=array();
-				$rule_id=0;
-				while ($row=mysql_fetch_assoc($result))
-				{
-					$rule_id=$row['rule_id'];
-					$arr_items[$row['id']]=$row;
-				}
-				
-				if (count($arr_items)==0)
-				{
-					return array();
-				}
-
-				$arr_rules=array();
-                $i = 1;
-				foreach ($arr_items as $row)
-				{
-	                if ($row['parent_id']>0)
-	                {   
-		                $arr_rules[$arr_items[$row['parent_id']]['type']][]=array('value'=>$arr_items[$row['parent_id']]['value'],'rule_id'=>$rule_id, 'out_id'=>$row['value'],'order'=>$i);
-		                $i++;
-	                }
-				}
-				$str_rules=serialize($arr_rules);
-
-				if (!is_dir($rules_path))
-				{
-					mkdir ($rules_path);
-					chmod ($rules_path, 0777);
-				}
-
-				if (is_writable($rules_path))
-				{
-					file_put_contents($rule_path, $str_rules);
-					chmod ($rule_path, 0777);
-				}
-				return $arr_rules;
-				*/
 			}
 		}
 	}
@@ -190,36 +136,6 @@
 			else
 			{
 				track_error('Out link ' . $id . ' not found');
-				/*
-				global $_DB_LOGIN, $_DB_PASSWORD, $_DB_NAME, $_DB_HOST;
-				
-				// Connect to DB
-				mysql_connect($_DB_HOST, $_DB_LOGIN, $_DB_PASSWORD) or die("Could not connect: " .mysql_error());
-				mysql_select_db($_DB_NAME);
-				mysql_query('SET NAMES utf8');
-
-				$sql="select offer_tracking_url from tbl_offers where id='".mysql_real_escape_string($id)."'";
-				$result=mysql_query($sql);
-				$row=mysql_fetch_assoc($result);
-				$link=$row['offer_tracking_url'];
-
-				if ($link=='')
-				{
-					return '';
-				}
-
-				if (!is_dir($outs_path))
-				{
-					mkdir ($outs_path);
-					chmod ($outs_path, 0777);
-				}
-
-				if (is_writable($outs_path))
-				{
-					file_put_contents($out_path, $link);
-					chmod ($out_path, 0777);
-				}
-				*/
 			}
 
 			return $link;

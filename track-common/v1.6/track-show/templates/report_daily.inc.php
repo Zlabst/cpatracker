@@ -127,12 +127,15 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 	
 	// Итоговая строка
 	
-	echo "<tfoot><tr><th ".($var['report_params']['mode'] == 'popular' ? ' colspan="2"' : '') ."><strong><i style='display:none;'>&#148257;</i>Итого</strong></th>";
-	foreach ($var['arr_dates'] as $cur_date) {
-			echo '<th>' . get_clicks_report_element($column_total_data[$cur_date]['click'], $column_total_data[$cur_date]['lead'], $column_total_data[$cur_date]['sale'], $column_total_data[$cur_date]['sale_lead']) . '</th>';
-	}	
-	echo '<th>' . get_clicks_report_element($table_total_data['click'], $table_total_data['lead'], $table_total_data['sale'], $table_total_data['sale_lead']) . '</th>';
-	echo "</tr></tfoot>";
+	if($var['report_params']['mode'] != 'popular') {
+		echo "<tfoot><tr><th ".($var['report_params']['mode'] == 'popular' ? ' colspan="2"' : '') ."><strong><i style='display:none;'>&#148257;</i>Итого</strong></th>";
+		foreach ($var['arr_dates'] as $cur_date) {
+				echo '<th>' . get_clicks_report_element($column_total_data[$cur_date]['click'], $column_total_data[$cur_date]['lead'], $column_total_data[$cur_date]['sale'], $column_total_data[$cur_date]['sale_lead']) . '</th>';
+		}	
+		echo '<th>' . get_clicks_report_element($table_total_data['click'], $table_total_data['lead'], $table_total_data['sale'], $table_total_data['sale_lead']) . '</th>';
+		echo "</tr></tfoot>";
+	}
+	
 	echo "</table></div></div>";
 	
 	// Скрипты, отвечающие за сортировку и sparklines

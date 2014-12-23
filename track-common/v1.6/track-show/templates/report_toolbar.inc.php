@@ -87,8 +87,8 @@ if(!empty($report['data']) or $params['conv'] != 'all') {
             </div>
 
             <div class="btn-group margin5rb" id='rt_sale_section' data-toggle="buttons">
-                <label class="btn btn-default active" onclick='update_stats("sales");'><input type="radio" name="option_leads_type">Продажи</label>
-                <label class="btn btn-default" onclick='update_stats("leads");'><input type="radio" name="option_leads_type">Лиды</label>	
+                <label class="btn btn-default active" onclick='update_stats("sale");'><input type="radio" name="option_leads_type">Продажи</label>
+                <label class="btn btn-default" onclick='update_stats("lead");'><input type="radio" name="option_leads_type">Лиды</label>	
             </div>
             	
             <?php
