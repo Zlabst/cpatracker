@@ -41,16 +41,20 @@
 			
 			if($row['source_name'] == 'yadirect' and !empty($row['click_param_value8'])) {
 				$cur_referrer = $row['click_param_value8'];
-				if (strlen($cur_referrer)>35) {
-					$wrapped_referrer=substr($cur_referrer,0, 29).'…';
+				if (mb_strlen($cur_referrer, 'UTF-8') > 40) {
+					$wrapped_referrer = mb_substr($cur_referrer, 0, 38, 'UTF-8').'…';
+				} else {
+					$wrapped_referrer = $cur_referrer;
 				}
 				$wrapped_referrer = '<span style="color: royalblue">'._e($wrapped_referrer). '</span>';
 				
 			} else {
 				$cur_referrer=str_replace (array('http://www.', 'www.'),'',$row['referer']);
 				if (strpos($cur_referrer, 'http://')===0){$cur_referrer=substr($cur_referrer, strlen('http://'));}
-				if (strlen($cur_referrer)>35) {
-					$wrapped_referrer=substr($cur_referrer,0, 29).'…';
+				if (mb_strlen($cur_referrer, 'UTF-8') > 35) {
+					$wrapped_referrer = mb_substr($cur_referrer, 0, 29, 'UTF-8').'…';
+				} else {
+					$wrapped_referrer = $cur_referrer;
 				}
 				$wrapped_referrer = _e($wrapped_referrer);
 			}

@@ -192,19 +192,27 @@ krsort($sales);
 
         return false;
     }
-   <?php if (is_array($sales)) :?> 
+   <?php
+   	   // Тонкая подстройка количества осей графика, чтобы там не было дробных значений
+   	   $axes_tune = array(
+   	   		1 => 2,
+   	   		2 => 3,
+   	   );
+   	   
+   	   if (is_array($sales)) { ?> 
     google.load("visualization", "1", {packages:["corechart"]});
       google.setOnLoadCallback(drawChart);
       function drawChart() {
         var data = google.visualization.arrayToDataTable([
           [<?php if ($_REQUEST['subtype']=='monthly') echo "'Месяц'"; else echo "'День'";?>, 'Продажи'],
-          <?php $i = 0;?>
-          <?php foreach ($days as $day) : ?>
-              <?php $i++;?>
-              <?php $dkey = (!$month)?date('d.m', strtotime($day)):$day; ?>
-              <?php echo  '[\''.$dkey.'\', '. intval($total[$dkey]).']'; ?><?php if ($i < count($days)) echo ',';?>
+          <?php $i = 0; $max = 0;?>
+          <?php foreach ($days as $day) { ?>
+              <?php $i++;
+              $dkey = (!$month)?date('d.m', strtotime($day)):$day;
+              if($total[$dkey] > $max) $max = $total[$dkey];
+              echo  '[\''.$dkey.'\', '. intval($total[$dkey]).']'; ?><?php if ($i < count($days)) echo ',';?>
                 
-          <?php endforeach; ?>
+          <?php } ?>
         ]);
 
         var options = {
@@ -213,13 +221,14 @@ krsort($sales);
           height: 250,
           chartArea: {left: '20',width:'800'},
           legend: {position: 'in'},
-          hAxis: {title: 'Количество'}
+          hAxis: {title: 'Количество', format:'string'},
+          vAxis: {textPosition: 'out', format:'#', <?php if(!empty($axes_tune[$max])) { ?>gridlines: {count: <?php echo $axes_tune[$max];?>}<?php } ?>}
         };
 
         var chart = new google.visualization.ColumnChart(document.getElementById('chart_div'));
         chart.draw(data, options);
       }
-      <?php endif;?>
+      <?php } ?>
 </script>
 
 <style>
