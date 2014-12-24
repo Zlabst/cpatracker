@@ -2400,7 +2400,7 @@ function send2trackers($name, $data) {
 		            if ($row['parent_id']>0) {
 		                $arr_rules[$arr_items[$row['parent_id']]['type']][] = array(
 		                	'value'   => $arr_items[$row['parent_id']]['value'],
-		                	'rule_id' => $rule_id, 
+		                	'rule_id' => $row['rule_id'], 
 		                	'out_id'  => $row['value'],
 		                	'order'   => $i
 		               	);

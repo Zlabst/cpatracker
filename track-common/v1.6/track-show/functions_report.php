@@ -133,6 +133,7 @@
 			t1.id,
 			t1.source_name,
 			UNIX_TIMESTAMP(t1.date_add) as `time_add`,
+			t1.rule_id,
 			t1.out_id,
 			t1.parent_id,
 			t1.campaign_name,
@@ -440,6 +441,7 @@
 							'price'  => 0,
 							'unique' => 0,
 							'income' => 0,
+							'direct' => 0,
 							'sale'   => 0,
 							'lead'   => 0,
 							'out'    => 0,
@@ -678,11 +680,11 @@
 		if($params['mode'] == 'lp_offers') { //and $params['part'] == 'all'
 			uasort($data, 'lp_order');
 			
-			//dmp($data);
+			//dmp($data); //111
 			$lp_offers_valid = array_keys($lp_offers_valid);
 			$ln = 0; // номер лэндинга - условное значение, необходимое для группировки при сортировке таблицы с подчиненными офферами. У лэндинга и его офферов должен быть один номер, уникальный для этой группы
 			foreach($data as $k => $v) {
-				if(!in_array($k, $lp_offers_valid) or $v['cnt'] == 0) {
+				if((!in_array($k, $lp_offers_valid) and $v['direct'] == 0) or $v['cnt'] == 0) {
 					unset($data[$k]);
 				} else {
 					$data[$k]['ln'] = $ln;
@@ -699,7 +701,7 @@
 		// Удаляем страницы, у которых нет исходящих (Это не Лэндинги)
 		if(($params['mode'] == 'lp' and $params['part'] == 'all') and empty($parent_val) ) {
 			foreach($data as $k => $v) {
-				if(empty($v['out'])) {
+				if(empty($v['out']) and empty($v['direct'])) {
 					unset($data[$k]);
 				}
 			}
@@ -1654,6 +1656,7 @@
 					'price'  => 0,
 					'unique' => 0,
 					'income' => 0,
+					'direct' => 0,
 					'sale'   => 0,
 					'lead'   => 0,
 					'out'    => 0,
@@ -1669,6 +1672,7 @@
 			$arr['price']     += $r['click_price'];
 			$arr['unique']    += $r['is_unique'];
 			$arr['income']    += $r['conversion_price_main'];
+			$arr['direct']    += ($r['rule_id'] == 0 and $r['time_add'] > 1419463566) ? 1 : 0;
 			$arr['out']       += $r['is_connected'];
 			$arr['sale_lead'] += $r['sale_lead'];
 		}
