@@ -1,5 +1,6 @@
 <?php if (!$include_flag){exit();} ?>
 <?php
+	//dmp($row);
 	$date_url = (isset($_REQUEST['date']) and preg_match('/^\d{4}-\d{2}-\d{2}$/', $_REQUEST['date'])) ? '&date=' . $_REQUEST['date'] : '';
 	echo "<tr style='cursor:pointer;' onclick='$(this).next().toggle();'>";
 			if ($row['country']==''){
@@ -37,23 +38,34 @@
 			<td><a href='?filter_by=source_name&value="._e($row['source_name']).$date_url."'>"._e($source_name)."</td>
 			<td>"._e($row['campaign_name'].' '.$row['ads_name'])."</td>";
 			
-			$cur_referrer=str_replace (array('http://www.', 'www.'),'',$row['referer']);
-			if (strpos($cur_referrer, 'http://')===0){$cur_referrer=substr($cur_referrer, strlen('http://'));}
 			
-			if (strlen($cur_referrer)>35)
-			{
-				$cur_referrer=substr($cur_referrer,0, 29).'…';
+			if($row['source_name'] == 'yadirect' and !empty($row['click_param_value8'])) {
+				$cur_referrer = $row['click_param_value8'];
+				if (strlen($cur_referrer)>35) {
+					$wrapped_referrer=substr($cur_referrer,0, 29).'…';
+				}
+				$wrapped_referrer = '<span style="color: royalblue">'._e($wrapped_referrer). '</span>';
+				
+			} else {
+				$cur_referrer=str_replace (array('http://www.', 'www.'),'',$row['referer']);
+				if (strpos($cur_referrer, 'http://')===0){$cur_referrer=substr($cur_referrer, strlen('http://'));}
+				if (strlen($cur_referrer)>35) {
+					$wrapped_referrer=substr($cur_referrer,0, 29).'…';
+				}
+				$wrapped_referrer = _e($wrapped_referrer);
 			}
-			$wrapped_referrer=$cur_referrer;
+			
+			
+			
 
 			// Merge cells if we don't have additional params
 			if ($row['campaign_param1'].$row['campaign_param2'].$row['campaign_param3'].$row['campaign_param4'].$row['campaign_param5']=='')
 			{
-				echo "<td colspan=6  title='"._e($row['referer'])."'>"._e($wrapped_referrer)."</td>";			
+				echo "<td colspan=6  title='"._e($cur_referrer)."'>".$wrapped_referrer."</td>";			
 			}
 			else
 			{
-				echo "<td title='"._e($row['referer'])."'>"._e($wrapped_referrer)."</td>";			
+				echo "<td title='"._e($cur_referrer)."'>".$wrapped_referrer."</td>";			
 				echo "<td>"._e($row['campaign_param1'])."</td>
 				<td>"._e($row['campaign_param2'])."</td>
 				<td>"._e($row['campaign_param3'])."</td>

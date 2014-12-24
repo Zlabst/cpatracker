@@ -325,6 +325,13 @@
 						}
 						$sql_click_params[]="click_param_name{$i}='position_type', click_param_value{$i}='"._str($position_type)."'";
 					}
+					
+					// Поисковые слова Яндекса
+					if($click_link_source == 'yadirect' and $param_name == 'ad_id') {
+						$i++;
+						$sql_click_params[]="click_param_name{$i}='text', click_param_value{$i}='"._str(parse_search_refer($arr_click_info[17]))."'";
+					}
+					
 					unset($click_get_params[$param_name]); // Параметр отработан, убираем его чтобы остались только пользовательские
 				}
 				$i++;

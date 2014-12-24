@@ -527,6 +527,7 @@ $source_config = array(
 			'keyword'     => array('n' => 5, 'name' => 'Ключевая фраза', 'url' => '{keyword}'),
 			'campaign_id' => array('n' => 6, 'name' => 'ID кампании'   , 'url' => '{campaign_id}'),
 			'ad_id'       => array('n' => 7, 'name' => 'ID объявления',  'url' => '{ad_id}'),
+			'text'        => array('n' => 8, 'name' => 'Текст запроса'),
 		),
 	),
 	'popunder' => array(
@@ -2574,4 +2575,97 @@ function tracklink() {
 }
 
 //dmp($tracklist);
+
+function parse_search_refer($refer, $tail = 1) {
+	  // База данных поисковых систем 
+	  $search_engines=Array( 
+		Array("name"=>"Картинки.Mail", "pattern"=>"go.mail.ru/search_images", "param"=>"q="), 
+		Array("name"=>"Mail", "pattern"=>"go.mail.ru", "param"=>"q="), 
+		Array("name"=>"Google Images", "pattern"=>"images.google.", "param"=>"q="), 
+		Array("name"=>"Google", "pattern"=>"google.", "param"=>"q="), 
+		Array("name"=>"Google", "pattern"=>"google.", "param"=>"as_q="), 
+		Array("name"=>"Live Search", "pattern"=>"search.live.com", "param"=>"q="), 
+		Array("name"=>"RapidShare Search Engine", "pattern"=>"rapidshare-search-engine", "param"=>"s="), 
+		Array("name"=>"Rambler", "pattern"=>"rambler.ru", "param"=>"query="), 
+		Array("name"=>"Rambler", "pattern"=>"rambler.ru", "param"=>"words="), 
+		Array("name"=>"Yahoo!", "pattern"=>"search.yahoo.com", "param"=>"p="), 
+		Array("name"=>"Nigma", "pattern"=>"nigma.ru/index.php", "param"=>"s="), 
+		Array("name"=>"Nigma", "pattern"=>"nigma.ru/index.php", "param"=>"q="), 
+		Array("name"=>"MSN", "pattern"=>"search.msn.com/results", "param"=>"q="), 
+		Array("name"=>"Bing", "pattern"=>"bing.com/search", "param"=>"q="),
+		Array("name"=>"Ask", "pattern"=>"ask.com/web", "param"=>"q="), 
+		Array("name"=>"QIP", "pattern"=>"search.qip.ru/search", "param"=>"query="), 
+		Array("name"=>"RapidAll", "pattern"=>"rapidall.com/search.php", "param"=>"query="), 
+		Array("name"=>"Яндекс.Картинки", "pattern"=>"images.yandex.ru/", "param"=>"text="), 
+		Array("name"=>"Яндекс.Mobile", "pattern"=>"m.yandex.ru/search", "param"=>"query="), 
+		Array("name"=>"Яндекс", "pattern"=>"hghltd.yandex.net", "param"=>"text="), 
+		Array("name"=>"Яндекс", "pattern"=>"yandex.ru", "param"=>"text="),
+		Array("name"=>"Яндекс", "pattern"=>"yandex.ua", "param"=>"text="),
+		Array("name"=>"Яндекс", "pattern"=>"yandex.kz", "param"=>"text="),
+		Array("name"=>"Яндекс", "pattern"=>"yandex.by", "param"=>"text="), 
+		Array("name"=>"Avg", "pattern"=>"search.avg.com", "param"=>"q="),
+		Array("name"=>"Ukr.net", "pattern"=>"search.ukr.net", "param"=>"search_query=") 
+	  ); 
+	  
+	  // Отрезать от ссылки "хвост" 
+	  $tmp=explode("?", $refer); 
+	  $chk_site=$tmp[0];  // Имя сайта 
+
+	  // Разобрать "хвост" на отдельные параметры 
+	  $params=split("&", implode("&", $tmp)); 
+	  
+		$result_engine=""; 
+		$result_title=$refer; 
+		$signature_found=false;
+		for ($i=0; $i<count($params); $i++) 
+		{ 
+			// Параметр пустой, пропустить 
+			if ($params[$i]=="") { continue; } 
+			foreach ($search_engines as $engine) 
+			{ 
+				// Поиск по всем сигнатурам 
+				if (strpos($chk_site,$engine['pattern'])!==false && substr($params[$i],0,strlen($engine['param']))==$engine['param']) 
+				{ 
+					// Сигнатура найдена 
+					$result_title=substr($params[$i], strlen($engine['param'])); 
+					$result_engine=$engine['name']; 
+					$signature_found=true;
+					break;
+				}
+			} 
+			// Show first pattern occurence
+			if ($signature_found){break;}
+		} 
+	  
+	  if ($result_engine!="") 
+		 { 
+		// Привести строку в текстовый вид 
+		$str=trim(urldecode($result_title)); 
+		// Если строка в юникоде, то перевести ее в кодировку win1251 
+		/*
+		if (is_unicode($str)) 
+		{ 
+			// $str=iconv("utf-8","windows-1251",$str); 
+		}
+		else
+		{
+			$str=iconv('windows-1251','utf-8',$str); 
+		}
+		*/
+		if ($str!="") { 
+		  // Сформировать строку "Имя поисковой системы: запрос" 
+		  // $result=$result_engine.": ".$str; 
+		  $result=$str; 
+		} 
+		// Пустой поисковый запрос 
+		else { 
+		  $result=""; 
+		} 
+	  } 
+	  else { 
+		$result=""; 
+	  } 
+
+	  return ($result); 
+	}
 ?>

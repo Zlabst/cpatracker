@@ -133,8 +133,8 @@ function modufy_links() {
 	//console.log(subid);
 	
 	if(vars['rule_name'] !== undefined && subid == '') {
-		//vars2.push('redirect_link=' + window.location.href);
-		vars2.push('referrer=' + document.referrer);
+		//vars2.push('redirect_link=' + escape(window.location.href));
+		vars2.push('referrer=' + escape(document.referrer));
 		
 		params = vars2.join('&');
 		SendRequest('<?php echo _HTML_TRACK_PATH; ?>/track_direct.php?' + params, '', function(data) {
