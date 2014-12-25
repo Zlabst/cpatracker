@@ -744,6 +744,7 @@
 	}
 
 	header('Content-Type: text/html; charset=utf-8');
+	header('X-Frame-Options: DENY');
 	
 	$page = rq('page');
 	
