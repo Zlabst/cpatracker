@@ -84,7 +84,7 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 			
 			$data['popular'] = '<a href="'.report_lnk($var['report_params'], array('filter_str' => array_merge($var['report_params']['filter_str'], array($source_name => _e($data['popular']))))).'">' . _e($data['popular']) . '</a>';
 			
-			echo "<tr><td>" . $source_name_full . "<span style='float:right; margin-left:10px;'><div id='sparkline_{$i}'></div></span></td><td>".$data['popular']."</td>";
+			echo "<tr><td><table class=\"sparktable\"><tr><td>" . $source_name_full . "</td><td><span style='float:right; margin-left:10px;'><div id='sparkline_{$i}'></div></span></td></tr></table></td><td>".$data['popular']."</td>";
 		} else {
 			// Ограничиваем глубину фильтров
 			if(empty($var['report_params']['filter'][0]) or count($var['report_params']['filter'][0]) < 5) {
@@ -93,7 +93,7 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 				$source_name_full = _e($source_name_full);
 			}
 			
-			echo "<tr><td>" . $source_name_full . "<span style='float:right; margin-left:10px;'><div id='sparkline_{$i}'></div></span></td>";
+			echo "<tr><td><table class=\"sparktable\"><tr><td>" . $source_name_full . "</td><td><span style='float:right; margin-left:10px;'><div id='sparkline_{$i}'></div></span></td></tr></table></td>";
 		}
 		
 		

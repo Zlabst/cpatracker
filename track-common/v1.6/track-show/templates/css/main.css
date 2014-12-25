@@ -480,3 +480,9 @@ table.dataTable td {
 	margin-right: 5px;
 	margin-bottom: 5px;
 }
+table.dataTable td table.sparktable {
+	width: 100%;
+}
+table.dataTable td table.sparktable td {
+	padding: 0px !important;
+}
