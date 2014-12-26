@@ -489,7 +489,9 @@ table.dataTable td table.sparktable td {
 th .sdata.lead {
 	font-weight: bold;
 }
-
+.sdata {
+	white-space: nowrap;
+}
 .sdata.lead {
 	font-size: 14px;
 }

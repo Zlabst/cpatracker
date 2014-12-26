@@ -337,6 +337,13 @@
 				$i++;
 			}
 			
+			// Удаляем параметры из чёрной списка (для трекеров, которые шлют нам много лишнего)
+			if(isset($source_config[$click_link_source]['rapams_ignore'])) {
+				foreach($source_config[$click_link_source]['rapams_ignore'] as $param_name) {
+					unset($click_get_params[$param_name]);
+				}
+			}
+			
 			// Удаляем дополнительные параметры "прямого перехода"
 			$direct_params = array('utm_source', 'rule_name', 'utm_campaign');
 			foreach($direct_params as $param_name) {
