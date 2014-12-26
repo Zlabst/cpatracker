@@ -73,7 +73,7 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 			}
 		}
 		
-		//dmp($var['arr_dates']);
+		
 		
 		if($var['report_params']['mode'] == 'popular') {
 			
@@ -82,7 +82,7 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 			
 			$source_name_full = '<b><a href="'.report_lnk($var['report_params'], array('filter_str' => array_merge($var['report_params']['filter_str'], array('group_by' => _e($source_name))))).'">' . $name . '</a></b>';
 			
-			$data['popular'] = '<a href="'.report_lnk($var['report_params'], array('filter_str' => array_merge($var['report_params']['filter_str'], array($source_name => _e($data['popular']))))).'">' . _e($data['popular']) . '</a>';
+			$data['popular'] = '<a href="'.report_lnk($var['report_params'], array('filter_str' => array_merge($var['report_params']['filter_str'], array($source_name => _e($data['popular']))))).'">' . _e(param_val($data['popular'], $source_name)) . '</a>';
 			
 			echo "<tr><td><table class=\"sparktable\"><tr><td>" . $source_name_full . "</td><td><span style='float:right; margin-left:10px;'><div id='sparkline_{$i}'></div></span></td></tr></table></td><td>".$data['popular']."</td>";
 		} else {

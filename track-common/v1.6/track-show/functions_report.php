@@ -391,7 +391,7 @@
 				
 				foreach($rows as $r) {
 					foreach($group_types as $k => $v) {
-						$name = param_val($r, $k);
+						$name = param_key($r, $k);
 
 						$data[$k][$name]['cnt']    += $r['cnt'];
 						$data[$k][$name]['price']  += $r['click_price'];
@@ -607,6 +607,7 @@
 					}
 				}
 			} else {
+				//dmp($data);
 				foreach($data as $k => $v) {
 					uasort($v, 'params_order');
 
@@ -628,6 +629,7 @@
 			
 			foreach($data as $k => $r) {
 				if($r['popular'] == $group_types[$r['name']][1]
+					or $r['popular'] == ''
 					or !empty($params['filter'][0][$r['name']])
 					or ($r['cnt'] == $r['total'] or round($r['cnt'] / $r['total'] * 100) == 100)
 					) {
@@ -1077,12 +1079,12 @@
 	}
 	
 	/* v2 */
-	function get_clicks_report_element2 ($data) { 
+	function get_clicks_report_element2 ($data, $emp = true) { 
 		global $report_cols, $currencies;
 		$out = array();
 		foreach($report_cols as $col => $options) {
 			$func = 't_' . $col;
-			$out[] = '<span class="timetab sdata ' . $col . '">' . sortdata($col, $data) . '</span>';
+			$out[] = '<span class="timetab sdata ' . $col . '">' . sortdata($col, $data, $emp) . '</span>';
 		}
 		return join('', $out);
 	}
@@ -1478,12 +1480,12 @@
 		}
 		
 		// Набор функций для вычисления и форматирование показателей в отчётах
-		function t_price($r, $wrap = true) {
+		function t_price($r, $wrap = true, $emp = true) {
 			$r['price'] = round($r['price'], 2);
 			return currencies_span($r['price'], $wrap);
 		}
 		
-		function t_lpctr($r, $wrap = true) {
+		function t_lpctr($r, $wrap = true, $emp = true) {
 			if(!empty($r['sub'])) {
 				$out = round($r['out'] / $r['cnt'] * 100, 1);
 				return $wrap ? $out . '%' : $out;
@@ -1492,82 +1494,83 @@
 			}
 		}
 		
-		function t_income($r, $wrap = true) {
+		function t_income($r, $wrap = true, $emp = true) {
 			return currencies_span($r['income'], $wrap);
 		}
 
-		function t_epc($r, $wrap = true) {
+		function t_epc($r, $wrap = true, $emp = true) {
 			return currencies_span(round2($r['income'] / $r['cnt']), $wrap);
 		}
 
-		function t_profit($r, $wrap = true) {
+		function t_profit($r, $wrap = true, $emp = true) {
 			return currencies_span(round2($r['income'] - $r['price']), $wrap);
 		}
 
-		function t_roi($r, $wrap = true) {
+		function t_roi($r, $wrap = true, $emp = true) {
 			$out = round(($r['income'] - $r['price']) / $r['price'] * 100, 1);
 			return $wrap ? $out . '%' : $out;
 		}
 
-		function t_conversion($r, $wrap = true) {
+		function t_conversion($r, $wrap = true, $emp = true) {
 			if($r['sale'] == 0) return $wrap ? '' : 0;
 			$out = round2($r['sale'] / $r['cnt'] * 100);
 			return $wrap ? $out . '%' : $out;
 		}
 
-		function t_conversion_l($r, $wrap = true) {
+		function t_conversion_l($r, $wrap = true, $emp = true) {
 			if($r['lead'] == 0) return $wrap ? '' : 0;
 			$out = round2($r['lead'] / $r['cnt'] * 100);
 			return $wrap ? $out . '%' : $out;
 		}
 		
-		function t_conversion_a($r, $wrap = true) {
+		function t_conversion_a($r, $wrap = true, $emp = true) {
 			if($r['sale_lead'] == 0) return $wrap ? '' : 0;
 			$out = round2($r['sale_lead'] / $r['cnt'] * 100);
 			return $wrap ? $out . '%' : $out;
 		}
 							
-		function t_follow($r, $wrap = true) {
+		function t_follow($r, $wrap = true, $emp = true) {
 			$out = round($r['out'] / $r['cnt'] * 100, 1);
 			return $wrap ? $out . '%' : $out;
 		}
 
-		function t_cps($r, $wrap = true) {
+		function t_cps($r, $wrap = true, $emp = true) {
 			return currencies_span(round2($r['price'] / $r['sale']), $wrap);
 		}
 		
-		function t_cpa($r, $wrap = true) {
+		function t_cpa($r, $wrap = true, $emp = true) {
 			return currencies_span(round2($r['price'] / $r['sale_lead']), $wrap);
 		}
 		
-		function t_cpl($r, $wrap = true) {
+		function t_cpl($r, $wrap = true, $emp = true) {
 			return currencies_span(round2($r['price'] / $r['lead']), $wrap);
 		}
 
-		function t_repeated($r, $wrap = true) {
+		function t_repeated($r, $wrap = true, $emp = true) {
 			
 			$repeated = $r['cnt'] - $r['unique'];
 			//if($repeated < 0 or $repeated == 0) return $wrap ? '' : 0;
 			if($repeated < 0) $repeated = 0;
+			
 			$repeated = round($repeated / $r['cnt']  * 100, 1);
-			return $wrap ? $repeated . '%' : $repeated;
+			return $wrap ? (($emp && $repeated <= 0) ? '' : $repeated . '%') : $repeated;
 		}
 		
-		function t_cnt($r, $wrap = true) {
+		function t_cnt($r, $wrap = true, $emp = true) {
 			return $r['cnt'];
 		}
 		
-		function t_sale($r, $wrap = true) {
+		function t_sale($r, $wrap = true, $emp = true) {
 			if($r['sale'] == 0) return $wrap ? '' : 0;
 			return $r['sale'];
 		}
 		
-		function t_lead($r, $wrap = true) {
+		function t_lead($r, $wrap = true, $emp = true) {
 			if($r['lead'] == 0) return $wrap ? '' : 0;
 			return $r['lead'];
 		}
 		
-		function t_sale_lead($r, $wrap = true) {
+		function t_sale_lead($r, $wrap = true, $emp = true) {
 			if($r['sale_lead'] == 0) return $wrap ? '' : 0;
 			return $r['sale_lead'];
 		}
@@ -1635,14 +1638,15 @@
 					if($row[$type] != '') {
 						$out = ($row['campaign_name'] . '-' . $row[$type]);
 					} else {
-						$out = '{empty}';
+						$out = '';
 					}
 				} else {
 					$out = $row[$type];
 				}
 			} else {
-				$out = '{empty}';
+				$out = '';
 			}
+			
 			return $out;
 		}
 		
@@ -1696,9 +1700,13 @@
 			}
 			
 			if($type == 'referer') {
-
-				$name = parse_url($v);
-				$name = $name['host'];
+				
+				if(substr($v, 0, 4) == 'http' or strstr($v, '/') !== false) {
+					$name = parse_url($v);
+					$name = $name['host'];
+				} else {
+					$name = $v;
+				}
 				
 			} elseif($type == 'source_name') {
 				$name = empty($source_config[$v]['name']) ? $v : $source_config[$v]['name'];
@@ -1711,12 +1719,15 @@
 				//dmp($v);
 				//dmp($row);
 			} elseif($type == 'out_id') {
+				
 				if(isset($links[$v])) {
 					$name = $links[$v];
 				} else {
 					$name = current(get_out_description($v));
 					$links[$v] = $name;
 				}
+				//dmp($links);
+				//dmp(get_out_description($v));
 			} else {
 				// Специальные поля, определённые для источника в виде списка
 				if(!empty($source_config[$source_name]['params']) 
@@ -1736,7 +1747,12 @@
 				}
 			}
 			
-			if(trim($name) == '' or $name == '{empty}') $name = $group_types[$type][1];
+			if(trim($name) == '' 
+				or $name == '{empty}' 
+				or ($type == 'campaign_name' and $name == 'campaign')
+				or ($type == 'ads_name' and $name == 'campaign-ads')) 
+					$name = $group_types[$type][1];
+				
 			return $name;
 		}
 		
@@ -1788,7 +1804,10 @@
 		 * Название ведущей колонки в отчёте (для специальных настроек источников)
 		 */
 		function col_name($params, $only_name = false) {
-			return param_name($params['group_by'], $params['filter'][0]['source_name'], $only_name);
+			
+			// Для режима подчинённых страниц нужно брать второй уровень (subgroup_by)
+			$group_by = ($params['mode'] == 'lp_offers') ? $params['subgroup_by'] : $params['group_by'];
+			return param_name($group_by, $params['filter'][0]['source_name'], $only_name);
 		}
 		
 		/*
@@ -1800,7 +1819,7 @@
 		 * offer - флаг оффера, 0 для лэндинга, 1 для оффера, сортируется всегда так чтобы лэндинг был вверху
 		 * val_offer - значение ячейки оффера (для лэндинга пустое)
 		 */
-		function sortdata($col_name, $data) {
+		function sortdata($col_name, $data, $emp = false) {
 			//dmp($data);
 			//print_r($data);
 			//static $l; // счётчик лэндингов
@@ -1812,8 +1831,8 @@
 				//empty($data['r']['sub']) ? 0 : 1 // есть ли подчинённые
 			);
 			
-			$val0 = intval($func($r, false));
-			$val = $func($r);
+			$val0 = intval($func($r, false, false));
+			$val = $func($r, true, $emp);
 			
 			if($col_name == 'cnt' and $r['sale_lead'] > 0 and $data['part'] != 'all') {
 				$val = $val . ':' . $r['sale_lead'];

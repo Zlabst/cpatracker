@@ -2,11 +2,22 @@
 .sortdata {
 	display: none;
 }
+td.name {
+	white-space: nowrap;
+}
+tr.sub td.name {
+	padding-left: 25px !important;
+}
 tr.sub td.name:before {
 	content: '├';
+	position: absolute;
+	left: 8px;
+
 }
 tr.sub.last td.name:before {
 	content: '└';
+	position: absolute;
+	left: 8px;
 }
 .sdata {
 	display: none;
@@ -28,7 +39,7 @@ if(!isset($table_n)) {
 }
 
 echo "<div class='row'>";
-echo "<div class='col-md-12'>";
+echo "<div class='col-md-12 hidecont'>";
 echo "<table class='table table-condensed table-striped table-bordered dataTableT dataTableT".$table_n."' style='margin-bottom:15px !important;'>";
 	
 	// Заголовок 
@@ -104,11 +115,11 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 	
 	echo "<tfoot><tr><th ".($var['report_params']['mode'] == 'popular' ? ' colspan="2"' : '') ."><strong><i style='display:none;'>&#148257;</i>Итого</strong></th>";
 	foreach ($var['arr_dates'] as $cur_date) {
-			$var['r'] = $column_total_data[$cur_date];
-			echo '<th>' . get_clicks_report_element2($var) . '</th>';
+		$var['r'] = $column_total_data[$cur_date];
+		echo '<th>' . get_clicks_report_element2($var, false) . '</th>';
 	}
 	
-	echo '<th>' . get_clicks_report_element2($table_total_data) . '</th>';
+	echo '<th>' . get_clicks_report_element2($table_total_data, false) . '</th>';
 	echo "</tr></tfoot>";
 	echo "</table></div></div>";
 	//dmp($arr_sparkline);
@@ -116,7 +127,7 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 ?>
 <script>
 $(document).ready(function() {
-	
+	$('.hidecont').show();
 	window.lp_aftersort = function() { 
 		$('tr.sub').removeClass('last'); 
 		rows = $('#DataTables_Table_<?php echo $table_n; ?> tbody').children(); 

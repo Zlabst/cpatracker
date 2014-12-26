@@ -486,3 +486,13 @@ table.dataTable td table.sparktable {
 table.dataTable td table.sparktable td {
 	padding: 0px !important;
 }
+th .sdata.lead {
+	font-weight: bold;
+}
+
+.sdata.lead {
+	font-size: 14px;
+}
+.hidecont {
+	display: none;
+}

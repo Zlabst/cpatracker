@@ -36,7 +36,8 @@ if(empty($var['filter'][1]) or 1) {
 	$name = _e($name);
 }
 
-echo '<tr class="'.$var['class'].'"><td class="name"> ' . $name . "<span style='float:right; margin-left:10px;'><div id='sparkline_".$sparkline."'></div></span></td>";
+echo '<tr class="'.$var['class'].'"><td class="name"><table class="sparktable"><tr><td> ' . $name . "</td><td><span style='float:right; margin-left:10px;'><div id='sparkline_".$sparkline."'></div></span></td></tr></table></td>";
+//echo '<tr class="'.$var['class'].'"><td class="name"> ' . $name . "<span style='float:right; margin-left:10px; position: absolute'><div id='sparkline_".$sparkline."'></div></span></td>";
 
 // Следующие колонки, данные
 
@@ -75,5 +76,5 @@ foreach ($var['arr_dates'] as $cur_date) {
 $var_sub = $var;
 $var_sub['r'] = $row_total_data;
 
-echo '<td>'.get_clicks_report_element2($var_sub).'</td></tr>';
+echo '<td>'.get_clicks_report_element2($var_sub, false).'</td></tr>';
 ?>		

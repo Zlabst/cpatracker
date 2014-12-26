@@ -37,9 +37,12 @@ function glink($v, $li = false, $name = '') {
 				echo '<a class="btn btn-default '.($params['mode'] == 'popular' ? 'active' : '').'" href="' . report_lnk($params, array('mode' => 'popular')) . '"' . $class . '>Популярные</a>';
 			}
 			
-			echo 
-				glink('out_id') .
-				glink('source_name') .
+			// Если у нас есть хоть какая-то фильтрация, то первый параметр "Целевые страницы" не имеет смысла
+			if(empty($params['filter'][1])) {
+				echo glink('out_id');
+			}
+			
+			echo glink('source_name') .
 				glink('campaign_name') .
 				glink('ads_name') .
 				glink('referer') ;

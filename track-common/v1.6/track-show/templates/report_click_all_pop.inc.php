@@ -49,7 +49,7 @@ if($var['report_params']['group_by'] != '')  {
 							
 							$name = param_name($r['name'], $var['report_params']['filter'][0]['source_name']);
 							
-							$popular_str = substr($r['popular'], 0, 50);
+							$popular_str = substr(param_val($r['popular'], $k), 0, 50);
 							
 							// Ограничиваем глубину фильтров
 							if(empty($var['report_params']['filter'][0]) or count($var['report_params']['filter'][0]) < 5) {

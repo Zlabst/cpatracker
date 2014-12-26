@@ -20,13 +20,16 @@
 			// Текущая ссылка
 			if($i == count($params['filter_str'])) {
 				if($params['group_by'] != '') {
+					//echo 1;
 					echo '<li class="active">' . $source_type . '<a href="' . report_lnk($params, array('group_by' => '', 'mode' => 'popular', 'subgroup_by' => '' )) . '">' . _e($source_name) . '</a></li>
 						<li class="active">' . col_name($params) . '</a></li>'; //$group_types[$params['group_by']][0]
 				} else {
+					//echo 2;
 					echo '<li class="active">' . $source_type . _e($source_name) . '</li>';
 					echo '<li class="active">Популярные</li>';
 				}
 			} else {
+				//echo 3;
 				echo '<li class="active">' . $source_type . '<a href="' . report_lnk($params, array('filter_str' => array_slice($params['filter_str'], 0, $i))) . '">' . _e($source_name) . '</a></li>';
 			}
 			$i++;

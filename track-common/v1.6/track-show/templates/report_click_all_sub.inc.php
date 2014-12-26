@@ -30,15 +30,22 @@ if(!isset($table_n)) {
 .sortdata {
 	display: none;
 }
+tr.sub td.name {
+	padding-left: 25px !important;
+}
 tr.sub td.name:before {
 	content: '├';
+	position: absolute;
+	left: 8px;
 }
 tr.sub.last td.name:before {
 	content: '└';
+	position: absolute;
+	left: 8px;
 }
 </style>
 <div class="row">
-	<div class="col-md-12">
+	<div class="col-md-12 hidecont">
 		<table class="table table-striped table-bordered table-condensed dataTableT dataTableT<?php echo $table_n; ?> dataTable">
 			<thead>
 				<tr><th><?php echo col_name($var); ?></th><th>Переходы</th><th>Повторные</th><th>LP&nbsp;CTR</th><th class="col_s">Продажи</th><th class="col_l">Лиды</th><th class="col_a">Действия</th><th class="col_s">Конверсия</th><th class="col_l">Конверсия</th><th class="col_a">Конверсия</th><th>Затраты</th><th class="col_s col_a">Прибыль</th><th class="col_s">EPC</th><th class="col_s">ROI</th><th class="col_s">CPS</th><th class="col_l">CPL</th><th class="col_a">CPA</th></tr>
@@ -84,6 +91,8 @@ tr.sub.last td.name:before {
 <script>
 
 $(document).ready(function() {
+	$('.hidecont').show();
+	
 	// Конвертируем сложные для сортировки данные (валюта, проценты) в нормальные числа
 	cnv2 = function(a) {
 		if(a.indexOf('usd') + 1) {
