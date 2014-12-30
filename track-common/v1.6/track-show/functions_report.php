@@ -654,8 +654,15 @@
 				$data = $data3;
 			}
 		} else {
-	
+			/*
+			if($_SERVER['REMOTE_ADDR'] == '178.121.223.216') {
+				dmp($data);
+			}
+			*/
+			
 			// Убираем строчки с конверсиями
+			$data = conv_filter($data, $params['conv']);
+			/*
 			if($params['conv'] == 'none') {
 				foreach($data as $k => $v) {
 					if($v['sale_lead'] > 0) unset($data[$k]);
@@ -673,6 +680,7 @@
 					if($v['lead'] == 0) unset($data[$k]);
 				}
 			}
+			*/
 		}
 		//}
 		
@@ -1913,5 +1921,39 @@
 			$rs = db_query($q);
 			$r = mysql_fetch_assoc($rs);
 			return array($r['id'], $r['offer_tracking_url']);
+		}
+		
+		
+		/*
+		 * Фильтруем конверсии
+		 */
+		function conv_filter($data, $conv = 'none') {
+			switch($conv) {
+				case 'none':
+					foreach($data as $k => $v) {
+						if($v['sale_lead'] > 0) unset($data[$k]);
+						if(isset($v['sub'])) $data[$k]['sub'] = conv_filter($v['sub'], $conv);
+					}
+					break;
+				case 'sale_lead':
+					foreach($data as $k => $v) {
+						if($v['sale_lead'] == 0 and $v['sale'] == 0 and $v['lead'] == 0) unset($data[$k]);
+						if(isset($v['sub'])) $data[$k]['sub'] = conv_filter($v['sub'], $conv);
+					}
+					break;
+				case 'sale':
+					foreach($data as $k => $v) {
+						if($v['sale'] == 0) unset($data[$k]);
+						if(isset($v['sub'])) $data[$k]['sub'] = conv_filter($v['sub'], $conv);
+					}
+					break;
+				case 'lead':
+					foreach($data as $k => $v) {
+						if($v['lead'] == 0) unset($data[$k]);
+						if(isset($v['sub'])) $data[$k]['sub'] = conv_filter($v['sub'], $conv);
+					}
+					break;
+			}
+			return $data;
 		}
 ?>

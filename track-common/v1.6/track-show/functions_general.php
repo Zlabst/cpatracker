@@ -492,7 +492,7 @@ $source_config = array(
 	),
 	'yadirect' => array(
 		'name' => 'Яндекс.Директ',
-		'rapams_ignore' => array('etext', 'uuid', 'state', 'data', 'b64e', 'sign', 'keyno', 'l10n', 'cts', 'ref', 'mc', 'csg'),
+		'rapams_ignore' => array('etext', 'uuid', 'state', 'data', 'b64e', 'sign', 'keyno', 'l10n', 'cts', 'ref', 'mc', 'csg', 'clid', 'lr', 'redircnt', 'msid'),
 		'params' => array(
 			'source_type' => array(
 				'name' => 'Тип площадки',
