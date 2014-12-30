@@ -54,6 +54,9 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 		
 		// Первая колонка, название
 		
+		$source_name_full = param_val($source_name, $var['group_by'], $var['filter'][0]['source_name']);
+		
+		/*
 		if ($source_name == '{empty}' or trim($source_name) == '') {
 			$source_name_full = $group_types[$var['group_by']][1]; 
 		} else {
@@ -72,6 +75,7 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 				$source_name_full = $source_name;
 			}
 		}
+		*/
 		
 		
 		

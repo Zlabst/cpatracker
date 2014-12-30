@@ -191,9 +191,9 @@
 		// WURFL mobile database
 		global $wurflManager;
 		if($timeshift != 0) {
-			$click_date=date("Y-m-d H:i:s", strtotime($arr_click_info[0]) + $timeshift);
+			$click_date = date("Y-m-d H:i:s", strtotime($arr_click_info[0]) + $timeshift);
 		} else {
-			$click_date=$arr_click_info[0];
+			$click_date = $arr_click_info[0];
 		}
 		$click_day=current(explode(' ', $click_date));
 		$click_hour=get_hour_by_date ($click_date);

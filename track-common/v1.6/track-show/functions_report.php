@@ -561,15 +561,18 @@
 				} else {
 
 					foreach($rows as $r) {
-						$k1 = (trim($r['name']) == '' ? '{empty}' : $r['name']);
+						//$k1 = (trim($r['name']) == '' ? '{empty}' : $r['name']);
+						$k1 = param_key($r, $params['group_by']);
 						$k2 = date($date_formats[$params['part']], $r['time_add']);
 						$k3 = $groups[$r['is_sale'].$r['is_lead']];
 						
 						// Обрезаем реферер до домена
+						/*
 						if($params['group_by'] == 'referer') {
 							$url = parse_url($k1);
 							$k1 = $r['name'] = $url['host'];
 						}
+						*/
 						
 						
 						$data[$k1]['sale'] += $r['is_sale'];
@@ -1635,10 +1638,22 @@
 				
 				// Для объявления добавляем кампанию
 				} elseif($type == 'ads_name') {
-					if($row[$type] != '') {
+					if($row[$type] != '' and ($row[$type] != 'ads' or $row['campaign_name'] != 'campaign')) {
 						$out = ($row['campaign_name'] . '-' . $row[$type]);
 					} else {
 						$out = '';
+					}
+				} elseif($type == 'campaign_name') {
+					if($row[$type] != 'campaign') {
+						$out = $row[$type];
+					} else {
+						$out = '';
+					}
+				} elseif($type == 'source_name') {
+					if($row[$type] == 'source') {
+						$out = '';
+					} else {
+						$out = $row[$type];
 					}
 				} else {
 					$out = $row[$type];
@@ -1709,8 +1724,11 @@
 				}
 				
 			} elseif($type == 'source_name') {
-				$name = empty($source_config[$v]['name']) ? $v : $source_config[$v]['name'];
-				
+				if($v == 'source') { // значение по умолчанию
+					$name = '';
+				} else {
+					$name = empty($source_config[$v]['name']) ? $v : $source_config[$v]['name'];
+				}
 			} elseif($type == 'ads_name') {
 				if($v != '') {
 					$name = is_array($row) ? ($row['campaign_name'] . '-' . $row['ads_name']) : $row;

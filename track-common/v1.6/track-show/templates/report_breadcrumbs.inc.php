@@ -21,8 +21,13 @@
 			if($i == count($params['filter_str'])) {
 				if($params['group_by'] != '') {
 					//echo 1;
+					if($params['mode'] == 'lp_offers') {
+						echo '<li class="active">' . $source_type . '' . _e($source_name) . '</li>
+						<li class="active">' . col_name($params) . '</a></li>'; //$group_types[$params['group_by']][0]
+					} else {
 					echo '<li class="active">' . $source_type . '<a href="' . report_lnk($params, array('group_by' => '', 'mode' => 'popular', 'subgroup_by' => '' )) . '">' . _e($source_name) . '</a></li>
 						<li class="active">' . col_name($params) . '</a></li>'; //$group_types[$params['group_by']][0]
+					}
 				} else {
 					//echo 2;
 					echo '<li class="active">' . $source_type . _e($source_name) . '</li>';
