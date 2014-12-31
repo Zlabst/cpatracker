@@ -8,43 +8,49 @@
 <?php
 	$date = rq('date', 4, get_current_day());
 	$hour = rq('hour', 2);
-	$prev_date = date('Y-m-d', strtotime('-1 days', strtotime($date)));
-	$next_date = date('Y-m-d', strtotime('+1 days', strtotime($date)));
+	$prev_date=date('Y-m-d', strtotime('-1 days', strtotime($date)));
+	$next_date=date('Y-m-d', strtotime('+1 days', strtotime($date)));
 
 	$main_type   = rq('report_type', 0, 'source_name');
+	$group_by    = $main_type;
 	$limited_to  = '';
+	$report_type = 'hourly';
+	$from        = $date;
+	$to          = $date;
 	
 	$params = array(
 		'type'     => 'basic',
 		'part'     => 'hour',
 		'filter'   => array(),
-		'group_by' => $main_type,
-		'subgroup_by' => $main_type,
+		'group_by' => 'source_name',
+		'subgroup_by' => 'source_name',
 		'conv'     => 'all',
 		'mode'     => '',
 		'col'      => 'sale_lead',
 		'from'     => $date,
 		'to'       => $date,
 	);
-		
-	$arr_report_data = get_clicks_report_grouped2($params); 
-	//$arr_report_data = $arr_report_data['data'];
 	
-	dmp($arr_report_data);
-	/********/
+	$arr_report_data = get_clicks_report_grouped2($params);
 	
 	$arr_hourly = array();
 
-	foreach ($arr_report_data['data'] as $row_name=>$row_data)
-	{
-		foreach ($row_data as $cur_hour=>$data) {
+	foreach ($arr_report_data['data'] as $row_name => $row_data) {
+		foreach ($row_data as $cur_hour => $data) {
+			if(!is_numeric($cur_hour)) continue;
+			/*
 			$clicks_data    = $data['click'];
 			$leads_data     = $data['lead'];
 			$sales_data     = $data['sale'];
 			$saleleads_data = $data['sale_lead'];
-
-			$arr_hourly[$row_name][$cur_hour] = get_clicks_report_element ($clicks_data, $leads_data, $sales_data, $saleleads_data);
+			*/
+			$arr_hourly[$row_name][$cur_hour] = get_clicks_report_element ($data, false);
 		}			
+	}
+	
+	if($_SERVER['REMOTE_ADDR'] == '178.121.223.216') {
+		dmp($arr_report_data);
+		dmp($arr_hourly);
 	}
 
 	echo "<div class='row'>";
@@ -89,7 +95,7 @@
 			echo "</tr>";		
 			echo "<tr>";
 			
-			foreach ($arr_hourly as $source_name=>$data)
+			foreach ($arr_hourly as $source_name => $data)
 			{
 				switch ($main_type)
 				{
@@ -143,7 +149,7 @@ echo "</div> <!-- ./row -->";
 			</div>
 
 			<div class="btn-group invisible" id='rt_sale_section' data-toggle="buttons">
-				<label class="btn btn-default active" onclick='update_stats("sale_lead");'><input type="radio" name="option_leads_type">Все действия</label>
+				<!--<label class="btn btn-default active" onclick='update_stats("sale_lead");'><input type="radio" name="option_leads_type">Все действия</label>-->
 				<label class="btn btn-default" onclick='update_stats("sale");'><input type="radio" name="option_leads_type">Продажи</label>
 				<label class="btn btn-default" onclick='update_stats("lead");'><input type="radio" name="option_leads_type">Лиды</label>	
 			</div>
@@ -162,7 +168,7 @@ echo "</div> <!-- ./row -->";
 
 <input type='hidden' id='usd_selected' value='1'>
 <input type='hidden' id='type_selected' value='clicks'>
-<input type='hidden' id='sales_selected' value='0'>
+<input type='hidden' id='sales_selected' value='1'>
 
 
 <?php
@@ -210,4 +216,4 @@ if(!empty($arr_data)) {
 	}
 }
 ?>
-<script>show_conv_mode('sale', 0);update_stats2('cnt', false); /* show_currency('usd');*/</script>
+<script>show_conv_mode('sale', 0);update_stats2('cnt', false);show_currency('usd');</script>

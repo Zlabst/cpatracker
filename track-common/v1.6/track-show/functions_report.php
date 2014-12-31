@@ -110,7 +110,11 @@
 					$tmp[] = "`".$k."` = '".mysql_real_escape_string($v)."'";
 				}
 			}
-			$where = ' and ('.join(' and ', $tmp).')';
+			if(!empty($tmp)) {
+				$where = ' and ('.join(' and ', $tmp).')';
+			} else {
+				$where = '';
+			}
 		} else {
 			$where = '';
 		}
@@ -145,11 +149,15 @@
 			t1.is_parent,
 			t1.is_connected ".$select."
 			FROM `tbl_clicks` t1
-			WHERE CONVERT_TZ(t1.`date_add_day`, '+00:00', '"._str($timezone_shift)."') BETWEEN '" . $params['from'] . "' AND '" . $params['to'] . "'" . $where . (empty($params['where']) ? '' : " and " . $params['where'] ). "
+			WHERE DATE(CONVERT_TZ(t1.`date_add_day`, '+00:00', '"._str($timezone_shift)."')) BETWEEN '" . $params['from'] . "' AND '" . $params['to'] . "'" . $where . (empty($params['where']) ? '' : " and " . $params['where'] ). "
 			ORDER BY t1.id ASC
 			LIMIT $start, $limit";
 		
-		//echo $q . '<br />';
+		
+		if($_SERVER['REMOTE_ADDR'] == '178.121.223.216') {
+			echo $q . '<br />';
+		}
+		
 		$rs = db_query($q);
 		
 		$q="SELECT FOUND_ROWS() as `cnt`";
@@ -202,7 +210,7 @@
 		
 		// По временным промежуткам
 		$date_formats = array(
-			'hour' => 'Y-m-d H',
+			'hour' => 'H', // Y-m-d
 			'day'  => 'Y-m-d',
 			'month'=> 'm.Y'
 		);
@@ -225,6 +233,8 @@
 			$arr_dates = getMonthsBetween($params['from'], $params['to']);
 		} elseif($params['part'] == 'day') {
 			$arr_dates = getDatesBetween($params['from'], $params['to']);
+		} elseif($params['part'] == 'hour') {
+			$arr_dates = getHours24();
 		}
 		
 		global $pop_sort_by, $pop_sort_order;
@@ -1091,10 +1101,14 @@
 	
 	/* v2 */
 	function get_clicks_report_element2 ($data, $emp = true) { 
+		/*
+		if($_SERVER['REMOTE_ADDR'] == '178.121.223.216') {
+			dmp($data) . '<br />';
+		}*/
 		global $report_cols, $currencies;
 		$out = array();
 		foreach($report_cols as $col => $options) {
-			$func = 't_' . $col;
+			//$func = 't_' . $col;
 			$out[] = '<span class="timetab sdata ' . $col . '">' . sortdata($col, $data, $emp) . '</span>';
 		}
 		return join('', $out);
@@ -1118,9 +1132,10 @@
 			$profit_amount_rub = cur_conv($profit_amount, 'RUB');
 
 			if ($sales_count>0) {
-				$conversion=round2($sales_count/$clicks_count*100).'%';
-				$epc=$sales_amount/$clicks_count;
-				$epc_rub=cur_conv($epc, 'RUB');
+				
+				$conversion = '<b>'.round2($sales_count/$clicks_count*100).'%</b>';
+				$epc = $sales_amount/$clicks_count;
+				$epc_rub = cur_conv($epc, 'RUB');
 			}
 			else
 			{
@@ -1955,5 +1970,18 @@
 					break;
 			}
 			return $data;
+		}
+		
+		/*
+		* Массив из 24 часов
+		*/
+		function getHours24() {
+			$hours = array(
+				'00', '01', '02', '03', '04', '05',
+				'06', '07', '08', '09', '10', '11',
+				'12', '13', '14', '15', '16', '17',
+				'18', '19', '20', '21', '22', '23',
+			);
+			return $hours;
 		}
 ?>

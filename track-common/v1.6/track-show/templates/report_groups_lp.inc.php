@@ -94,10 +94,13 @@ function glink($v, $li = false, $name = '') {
 			
 			$click_params_cnt = 0;
 			
-			if(array_key_exists('source_name', $params['filter'][0]) and !empty($source_config[$params['filter'][0]['source_name']]['params'])) {
-				$click_params = $source_config[$params['filter'][0]['source_name']]['params'];
-				$click_params_cnt = count($click_params);
-				$click_params_keys = array_keys($click_params);
+			if(array_key_exists('source_name', $params['filter'][0]) or array_key_exists('source_name', $params['filter'][1])) {
+				$source_name = current(explode('|', $params['filter'][array_key_exists('source_name', $params['filter'][1]) ? 1 : 0]['source_name']));
+				if(!empty($source_config[$source_name]['params'])) {
+					$click_params = $source_config[$source_name]['params'];
+					$click_params_cnt = count($click_params);
+					$click_params_keys = array_keys($click_params);
+				}
 			}
 			
 			for($i = 1; $i <= 15; $i++) {
