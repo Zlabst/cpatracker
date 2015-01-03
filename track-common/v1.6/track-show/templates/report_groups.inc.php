@@ -4,7 +4,7 @@ if (!$include_flag){exit();}
 
 extract($var);
 
-global $params, $source_config;
+global $params, $source_config, $one_source;
 
 // Параметры отчёта нужны для формирования ссылок
 $params = $var['report_params'];
@@ -93,6 +93,10 @@ function glink($v, $li = false, $name = '') {
 			
 			if(array_key_exists('source_name', $params['filter'][0]) and !empty($source_config[$params['filter'][0]['source_name']]['params'])) {
 				$click_params = $source_config[$params['filter'][0]['source_name']]['params'];
+				$click_params_cnt = count($click_params);
+				$click_params_keys = array_keys($click_params);
+			} elseif(!empty($one_source) and !empty($source_config[$one_source]['params'])) {
+				$click_params = $source_config[$one_source]['params'];
 				$click_params_cnt = count($click_params);
 				$click_params_keys = array_keys($click_params);
 			}

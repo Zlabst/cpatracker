@@ -672,25 +672,13 @@
 			
 			// Убираем строчки с конверсиями
 			$data = conv_filter($data, $params['conv']);
-			/*
-			if($params['conv'] == 'none') {
-				foreach($data as $k => $v) {
-					if($v['sale_lead'] > 0) unset($data[$k]);
-				}
-			} elseif($params['conv'] == 'sale_lead') {
-				foreach($data as $k => $v) {
-					if($v['sale_lead'] == 0) unset($data[$k]);
-				}
-			} elseif($params['conv'] == 'sale') {
-				foreach($data as $k => $v) {
-					if($v['sale'] == 0) unset($data[$k]);
-				}
-			} elseif($params['conv'] == 'lead') {
-				foreach($data as $k => $v) {
-					if($v['lead'] == 0) unset($data[$k]);
-				}
+			
+			// "Один источник" - если группировка по источнику и он у нас один, то берём его именованные параметры
+			if($params['group_by'] == 'source_name' and count($data) == 1) { //
+				global $one_source;
+				$one_source = current(array_keys($data));
 			}
-			*/
+		
 		}
 		//}
 		
