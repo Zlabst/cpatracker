@@ -92,7 +92,15 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 		} else {
 			// Ограничиваем глубину фильтров
 			if(empty($var['report_params']['filter'][0]) or count($var['report_params']['filter'][0]) < 5) {
-				$source_name_full = '<a href="'.report_lnk($var['report_params'], array('filter_str' => array_merge($var['report_params']['filter_str'], array($var['report_params']['group_by'] => _e($source_name))))).'">' . _e($source_name_full) . '</a>';
+				$lnk_arr = array('filter_str' => array_merge($var['report_params']['filter_str'], array($var['report_params']['group_by'] => _e($source_name))));
+				
+				// Первый фильтр - переход в режим "Популярные"
+				if(count($var['report_params']['filter'][0]) == 0) {
+					$lnk_arr['mode'] = 'popular';
+					$lnk_arr['group_by'] = '';
+				}
+				$source_name_full = '<a href="'.report_lnk($var['report_params'], $lnk_arr).'">' . _e($source_name_full) . '</a>';
+				
 			} else {
 				$source_name_full = _e($source_name_full);
 			}

@@ -5,8 +5,15 @@
 	if(!empty($params['filter_str'])) {
 		
 		$i = 1;
+		$all_data_params = array('filter' => array(), 'group_by' => 'out_id', 'subgroup_by' => 'out_id', 'conv' => 'all');
+		
+		// Режим Популярные доступен при выборе хотя бы одного фильтра
+		if($params['mode'] == 'popular') {
+			$all_data_params['mode'] = '';
+		}
+		
 		echo '<div><ol class="breadcrumb">
-			<li><a href="' . report_lnk($params, array('filter' => array(), 'group_by' => 'out_id', 'subgroup_by' => 'out_id', 'conv' => 'all')) . '">Все данные</a></li>';
+			<li><a href="' . report_lnk($params, $all_data_params) . '">Все данные</a></li>';
 
 		// Для ссылок преобразуем ID в название	
 		foreach($params['filter_str'] as $k => $v) {
