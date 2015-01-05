@@ -2,9 +2,7 @@
 if (!$include_flag){exit();}
 // Таблица отчёта
 
-global $group_types;
-
-global $table_n;
+global $group_types, $table_n, $row_total_data, $table_total_data, $column_total_data;
 
 if(!isset($table_n)) {
 	$table_n = 0;
@@ -18,8 +16,8 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 	
 	// Заголовок 
 	
-	//dmp($var);
-	
+	//dmp($var['report_params']['mode']);
+		
 	echo "<thead>";
 		echo "<tr>";
 		
@@ -46,38 +44,16 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 	//dmp($var['arr_report_data']);
 	
 	foreach ($var['arr_report_data'] as $source_name => $data) {
+		
+		// Прячем офферы или лендинги
+		if(($var['report_params']['mode'] == '' and $data['out'] > 0) or ($var['report_params']['mode'] == 'lp' and $data['out'] == 0)) continue;
 
 		$row_total_data = array(); // суммирование по строкам
 		$i++;
 		
-		//dmp($data);
-		
 		// Первая колонка, название
 		
 		$source_name_full = param_val($source_name, $var['group_by'], $var['filter'][0]['source_name']);
-		
-		/*
-		if ($source_name == '{empty}' or trim($source_name) == '') {
-			$source_name_full = $group_types[$var['group_by']][1]; 
-		} else {
-			if($var['group_by'] == 'out_id') {
-				//$source_name_full = $source_name;
-				$source_name_full = current(get_out_description($source_name));
-			} elseif($var['group_by'] == 'referer') {
-				$source_name_full = str_replace('https://', '', $source_name);
-				$source_name_full = str_replace('http://', '', $source_name_full);
-				if(substr($source_name_full, -1) == '/')
-					$source_name_full = substr($source_name_full, 0, strlen($source_name_full)-1);
-				
-				if(substr($key, -1) == '/')
-					$key = substr($key, 0, strlen($key)-1);
-			} else {
-				$source_name_full = $source_name;
-			}
-		}
-		*/
-		
-		
 		
 		if($var['report_params']['mode'] == 'popular') {
 			
@@ -112,28 +88,18 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 		// Следующие колонки, данные
 		
 		foreach ($var['arr_dates'] as $cur_date) {
-			$clicks_data    = $data[$cur_date]['click'];
-			$leads_data     = $data[$cur_date]['lead'];
-			$sales_data     = $data[$cur_date]['sale'];
-			$saleleads_data = $data[$cur_date]['sale_lead'];
+
+			stat_inc_total($cur_date, $data[$cur_date]);
+
+			$arr_sparkline[$i][] = $data[$cur_date]['cnt'] + 0;
 			
-			$arr1 = array('click', 'lead', 'sale', 'sale_lead');
-			$arr2 = array('cnt', 'cost', 'earnings');
-			foreach($arr1 as $k1) {
-				foreach($arr2 as $k2) {
-					$table_total_data[$k1][$k2] += $data[$cur_date][$k1][$k2];
-					$row_total_data[$k1][$k2] += $data[$cur_date][$k1][$k2];
-					$column_total_data[$cur_date][$k1][$k2] += $data[$cur_date][$k1][$k2];
-				}
-			}
-			
-			$arr_sparkline[$i][] = $clicks_data['cnt'] + 0;
-			
-			echo '<td>' . get_clicks_report_element ($clicks_data, $leads_data, $sales_data, $saleleads_data) . '</td>';
+			echo '<td>' . get_clicks_report_element2 ($data[$cur_date], true, false) . '</td>';
 		}
 		
+		
+		
 		// Колонка Итого
-		echo '<td>'.get_clicks_report_element($row_total_data['click'], $row_total_data['lead'], $row_total_data['sale'], $row_total_data['sale_lead']).'</td></tr>';
+		echo '<td>'.get_clicks_report_element2($row_total_data, false, false).'</td></tr>';
 	}
 	echo "</tbody>";
 	
@@ -142,9 +108,9 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 	if($var['report_params']['mode'] != 'popular') {
 		echo "<tfoot><tr><th ".($var['report_params']['mode'] == 'popular' ? ' colspan="2"' : '') ."><strong><i style='display:none;'>&#148257;</i>Итого</strong></th>";
 		foreach ($var['arr_dates'] as $cur_date) {
-				echo '<th>' . get_clicks_report_element($column_total_data[$cur_date]['click'], $column_total_data[$cur_date]['lead'], $column_total_data[$cur_date]['sale'], $column_total_data[$cur_date]['sale_lead']) . '</th>';
+				echo '<th>' . get_clicks_report_element2($column_total_data[$cur_date], false, false) . '</th>';
 		}	
-		echo '<th>' . get_clicks_report_element($table_total_data['click'], $table_total_data['lead'], $table_total_data['sale'], $table_total_data['sale_lead']) . '</th>';
+		echo '<th>' . get_clicks_report_element2($table_total_data, false, false) . '</th>';
 		echo "</tr></tfoot>";
 	}
 	

@@ -53,18 +53,8 @@ foreach ($var['arr_dates'] as $cur_date) {
 	$row['order'] = $r['order'];
 	$row['ln']    = $r['ln'];
 	$var_sub['r'] = $row;
-	
-	foreach($row as $k => $v) {
-		if(is_array($v)) continue;
-		
-		// Служебные колонки ln (landing number) и order не должны суммироваться, но переносятся в итоговую статистику
-		if($k == 'order' or $k == 'ln') {
-			$row_total_data[$k] = $v;
-			continue;
-		}
-		$row_total_data[$k] += $v;
-		$column_total_data[$cur_date][$k] += $v;
-	}
+
+	stat_inc_total($cur_date, $row);
 	
 	$arr_sparkline[$sparkline][] = $row['cnt'] + 0;
 	

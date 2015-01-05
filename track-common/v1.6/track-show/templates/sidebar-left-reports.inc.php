@@ -5,8 +5,8 @@
 		$reports_lnk_lp = '?act=reports&type=basic&mode=lp';
 	} else {
 		$params = report_options();
-		$reports_lnk = report_lnk($params, array('filter_str' => array(), 'mode' => '', 'type' => 'basic', 'part' => 'all', 'col' => 'sale_lead', 'conv' => 'all', 'group_by' => 'out_id'));
-		$reports_lnk_lp = report_lnk($params, array('filter_str' => array(), 'mode' => 'lp', 'type' => 'basic', 'part' => 'all', 'col' => 'sale_lead', 'conv' => 'all', 'group_by' => 'out_id'));
+		$reports_lnk = report_lnk($params, array('filter_str' => array(), 'mode' => '', 'type' => 'basic', 'part' => 'all', 'col' => 'act', 'conv' => 'all', 'group_by' => 'out_id'));
+		$reports_lnk_lp = report_lnk($params, array('filter_str' => array(), 'mode' => 'lp', 'type' => 'basic', 'part' => 'all', 'col' => 'act', 'conv' => 'all', 'group_by' => 'out_id'));
 	}
 ?>
 

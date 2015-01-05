@@ -9,7 +9,7 @@ $report_cols = array(
 	'lpctr'        => array('name' => 'LP CTR',    'money' => 0),
 	'sale'         => array('name' => 'Продажи',   'money' => 0),
 	'lead'         => array('name' => 'Лиды',      'money' => 0),
-	'sale_lead'    => array('name' => 'Действия' , 'money' => 0),
+	'act'          => array('name' => 'Действия' , 'money' => 0),
 	'conversion'   => array('name' => 'Конверсия', 'money' => 0),
 	'conversion_l' => array('name' => 'Конверсия', 'money' => 0),
 	'conversion_a' => array('name' => 'Конверсия', 'money' => 0),
@@ -2177,7 +2177,7 @@ function round2($v) {
 	} else {
 		$size = 2;
 	}
-	return round($v * $m, $size);
+	return round($v, $size) * $m;
 }
 
 function round3($v) {

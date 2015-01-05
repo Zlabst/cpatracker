@@ -250,23 +250,24 @@
 					$pop_sort_by = 'sale';
 				} elseif($params['conv'] == 'lead') {
 					$pop_sort_by = 'lead';
-				} elseif($params['conv'] == 'sale_lead') {
-					$pop_sort_by = 'sale_lead';
+				} elseif($params['conv'] == 'act') {
+					$pop_sort_by = 'act';
 				} elseif($params['conv'] == 'none') {
 					$pop_sort_by = $params['col'];
 					$pop_sort_order = -1;
 				}
 			} else {
 				/*
+				Если так сделать - то не посчитаются клики
 				if($params['conv'] == 'sale') {
 					$params['where'] = '`is_sale` = 1';
 				} elseif($params['conv'] == 'lead') {
-					//$params['where'] = '`is_lead` = 1';
-				} elseif($params['conv'] == 'sale_lead') {
-					//$params['where'] = '(`is_sale` = 1 or `is_lead` = 1)';
+					$params['where'] = '`is_lead` = 1';
+				} elseif($params['conv'] == 'act') {
+					$params['where'] = '(`is_sale` = 1 or `is_lead` = 1)';
 				} elseif($params['conv'] == 'none') {
 					//$params['where'] = ''; 
-					//$params['where'] = '`is_sale` = 0 and `is_lead` = 0';
+					$params['where'] = '`is_sale` = 0 and `is_lead` = 0';
 				}
 				*/
 			}
@@ -422,12 +423,19 @@
 							
 							//$k1 = (trim($r['name']) == '' ? '{empty}' : $r['name']);
 							$k2 = date($date_formats[$params['part']], $r['time_add']);
-							$k3 = $groups[$r['is_sale'].$r['is_lead']];
-							
+							//$k3 = $groups[$r['is_sale'].$r['is_lead']];
+							/*
 							$data2[$k][$name][$k2][$k3]['cnt'] += 1;
 							$data2[$k][$name][$k2][$k3]['cost'] += $r['clicks_price'];
 							$data2[$k][$name][$k2][$k3]['earnings'] += $r['conversions_sum'];
 							$data2[$k][$name][$k2][$k3]['is_parent_cnt'] += $r['is_parent'];
+							*/
+							$data2[$k][$name][$k2]['cnt'] += 1;
+							$data2[$k][$name][$k2]['cost'] += $r['clicks_price'];
+							$data2[$k][$name][$k2]['earnings'] += $r['conversions_sum'];
+							$data2[$k][$name][$k2]['is_parent_cnt'] += $r['is_parent'];
+							
+							stat_inc($data2[$k][$name][$k2], $r, $name, $r['name']);
 						}
 					}
 				}
@@ -572,9 +580,9 @@
 
 					foreach($rows as $r) {
 						//$k1 = (trim($r['name']) == '' ? '{empty}' : $r['name']);
-						$k1 = param_key($r, $params['group_by']);
-						$k2 = date($date_formats[$params['part']], $r['time_add']);
-						$k3 = $groups[$r['is_sale'].$r['is_lead']];
+						$k1      = param_key($r, $params['group_by']);
+						$timekey = date($date_formats[$params['part']], $r['time_add']);
+						//$k3      = $groups[$r['is_sale'].$r['is_lead']];
 						
 						// Обрезаем реферер до домена
 						/*
@@ -584,16 +592,22 @@
 						}
 						*/
 						
-						
+						/*
 						$data[$k1]['sale'] += $r['is_sale'];
 						$data[$k1]['lead'] += $r['is_lead'];
 						$data[$k1]['sale_lead'] += $r['is_sale'];
 						$data[$k1]['sale_lead'] += $r['is_lead'];
+						*/
+						stat_inc($data[$k1], $r, $k1, $r['name']);
 						
-						$data[$k1][$k2][$k3]['cnt'] += 1;
-						$data[$k1][$k2][$k3]['cost'] += $r['clicks_price'];
-						$data[$k1][$k2][$k3]['earnings'] += $r['conversions_sum'];
-						$data[$k1][$k2][$k3]['is_parent_cnt'] += $r['is_parent'];
+						/*
+						$data[$k1][$timekey][$k3]['cnt'] += 1;
+						$data[$k1][$timekey][$k3]['cost'] += $r['clicks_price'];
+						$data[$k1][$timekey][$k3]['earnings'] += $r['conversions_sum'];
+						$data[$k1][$timekey][$k3]['is_parent_cnt'] += $r['is_parent'];
+						*/
+						
+						stat_inc($data[$k1][$timekey], $r, $k1, $r['name']);
 					}
 				}
 			} // Стандартный режим
@@ -716,7 +730,7 @@
 					unset($data[$k]);
 				}
 			}
-		}
+		} 
 		
 		// cсылка "Другие", для Площадки, параметров ссылки и перехода 
 		// если не выбран какой-то определенный лэндинг.
@@ -763,291 +777,6 @@
 		return ($a['cnt'] < $b['cnt']) ? 1 : -1;
 	}
 	
-	function get_clicks_report_grouped ($main_column, $group_by, $limited_to='', $report_type='daily', $from='', $to='') {
-        $timezone_shift=get_current_timezone_shift();
-
-        switch ($report_type)
-        {
-            case 'hourly':
-                $time_column_alias='date_add_hour';
-                $time_column="HOUR(CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."')) as date_add_hour";
-                $group_time_column="HOUR(CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."'))";
-                $order_time_column="date_add_hour";
-                if ($from=='')
-                {
-                    if ($to=='')
-                    {
-                        $time_filter="1=1";
-                    }
-                    else
-                    {
-                        $time_filter="CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."') <= '"._str($to)." 23:59:59'";
-                    }
-                }
-                else
-                {
-                    if ($to=='')
-                    {
-                        $time_filter="CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."') >= '"._str($from)." 00:00:00'";
-                    }
-                    else
-                    {
-                        $time_filter="CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."') BETWEEN '"._str($from)." 00:00:00' AND '"._str($to)." 23:59:59'";
-                    }
-                }
-            break;
-
-            case 'daily':
-                $time_column_alias="date_add_day";
-                $time_column="DATE(CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."')) as date_add_day";
-                $group_time_column="DATE(CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."'))";
-                $order_time_column="date_add_day";
-
-                $time_filter="`date_add_day` >= DATE_SUB( DATE(CONVERT_TZ(NOW(), '+00:00', '"._str($timezone_shift)."')) , INTERVAL 7 DAY)";
-
-                if ($from=='')
-                {
-                    if ($to=='')
-                    {
-                        $from=get_current_day('-6 days');
-                        $to=get_current_day();
-                    }
-                    else
-                    {
-                        $from=date ('Y-m-d', strtotime('-6 days', strtotime($to)));
-                    }
-                }
-                else
-                {
-                    if ($to=='')
-                    {
-                        $to=date ('Y-m-d', strtotime('+6 days', strtotime($from)));
-                    }
-                    else
-                    {
-                        // Will use existing values
-                    }
-                }
-
-                $time_filter="CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."') BETWEEN '"._str($from)." 00:00:00' AND '"._str($to)." 23:59:59'";    
-            break;
-
-            case 'monthly':
-                $time_column_alias="date_add_day";
-                $time_column="DATE(CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."')) as date_add_day";
-                $group_time_column="DATE(CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."'))";
-                $order_time_column="date_add_day";
-
-                $time_filter="`date_add_day` >= DATE_SUB( DATE(CONVERT_TZ(NOW(), '+00:00', '"._str($timezone_shift)."')) , INTERVAL 7 DAY)";
-
-                if ($from=='')
-                {
-                    if ($to=='')
-                    {
-                        $from=get_current_day('-6 months');
-                        $to=get_current_day();
-                    }
-                    else
-                    {
-                        $from=date ('Y-m-d', strtotime('-6 months', strtotime($to)));
-                    }
-                }
-                else
-                {
-                    if ($to=='')
-                    {
-                        $to=date ('Y-m-d', strtotime('+6 months', strtotime($from)));
-                    }
-                    else
-                    {
-                        $from=date ('Y-m-d',  strtotime('13.'.$from));
-                        $to=date ('Y-m-d', strtotime('13.'.$to));
-                    }
-                }
-                   $from=date ('Y-m-01',  strtotime($from));
-                   $to=date ('Y-m-t',  strtotime($to));
-                $time_filter="CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."') BETWEEN '"._str($from)." 00:00:00' AND '"._str($to)." 23:59:59'";    
-            break;
-
-            default: 
-                $time_column_alias="date_add_day";
-                $time_column="date_add_day";
-                $group_time_column="date_add_day";
-                $order_time_column="date_add_day";
-                $time_filter="`date_add_day` >= DATE_SUB( CURDATE() , INTERVAL 7 DAY)";
-            break;
-        }
-
-        if ($limited_to!=''){$limited_to=" and `"._str($main_column)."`='"._str($limited_to)."'";}
-    
-        if ($main_column==$group_by)
-        {
-            $sql="SELECT 
-                    `"._str($main_column)."`, 
-                    {$time_column}, 
-                    SUM(`click_price`) as clicks_price, 
-                    SUM(`conversion_price_main`) as conversions_sum, 
-                    SUM(`is_parent`) as parent_count, 
-                    `is_sale`, 
-                    `is_lead`, 
-                    COUNT(`id`) AS cnt
-                FROM 
-                    `tbl_clicks`
-                WHERE 
-                    {$time_filter}
-                    {$limited_to}
-                GROUP BY 
-                    `"._str($main_column)."`, 
-                    `is_sale`, 
-                    `is_lead`,
-                    {$group_time_column}
-                ORDER BY 
-                    `"._str($main_column)."`, 
-                    {$order_time_column} ASC
-                    "; 
-        }
-        else
-        {
-            switch ($group_by)
-            {
-                case 'user_platform': 
-                    $sql="SELECT 
-                            `"._str($main_column)."`, 
-                            CONCAT(`user_platform`, ' ', `user_platform_info`) as user_platform, 
-                            {$time_column}, 
-                            SUM(`click_price`) as clicks_price, 
-                            SUM(`conversion_price_main`) as conversions_sum, 
-                            SUM(`is_parent`) as parent_count, 
-                            `is_sale`, 
-                            `is_lead`, 
-                            COUNT(`id`) AS cnt
-                        FROM 
-                            `tbl_clicks`
-                        WHERE 
-                            {$time_filter}
-                            {$limited_to}
-                        GROUP BY 
-                            `"._str($main_column)."`, 
-                            `user_platform`,
-                            `user_platform_info`,
-                            `is_sale`, 
-                            `is_lead`,
-                            {$group_time_column}
-                        ORDER BY 
-                            `"._str($main_column)."`, 
-                            `"._str($group_by)."`,
-                            {$order_time_column} ASC
-                            ";                
-                break;
-
-                case 'referer':
-                    $sql="SELECT 
-                        `"._str($main_column)."`, 
-                        LEFT(referer, IF(LOCATE('/', referer, 8) = 0, LENGTH(referer), LOCATE('/', referer, 8))) as `referer`,
-                        {$time_column}, 
-                        SUM(`click_price`) as clicks_price, 
-                        SUM(`conversion_price_main`) as conversions_sum, 
-                        SUM(`is_parent`) as parent_count, 
-                        `is_sale`, 
-                        `is_lead`, 
-                        COUNT(`id`) AS cnt
-                    FROM 
-                        `tbl_clicks`
-                    WHERE 
-                        {$time_filter}
-                        {$limited_to}
-                    GROUP BY 
-                        `"._str($main_column)."`, 
-                        LEFT(referer, IF(LOCATE('/', referer, 8) = 0, LENGTH(referer), LOCATE('/', referer, 8))), 
-                        `is_sale`, 
-                        `is_lead`,
-                        {$group_time_column}
-                    ORDER BY 
-                        `"._str($main_column)."`, 
-                        LEFT(referer, IF(LOCATE('/', referer, 8) = 0, LENGTH(referer), LOCATE('/', referer, 8))),
-                        {$order_time_column} ASC
-                        ";
-                break;
-
-                default: 
-                    $sql="SELECT 
-                            `"._str($main_column)."`, 
-                            `"._str($group_by)."`, 
-                            {$time_column}, 
-                            SUM(`click_price`) as clicks_price, 
-                            SUM(`conversion_price_main`) as conversions_sum, 
-                            SUM(`is_parent`) as parent_count, 
-                            `is_sale`, 
-                            `is_lead`, 
-                            COUNT(`id`) AS cnt
-                        FROM 
-                            `tbl_clicks`
-                        WHERE 
-                            {$time_filter}
-                            {$limited_to}
-                        GROUP BY 
-                            `"._str($main_column)."`, 
-                            `"._str($group_by)."`, 
-                            `is_sale`, 
-                            `is_lead`,
-                            {$group_time_column}
-                        ORDER BY 
-                            `"._str($main_column)."`, 
-                            `"._str($group_by)."`,
-                            {$order_time_column} ASC
-                            ";
-                break;            
-            }
-        }
-
-        $result=mysql_query($sql);
-        while ($row=mysql_fetch_assoc($result))
-        {
-            if ($row[$main_column]==''){$row[$main_column]='{empty}';}
-            $group_by_value=$row[$group_by];
-            if ($group_by_value==''){$group_by_value='{empty}';}
-
-            switch ($row['is_sale'].$row['is_lead'])
-            {
-                case '00':
-                    $click_type='click';
-                break;
-
-                case '01':
-                    $click_type='lead';
-                break;
-
-                case '10':
-                    $click_type='sale';
-                break;
-
-                case '11':
-                    $click_type='sale_lead';
-                break;
-            }
-
-            if ($main_column==$group_by)
-            {
-                if($report_type == 'monthly') {
-                    $arr_report_data[$row[$main_column]][date('m.Y', strtotime($row[$time_column_alias]))][$click_type]=array('cnt'=>$row['cnt'], 'cost'=>$row['clicks_price'], 'earnings'=>$row['conversions_sum'], 'is_parent_cnt'=>$row['parent_count']);
-                } else {
-                    $arr_report_data[$row[$main_column]][$row[$time_column_alias]][$click_type]=array('cnt'=>$row['cnt'], 'cost'=>$row['clicks_price'], 'earnings'=>$row['conversions_sum'], 'is_parent_cnt'=>$row['parent_count']);
-                }
-            }
-            else
-            {
-                if($report_type == 'monthly') {
-                    $arr_report_data[$row[$main_column]][$group_by_value][date('m.Y', strtotime($row[$time_column_alias]))][$click_type]=array('cnt'=>$row['cnt'], 'cost'=>$row['clicks_price'], 'earnings'=>$row['conversions_sum'], 'is_parent_cnt'=>$row['parent_count']);
-                } else { 
-                    $arr_report_data[$row[$main_column]][$group_by_value][$row[$time_column_alias]][$click_type]=array('cnt'=>$row['cnt'], 'cost'=>$row['clicks_price'], 'earnings'=>$row['conversions_sum'], 'is_parent_cnt'=>$row['parent_count']);
-                }
-            }
-        }
-
-        return $arr_report_data;
-    }
-
-	
 	// Суммирует значения из двухмерного массива
 	function sum_arr($arr, $param = 'cnt') {
 		$summ = 0;
@@ -1087,17 +816,22 @@
 		return ($k1 < $k2) ? $pop_sort_order * 1 : $pop_sort_order * -1;
 	}
 	
-	/* v2 */
-	function get_clicks_report_element2 ($data, $emp = true) { 
-		/*
-		if($_SERVER['REMOTE_ADDR'] == '178.121.223.216') {
-			dmp($data) . '<br />';
-		}*/
+	/* Генерируем данные с возможностью переключения колонок (дневной режим) 
+	 * emp - показывать пустую ячейку, если значение равно 0.
+     * sub - данные иерархически организованы (отчёт целевые страницы)
+	 */
+	function get_clicks_report_element2 ($data, $emp = true, $sub = true) { 
 		global $report_cols, $currencies;
 		$out = array();
 		foreach($report_cols as $col => $options) {
-			//$func = 't_' . $col;
-			$out[] = '<span class="timetab sdata ' . $col . '">' . sortdata($col, $data, $emp) . '</span>';
+			
+			// С иерархически организованными данными используется функция sortdata для корректной сортировки по всем уровням
+			if($sub) {
+				$out[] = '<span class="timetab sdata ' . $col . '">' . sortdata($col, $data, $emp) . '</span>';
+			} else {
+				$func = 't_' . $col;
+				$out[] = '<span class="timetab sdata ' . $col . '">' . $func($data, true, $emp) . '</span>';
+			}
 		}
 		return join('', $out);
 	}
@@ -1415,6 +1149,7 @@
 				'col'  => $params['col'],
 				'from' => $params['from'],
 				'to' => $params['to'],
+			
 			);
 			return '?' . http_build_query($vars);
 		}
@@ -1459,7 +1194,7 @@
 			$subgroup_by = rq('subgroup_by', 0, $group_by);
 			$conv = rq('conv', 0, 'all');
 			$mode = rq('mode', 0, '');
-			$col  = rq('col', 0, 'sale_lead');
+			$col  = rq('col',  0, 'act');
 			
 			// Если эта группировка уже затронута фильтром - выбираем следующую по приоритету
 			// Примечание: в отчёте по целевым можно не выбирать
@@ -1526,20 +1261,20 @@
 		}
 
 		function t_conversion($r, $wrap = true, $emp = true) {
-			if($r['sale'] == 0) return $wrap ? '' : 0;
+			if($r['sale'] == 0) return $wrap ? ($emp ? '' : '0') : 0;
 			$out = round2($r['sale'] / $r['cnt'] * 100);
 			return $wrap ? $out . '%' : $out;
 		}
 
 		function t_conversion_l($r, $wrap = true, $emp = true) {
-			if($r['lead'] == 0) return $wrap ? '' : 0;
+			if($r['lead'] == 0) return $wrap ? ($emp ? '' : '0') : 0;
 			$out = round2($r['lead'] / $r['cnt'] * 100);
 			return $wrap ? $out . '%' : $out;
 		}
 		
 		function t_conversion_a($r, $wrap = true, $emp = true) {
-			if($r['sale_lead'] == 0) return $wrap ? '' : 0;
-			$out = round2($r['sale_lead'] / $r['cnt'] * 100);
+			if($r['act'] == 0) return $wrap ? ($emp ? '' : '0') : 0;
+			$out = round2($r['act'] / $r['cnt'] * 100);
 			return $wrap ? $out . '%' : $out;
 		}
 							
@@ -1553,7 +1288,8 @@
 		}
 		
 		function t_cpa($r, $wrap = true, $emp = true) {
-			return currencies_span(round2($r['price'] / $r['sale_lead']), $wrap);
+			//return currencies_span($r['price'] / $r['act'], $wrap);
+			return currencies_span(round2($r['price'] / $r['act']), $wrap);
 		}
 		
 		function t_cpl($r, $wrap = true, $emp = true) {
@@ -1571,7 +1307,7 @@
 		}
 		
 		function t_cnt($r, $wrap = true, $emp = true) {
-			return $r['cnt'];
+			return empty($r['cnt']) ? ($emp ? '' : '0') : $r['cnt'];
 		}
 		
 		function t_sale($r, $wrap = true, $emp = true) {
@@ -1582,6 +1318,11 @@
 		function t_lead($r, $wrap = true, $emp = true) {
 			if($r['lead'] == 0) return $wrap ? '' : 0;
 			return $r['lead'];
+		}
+		
+		function t_act($r, $wrap = true, $emp = true) {
+			if($r['act'] == 0) return ($wrap && $emp) ? '' : 0;
+			return $r['act'];
 		}
 		
 		function t_sale_lead($r, $wrap = true, $emp = true) {
@@ -1661,7 +1402,7 @@
 						$out = '';
 					}
 				} elseif($type == 'source_name') {
-					if($row[$type] == 'source') {
+					if($row[$type] == 'source' or $row[$type] == 'SOURCE') {
 						$out = '';
 					} else {
 						$out = $row[$type];
@@ -1681,16 +1422,17 @@
 		function stat_inc(&$arr, $r, $id, $name) {
 			if(!isset($arr)) {
 				$arr = array(
-					'id'     => $id,
-					'name'   => $name,
-					'price'  => 0,
-					'unique' => 0,
-					'income' => 0,
-					'direct' => 0,
-					'sale'   => 0,
-					'lead'   => 0,
-					'out'    => 0,
-					'cnt'    => 0,
+					'id'        => $id,
+					'name'      => $name,
+					'price'     => 0,
+					'unique'    => 0,
+					'income'    => 0,
+					'direct'    => 0,
+					'sale'      => 0,
+					'lead'      => 0,
+					'act'       => 0,
+					'out'       => 0,
+					'cnt'       => 0,
 					'sale_lead' => 0,
 				);
 			}
@@ -1698,6 +1440,7 @@
 			$arr['name']      =  $name;
 			$arr['sale']      += $r['is_sale'];
 			$arr['lead']      += $r['is_lead'];
+			$arr['act']       += ($r['is_lead'] + $r['is_lead']);
 			$arr['cnt']       += $r['cnt'];
 			$arr['price']     += $r['click_price'];
 			$arr['unique']    += $r['is_unique'];
@@ -1706,6 +1449,23 @@
 			$arr['out']       += $r['is_connected'];
 			$arr['sale_lead'] += $r['sale_lead'];
 		}
+		
+		// Складываем дневную статистику для подведения итогов по строкам и колонкам
+		function stat_inc_total($cur_date, $row) {
+			global $row_total_data, $column_total_data, $table_total_data;
+			foreach($row as $k => $v) {
+				if(is_array($v)) continue;
+				
+				// Служебные колонки ln (landing number) и order не должны суммироваться, но переносятся в итоговую статистику
+				if($k == 'order' or $k == 'ln') {
+					$row_total_data[$k] = $v;
+					continue;
+				}
+				$row_total_data[$k] += $v;
+				$column_total_data[$cur_date][$k] += $v;
+				$table_total_data[$k] += $v;
+			}
+		} 
 		
 		// Значение поля для отображения пользователю, например
 		// out_id "10" становится названием ссылки "Ссылка 1",
@@ -1735,7 +1495,7 @@
 				}
 				
 			} elseif($type == 'source_name') {
-				if($v == 'source') { // значение по умолчанию
+				if($v == 'source' or $v == 'SOURCE') { // значение по умолчанию
 					$name = '';
 				} else {
 					$name = empty($source_config[$v]['name']) ? $v : $source_config[$v]['name'];
@@ -1938,9 +1698,9 @@
 						if(isset($v['sub'])) $data[$k]['sub'] = conv_filter($v['sub'], $conv);
 					}
 					break;
-				case 'sale_lead':
+				case 'act':
 					foreach($data as $k => $v) {
-						if($v['sale_lead'] == 0 and $v['sale'] == 0 and $v['lead'] == 0) unset($data[$k]);
+						if($v['act'] == 0 and $v['sale'] == 0 and $v['lead'] == 0) unset($data[$k]);
 						if(isset($v['sub'])) $data[$k]['sub'] = conv_filter($v['sub'], $conv);
 					}
 					break;

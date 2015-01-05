@@ -21,34 +21,34 @@ $to         = rq('to', 4, '');
 
 // Нижние кнопки 
 $currency = rq('currency', 0, 'usd');
-$col      = rq('col', 0, 'all_actions');
+$col      = rq('col', 0, 'act');
 
 if($params['conv'] == 'lead') {
 	$col == 'leads';
 };
 	
 $option_leads_type = array(
-	'sale_lead' => 'Все действия',
+	'act'  => 'Все действия',
 	'sale' => 'Продажи',
 	'lead' => 'Лиды'
 );
 
 $option_currency = array(
-	'currency_rub' => '<i class="fa fa-rub"></i>',
-	'currency_usd' => '$',
+	'rub' => '<i class="fa fa-rub"></i>',
+	'usd' => '$',
 );	
 
 // Проверяем на соответствие существующим типам
 
 if(empty($option_leads_type[$col])) 
-	$col = 'sale_lead';
+	$col = 'act';
 
-if(empty($option_currency['currency_' . $currency])) 
+if(empty($option_currency[$currency])) 
 	$currency = 'usd';
 
 if($part == 'all') { ?><style><?php
 	switch($col) {
-		case 'sale_lead':
+		case 'act':
 			echo '.col_s:not(.col_a) {display: none;} .col_l:not(.col_a) {display: none;} ';
 			break;
 		case 'sale':
@@ -196,20 +196,14 @@ switch ($_REQUEST['type']) {
 				// Таблица отчета
 				echo tpx('report_table', $assign);
 			}
-		
+			
+			// Возвращаем режим на место, иначе кнопки внизу будут вести на этот тип отчёта
+			$params['mode'] = $assign['report_params']['mode'] = '';
+			
 		}
 	}
 	
-	
-	
-	//dmp($report['data']);
-	
 	break;
-
-    case 'daily_grouped':
-        // Show report data
-        include _TRACK_SHOW_COMMON_PATH."/pages/report_daily_grouped.inc.php";
-    break;
     
     case 'all_stats':
         if ($from == '') {
@@ -381,17 +375,17 @@ switch ($_REQUEST['type']) {
     };
 </script>
 <?php 
-
-
 echo tpx('report_toolbar');
 
-if($part == 'all') { ?>
-	<script><?php 
-		echo "update_cols('" . $col . "', 0);";
-		echo "update_cols('currency_" . $currency . "', 1);";
-		?>
-	</script>
-<?php } ?>
+echo '<script>';
+
+echo "update_cols('" . $col . "', 0);";
+
+if($part == 'all') { 
+	echo "update_cols('currency_" . $currency . "', 1);";
+}
+echo '</script>';
+?>
 <input type='hidden' id='usd_selected' value='1'>
 <input type='hidden' id='type_selected' value='cnt'>
 <input type='hidden' id='sales_selected' value='1'>

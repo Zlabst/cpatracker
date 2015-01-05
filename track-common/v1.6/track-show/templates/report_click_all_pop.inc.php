@@ -45,7 +45,7 @@ if($var['report_params']['group_by'] != '')  {
 							//dmp($r);
 							
 							// Если конверсия по действию, а действий нет
-							if(in_array($var['report_params']['conv'], array('sale_lead', 'sale', 'lead')) and $r[$var['report_params']['conv']] == 0) continue;
+							if(in_array($var['report_params']['conv'], array('act', 'sale', 'lead')) and $r[$var['report_params']['conv']] == 0) continue;
 							
 							$name = param_name($r['name'], $var['report_params']['filter'][0]['source_name']);
 							
@@ -69,7 +69,7 @@ if($var['report_params']['group_by'] != '')  {
 							echo '<td class="col_s">'.
 							$r['sale'].'</td><td class="col_l">'.
 							$r['lead'].'</td><td class="col_a">'.
-							$r['sale_lead'].'</td><td class="col_s">'.
+							$r['act'].'</td><td class="col_s">'.
 							t_conversion($r).'</td><td class="col_l">'.
 							t_conversion_l($r).'</td><td class="col_a">'.
 							t_conversion_a($r).'</td>';

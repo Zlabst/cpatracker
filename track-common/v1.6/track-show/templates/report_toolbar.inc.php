@@ -1,36 +1,68 @@
 <?php
 global $option_leads_type, $col, $params, $option_currency, $currency, $report, $group_actions, $panels, $assign, $report_cols;
 
-// Есть данные
-if(!empty($report['data']) or $params['conv'] != 'all') {
+// Если есть данные, и их показ без ограничений
+if(!empty($report['data']) or $params['conv'] != 'all' or $params['col'] != 'act') {
+	
 	if($params['type'] != 'all_stats' and $params['part'] != 'all') {
+	//if(1) {
 		// Целевые страницы
 		// Новая версия "дневного" тулбара, кнопки переключают данные, сгенерированные функцией get_clicks_report_element2
-		if($params['mode'] == 'lp_offers') {
-			// Есть конверсии
-			if($params['conv'] != 'none') {
-				$group_actions = array(
-					'sale_lead' => array('cnt', 'repeated', 'lpctr', 'sale_lead', 'conversion_a', 'price', 'profit', 'cpa'),
-					'sale' => array('cnt', 'repeated', 'lpctr', 'sale', 'conversion', 'price', 'profit', 'epc', 'roi'),
-					'lead' => array('cnt', 'repeated', 'lpctr', 'lead', 'conversion_l', 'price', 'cpl')
-				);
-				
-				$panels = array(
-					'sale_lead' => 'Все действия',
-					'sale'      => 'Продажи',
-					'lead'      => 'Лиды'
-				);
-			// Конверсий нет, некоторые кнопки не нужны
+		//if($params['mode'] == 'lp_offers') {
+		if(1) {
+			// Офферы
+			if($params['mode'] == '') {
+
+				// Есть конверсии
+				if($params['conv'] != 'none') {
+					$group_actions = array(
+						'act'   => array('cnt', 'conversion_a', 'roi', 'epc', 'profit'),
+						'sale'  => array('cnt', 'conversion',   'roi', 'epc', 'profit'),
+						'lead'  => array('cnt', 'conversion_l', 'cpl')
+					);
+					
+					$panels = array(
+						'act'  => 'Все действия',
+						'sale' => 'Продажи',
+						'lead' => 'Лиды'
+					);
+				// Конверсий нет, некоторые кнопки не нужны
+				} else {
+					$group_actions = array(
+						'act'  => array('cnt', 'repeated', 'lpctr', 'price'),
+						'sale' => array('cnt', 'repeated', 'lpctr', 'price'),
+						'lead' => array('cnt', 'repeated', 'lpctr', 'price')
+					);
+					$panels = array();
+				}
+
+			
 			} else {
-				$group_actions = array(
-					'sale_lead' => array('cnt', 'repeated', 'lpctr', 'price'),
-					'sale'      => array('cnt', 'repeated', 'lpctr', 'price'),
-					'lead'      => array('cnt', 'repeated', 'lpctr', 'price')
-				);
-				$panels = array();
+				// Есть конверсии
+				if($params['conv'] != 'none') {
+					$group_actions = array(
+						'act'   => array('cnt', 'repeated', 'lpctr', 'act',  'conversion_a', 'price', 'profit', 'cpa'),
+						'sale'  => array('cnt', 'repeated', 'lpctr', 'sale', 'conversion',   'price', 'profit', 'epc', 'roi'),
+						'lead'  => array('cnt', 'repeated', 'lpctr', 'lead', 'conversion_l', 'price', 'cpl')
+					);
+					
+					$panels = array(
+						'act'  => 'Все действия',
+						'sale' => 'Продажи',
+						'lead' => 'Лиды'
+					);
+				// Конверсий нет, некоторые кнопки не нужны
+				} else {
+					$group_actions = array(
+						'act'  => array('cnt', 'repeated', 'lpctr', 'price'),
+						'sale' => array('cnt', 'repeated', 'lpctr', 'price'),
+						'lead' => array('cnt', 'repeated', 'lpctr', 'price')
+					);
+					$panels = array();
+				}
 			}
 		?>
-<div class="row" id='report_toolbar'>
+<div class="row" id="report_toolbar">
     <div class="col-md-12">
         <div class="form-group">
     	<?php
@@ -46,21 +78,43 @@ if(!empty($report['data']) or $params['conv'] != 'all') {
     		}
     		
     		if(!empty($panels)) {
-        		echo '<div class="btn-group margin5rb" id="rt_sale_section" data-toggle="buttons" >';
-        		
+        		echo '<div class="btn-group margin5rb" id="rt_sale_section"  >'; // data-toggle="buttons"
+        		/*
         		$i = 0;
         		foreach($panels as $value => $name) {
         			echo '<label class="btn btn-default '.($i == 0 ? 'active' : '').'" onclick="show_conv_mode(\''.$value.'\')"><input type="radio" name="option_leads_type">' . $name . '</label>';
         			$i++;
         		}
+        		*/
+        		
+        		// Все действия, продажи, лиды !!!!!!!!!!!!!!!
+        		
+				foreach($option_leads_type as $k => $v) {
+					$new_params = array('col' => $k);
+					if(in_array($params['conv'], array('sale', 'lead', 'act'))) {
+						$new_params['conv'] = $k;
+					}
+					//dmp($new_params);
+  					echo '<a class="btn btn-default'.($col == $k ? ' active' : '').'" href="'.report_lnk($params, $new_params).'">' . $v . '</a>';
+  				}
+        		
+        		
         		echo '</div>';
     		}
     		
     		echo tpx('report_conv', $assign);
     	?>
             <div class="btn-group pull-right margin5rb" id="rt_currency_section" data-toggle="buttons" style="display: none">
-                <label class="btn btn-default" onclick='show_currency("rub");'><input type="radio" name="option_currency"><i class="fa fa-rub"></i></label>
-                <label class="btn btn-default active" onclick='show_currency("usd");'><input type="radio" name="option_currency">$</label>	
+                <!--<label class="btn btn-default" onclick='show_currency("rub");'><input type="radio" name="option_currency"><i class="fa fa-rub"></i></label>
+                <label class="btn btn-default active" onclick='show_currency("usd");'><input type="radio" name="option_currency">$</label>	-->
+            <?php
+					// Переключение валют
+					foreach($option_currency as $k => $v) {
+	  					echo '<label class="btn btn-default '.($currency == $k ? ' active' : '').'" onclick="show_currency(\''.$k.'\');">
+					<input type="radio" name="option_currency">' . $v . '
+				</label>';
+	  				}
+				?>
             </div>
         </div>
     </div> <!-- ./col-md-12 -->
@@ -86,7 +140,7 @@ if(!empty($report['data']) or $params['conv'] != 'all') {
                 <label id="rt_profit_button" class="btn btn-default" onclick='update_stats("profit");'><input type="radio" name="option_report_type">Прибыль</label>
             </div>
 
-            <div class="btn-group margin5rb" id='rt_sale_section' data-toggle="buttons">
+            <div class="btn-group margin5rb" id='rt_sale_section' data-toggle="buttons">*
                 <label class="btn btn-default active" onclick='update_stats("sale");'><input type="radio" name="option_leads_type">Продажи</label>
                 <label class="btn btn-default" onclick='update_stats("lead");'><input type="radio" name="option_leads_type">Лиды</label>	
             </div>
@@ -127,7 +181,7 @@ if(!empty($report['data']) or $params['conv'] != 'all') {
 	  				// Все действия, продажи, лиды
 					foreach($option_leads_type as $k => $v) {
 						$new_params = array('col' => $k);
-						if(in_array($params['conv'], array('sale', 'lead', 'sale_lead'))) {
+						if(in_array($params['conv'], array('sale', 'lead', 'act'))) {
 							$new_params['conv'] = $k;
 						}
 	  					echo '<a class="btn btn-default'.($col == $k ? ' active' : '').'" href="'.report_lnk($params, $new_params).'">' . $v . '</a>';
@@ -139,7 +193,7 @@ if(!empty($report['data']) or $params['conv'] != 'all') {
 				<?php
 					// Переключение валют
 					foreach($option_currency as $k => $v) {
-	  					echo '<label class="btn btn-default '.('currency_' . $currency == $k ? ' active' : '').'" onclick="update_cols(\''.$k.'\');">
+	  					echo '<label class="btn btn-default '.($currency == $k ? ' active' : '').'" onclick="update_cols(\'currency_'.$k.'\');">
 					<input type="radio" name="option_leads_type">
 					' . $v . '
 				</label>';
@@ -149,6 +203,6 @@ if(!empty($report['data']) or $params['conv'] != 'all') {
 		</div>
 	</div>
 </div>
-<?php	}
+<?php }
 } // !empty($data)
 ?>	

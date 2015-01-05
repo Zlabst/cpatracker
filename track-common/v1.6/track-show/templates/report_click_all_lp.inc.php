@@ -67,7 +67,7 @@ if(!isset($table_n)) {
 							$r['out'].'</td><td class="col_s">'.
 							$r['sale'].'</td><td class="col_l">'.
 							$r['lead'].'</td><td class="col_a">'.
-							$r['sale_lead'].'</td><td class="col_s">'.
+							$r['act'].'</td><td class="col_s">'.
 							t_conversion($r).'</td><td class="col_l">'.
 							t_conversion_l($r).'</td><td class="col_a">'.
 							t_conversion_a($r).'</td><td>'.
@@ -92,7 +92,7 @@ if(!isset($table_n)) {
 							$r['out'].'</td><td class="col_s">'.
 							$r['sale'].'</td><td class="col_l">'.
 							$r['lead'].'</td><td class="col_a">'.
-							$r['sale_lead'].'</td><td class="col_s">'.
+							$r['act'].'</td><td class="col_s">'.
 							t_conversion($r).'</td><td class="col_l">'.
 							t_conversion_l($r).'</td><td class="col_a">'.
 							t_conversion_a($r).'</td><td>'.

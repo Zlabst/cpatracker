@@ -8,7 +8,7 @@ $type_buttons = array(
 	'all'  => array('Все переходы', ''),
 	'sale' => array('Только продажи', 'col_s'),
 	'lead' => array('Только лиды', 'col_l'),
-	'sale_lead' => array('Только действия', 'col_a'),
+	'act'  => array('Только действия', 'col_a'),
 	'none' => array('Без конверсий', ''),
 );
 

@@ -73,7 +73,7 @@ echo '<tr class="'.$var['class'].'"><td nowrap="" class="name">'.$name.'</td><td
 	sortdata('lpctr', $var).'</td><td class="col_s">'.
 	sortdata('sale', $var).'</td><td class="col_l">'.
 	sortdata('lead', $var).'</td><td class="col_a">'.
-	sortdata('sale_lead', $var).'</td><td class="col_s">'.
+	sortdata('act', $var).'</td><td class="col_s">'.
 	sortdata('conversion', $var).'</td><td class="col_l">'.
 	sortdata('conversion_l', $var).'</td><td class="col_a">'.
 	sortdata('conversion_a', $var).'</td><td>'.

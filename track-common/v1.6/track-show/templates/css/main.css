@@ -488,9 +488,11 @@ table.dataTable td table.sparktable td {
 }
 th .sdata.lead {
 	font-weight: bold;
+	font-size: 14px;
 }
 .sdata {
 	white-space: nowrap;
+	display: none;
 }
 .sdata.lead {
 	font-size: 14px;

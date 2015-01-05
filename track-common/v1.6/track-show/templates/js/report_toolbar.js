@@ -5,7 +5,11 @@ function modify_links(name, val) {
 	var node = document.getElementsByClassName("container")[1];
 	var els = node.getElementsByTagName("a");
 
-	for(var i=0,j=els.length; i<j; i++) {
+	for(var i=0, j=els.length; i<j; i++) {
+		// Не трогаем контейнер с соответствующим селектором
+		//console.log($(els[i]).parent());
+		if(name == 'col' && $(els[i]).parent().attr('id') == 'rt_sale_section') continue;
+		
 		href = els[i].href;
 		offset = href.indexOf(name);
 		if(offset == -1) {
@@ -28,12 +32,12 @@ function modify_links(name, val) {
 
 function update_cols(selected_option, mod_links) {
 	switch (selected_option) {
-		case 'sale_lead':
+		case 'act':
 			$('.col_s').hide();
 			$('.col_l').hide();
 			$('.col_a').show();
 			if(mod_links) {
-				modify_links('col', 'sale_lead');
+				modify_links('col', 'act');
 			}
 		break;
 		case 'sale':
@@ -104,12 +108,12 @@ function show_conv_mode(value, mod_links) {
 	$('.rt_types.rt_type_' + value).show();
 	
 	switch (value) {
-		case 'sale_lead':
+		case 'act':
 			$('.col_s').hide();
 			$('.col_l').hide();
 			$('.col_a').show();
 			if(mod_links) {
-				modify_links('col', 'sale_lead');
+				modify_links('col', 'act');
 			}
 		break;
 		case 'sale':
