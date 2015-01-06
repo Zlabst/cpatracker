@@ -5,6 +5,9 @@
  */
 $report_cols = array(
 	'cnt'          => array('name' => 'Переходы',  'money' => 0),
+	'cnt_act'      => array('name' => 'Переходы',  'money' => 0),
+	'cnt_sale'     => array('name' => 'Переходы',  'money' => 0),
+	'cnt_lead'     => array('name' => 'Переходы',  'money' => 0),
 	'repeated'     => array('name' => 'Повторные', 'money' => 0),
 	'lpctr'        => array('name' => 'LP CTR',    'money' => 0),
 	'sale'         => array('name' => 'Продажи',   'money' => 0),
@@ -28,6 +31,11 @@ $report_cols = array(
 $currencies = array(
 	'usd' => 1, // рассчёты внутри системы проводятся в долларах
 	'rub' => 30,
+);
+
+$option_currency = array(
+	'rub' => '<i class="fa fa-rub"></i>',
+	'usd' => '$',
 );
 
 // Группы источников

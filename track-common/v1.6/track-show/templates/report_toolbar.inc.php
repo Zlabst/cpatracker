@@ -35,7 +35,6 @@ if(!empty($report['data']) or $params['conv'] != 'all' or $params['col'] != 'act
 					);
 					$panels = array();
 				}
-
 			
 			} else {
 				// Есть конверсии

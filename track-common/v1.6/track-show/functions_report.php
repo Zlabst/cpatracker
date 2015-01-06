@@ -817,13 +817,34 @@
 	}
 	
 	/* Генерируем данные с возможностью переключения колонок (дневной режим) 
-	 * emp - показывать пустую ячейку, если значение равно 0.
-     * sub - данные иерархически организованы (отчёт целевые страницы)
+	 * emp  - показывать пустую ячейку, если значение равно 0
+     * sub  - данные иерархически организованы (отчёт "целевые страницы")
+     * cols - предустановленный набор колонок для загрузки, двухмерный массив вида:
+     * $cols = array(
+	 *	'act'   => array('cnt', 'conversion_a', 'roi', 'epc', 'profit'),
+	 *	'sale'  => array('cnt', 'conversion',   'roi', 'epc', 'profit'),
+	 *	'lead'  => array('cnt', 'conversion_l', 'cpl')
+	 * );
 	 */
-	function get_clicks_report_element2 ($data, $emp = true, $sub = true) { 
-		global $report_cols, $currencies;
+	function get_clicks_report_element2 ($data, $emp = true, $sub = true, $cols = false) { 
+		global $report_cols;
 		$out = array();
-		foreach($report_cols as $col => $options) {
+		
+		// Используем только пользовательские колонки, если они определены
+		if($cols and is_array($cols)) {
+			$data_cols = array();
+			foreach($cols as $type => $type_cols) {
+				foreach($type_cols as $col) {
+					if(!isset($data_cols[$col])) {
+						$data_cols[$col] = $report_cols[$col];
+					}
+				}
+			}
+		} else {
+			$data_cols = $report_cols; // все доступные колонки
+		}
+		
+		foreach($data_cols as $col => $options) {
 			
 			// С иерархически организованными данными используется функция sortdata для корректной сортировки по всем уровням
 			if($sub) {
@@ -837,114 +858,6 @@
 	}
 	/* /v2 */
 	
-	function get_clicks_report_element ($clicks_data, $leads_data, $sales_data, $saleleads_data)
-	{ 
-		if ((isset($clicks_data)) || (isset($leads_data)) || (isset($sales_data)) || isset($saleleads_data))
-		{
-			$clicks_count = array_sum (array($clicks_data['cnt'], $leads_data['cnt'], $sales_data['cnt'], $saleleads_data['cnt']));
-			$leads_count  = array_sum (array($leads_data['cnt'], $saleleads_data['cnt']));
-			$sales_count  = array_sum (array($sales_data['cnt'], $saleleads_data['cnt']));
-
-			$clicks_cost  = array_sum (array($clicks_data['cost'], $leads_data['cost'], $sales_data['cost'], $saleleads_data['cost']));			
-			
-			$sales_amount = array_sum (array($sales_data['earnings'], $saleleads_data['earnings']));
-			$sales_amount_rub = cur_conv($sales_amount, 'RUB');
-			
-			$profit_amount = $sales_amount-$clicks_cost;
-			$profit_amount_rub = cur_conv($profit_amount, 'RUB');
-
-			if ($sales_count>0) {
-				
-				$conversion = '<b>'.round2($sales_count/$clicks_count*100).'%</b>';
-				$epc = $sales_amount/$clicks_count;
-				$epc_rub = cur_conv($epc, 'RUB');
-			}
-			else
-			{
-				$conversion="0%";
-			}
-
-			if ($leads_count>0)
-			{
-				$conversion_leads='<b>'.round2($leads_count/$clicks_count).'%</b>';
-				$leads_clicks="<b>{$clicks_count}:{$leads_count}</b>";
-				$lead_price=$clicks_cost/$leads_count;
-				$lead_price_rub=cur_conv($clicks_cost/$leads_count, 'RUB');
-			}
-			else
-			{
-				$leads_clicks="{$clicks_count}:{$leads_count}";
-				$conversion_leads="0%";
-				$lead_price='';
-				$lead_price_rub='';
-			}
-
-			// Round and format values
-			$sales_amount=round($sales_amount, 2);
-			$sales_amount_rub=round($sales_amount_rub, 2);
-			$profit_amount=round($profit_amount, 2);
-			$profit_amount_rub=round($profit_amount_rub, 2);
-			
-			if ($profit_amount==0)
-			{
-				$profit_amount="<span style='color:lightgray; font-weight:normal;'>$0</span>";
-				$profit_amount_rub="<span style='color:lightgray; font-weight:normal;'>0р.</span>";
-			}
-			else
-			{
-				if ($profit_amount<0)
-				{
-					$profit_amount='<span style="color:red;">-$'.abs($profit_amount)."</span>";
-					$profit_amount_rub="<span style='color:red;'>{$profit_amount_rub} р.</span>";						
-				}
-				else
-				{
-					$profit_amount='$'.$profit_amount;
-					$profit_amount_rub=$profit_amount_rub.' р.';
-				}
-			}
-			
-			if (is_numeric ($lead_price)) {$lead_price='$'.round($lead_price, 2);}
-			if (is_numeric ($lead_price_rub)) {$lead_price_rub=round($lead_price_rub, 2).'р.';}
-			
-			if ($epc>=0.01){$epc=round($epc, 2);}else{$epc=round($epc, 3);}
-			if ($epc_rub>=0.01){$epc_rub=round($epc_rub, 2);}else{$epc_rub=round($epc_rub, 3);}
-
-
-			if ($clicks_cost>0)
-			{
-				$roi=round(($sales_amount-$clicks_cost)/$clicks_cost*100).'%';
-				if ($roi<=0){$roi="<span style='color:red;'>{$roi}</span>";}
-			}
-			else
-			{
-				$roi='';
-			}
-
-			if ($sales_count>0)
-			{
-				return "<span class='sdata leads leads_clicks'>{$leads_clicks}</span>
-						<span class='sdata leads leads_conversion'>{$conversion_leads}</span> 
-						<span class='sdata leads leads_price usd'>{$lead_price}</span>
-						<span class='sdata leads leads_price rub'>{$lead_price_rub}</span>
-						<b><span class='sdata clicks'>{$clicks_count}:{$sales_count}</span><span class='sdata conversion'>{$conversion}</span><span class='sdata sales usd'>{$profit_amount}</span><span class='sdata sales rub'>{$profit_amount_rub}</span><span class='sdata epc usd'>\${$epc}</span><span class='sdata epc rub'>{$epc_rub} р.</span><span class='sdata roi'>{$roi}</span></b>";				
-			}
-			else
-			{
-				return "<span class='sdata leads leads_clicks'>{$leads_clicks}</span>
-						<span class='sdata leads leads_conversion'>{$conversion_leads}</span> 
-						<span class='sdata leads leads_price'>{$lead_price}</span>
-						<span class='sdata clicks'>{$clicks_count}</span><span class='sdata conversion'>{$conversion}</span><span class='sdata roi' style='color:lightgray;'>-</span>
-						<span style='color:lightgray;' class='sdata epc usd'>$0</span><span style='color:lightgray;' class='sdata epc rub'>0 р.</span>
-						<span class='sdata sales usd' style='font-weight:bold;'>{$profit_amount}</span><span class='sdata sales rub' style='font-weight:bold;'>{$profit_amount_rub}</span>";
-			}
-		}
-		else
-		{
-			return '';
-		}
-	}
-        
         
         function get_sales($from, $to, $days, $month) {
             $timezone_shift = get_current_timezone_shift();
@@ -1323,6 +1236,21 @@
 		function t_act($r, $wrap = true, $emp = true) {
 			if($r['act'] == 0) return ($wrap && $emp) ? '' : 0;
 			return $r['act'];
+		}
+		
+		function t_cnt_sale($r, $wrap = true, $emp = true) {
+			if($r['sale'] == 0) return t_cnt($r, $wrap, $emp);
+			return $wrap ? '<b>' . $r['cnt'] . ':' . $r['sale'] . '</b>' : $r['sale'] * 10000000 + $r['cnt'];
+		}
+		
+		function t_cnt_lead($r, $wrap = true, $emp = true) {
+			if($r['lead'] == 0) return t_cnt($r, $wrap, $emp);
+			return $wrap ? '<b>' . $r['cnt'] . ':' . $r['lead'] . '</b>' : $r['lead'] * 10000000 + $r['cnt'];
+		}
+		
+		function t_cnt_act($r, $wrap = true, $emp = true) {
+			if($r['act'] == 0) return t_cnt($r, $wrap, $emp);
+			return $wrap ? '<b>' . $r['cnt'] . ':' . $r['act'] . '</b>' : $r['act'] * 10000000 + $r['cnt'];
 		}
 		
 		function t_sale_lead($r, $wrap = true, $emp = true) {

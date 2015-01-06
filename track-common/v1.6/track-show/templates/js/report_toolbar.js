@@ -69,9 +69,6 @@ function update_cols(selected_option, mod_links) {
 	}
 }
 
-
-
-
 function update_stats2(selected_option, currency_show) {
 	$('.timetab.sdata').hide();
 	$('.timetab.sdata').removeClass('current');
@@ -106,6 +103,9 @@ function show_conv_mode(value, mod_links) {
 	
 	// показываем нужную
 	$('.rt_types.rt_type_' + value).show();
+	
+	// жмём первую кнопку на показанной панели
+	$('.rt_types:visible').children()[0].click();
 	
 	switch (value) {
 		case 'act':

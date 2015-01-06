@@ -33,11 +33,6 @@ $option_leads_type = array(
 	'lead' => 'Лиды'
 );
 
-$option_currency = array(
-	'rub' => '<i class="fa fa-rub"></i>',
-	'usd' => '$',
-);	
-
 // Проверяем на соответствие существующим типам
 
 if(empty($option_leads_type[$col])) 

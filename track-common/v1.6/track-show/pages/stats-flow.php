@@ -10,6 +10,13 @@
 	$hour = rq('hour', 2);
 	$prev_date = date('Y-m-d', strtotime('-1 days', strtotime($date)));
 	$next_date = date('Y-m-d', strtotime('+1 days', strtotime($date)));
+	
+	// Кнопки панели управления
+	$group_actions = array(
+		'act'   => array('cnt_act', 'conversion_a', 'roi', 'epc', 'profit'),
+		'sale'  => array('cnt_sale', 'conversion',   'roi', 'epc', 'profit'),
+		'lead'  => array('cnt_lead', 'conversion_l', 'cpl')
+	);
 
 	$main_type   = rq('report_type', 0, 'source_name');
 	$limited_to  = '';
@@ -30,22 +37,19 @@
 	$arr_report_data = get_clicks_report_grouped2($params); 
 	//$arr_report_data = $arr_report_data['data'];
 	
-	dmp($arr_report_data);
+	//dmp($arr_report_data);
 	/********/
 	
 	$arr_hourly = array();
 
-	foreach ($arr_report_data['data'] as $row_name=>$row_data)
-	{
-		foreach ($row_data as $cur_hour=>$data) {
-			$clicks_data    = $data['click'];
-			$leads_data     = $data['lead'];
-			$sales_data     = $data['sale'];
-			$saleleads_data = $data['sale_lead'];
-
-			$arr_hourly[$row_name][$cur_hour] = get_clicks_report_element ($clicks_data, $leads_data, $sales_data, $saleleads_data);
-		}			
+	foreach ($arr_report_data['data'] as $row_name => $row_data) {
+		foreach ($row_data as $cur_hour => $data) {
+			$arr_hourly[$row_name][$cur_hour] = get_clicks_report_element2 ($data, true, false, $group_actions);
+		}
 	}
+	
+	//dmp($arr_hourly);
+	
 
 	echo "<div class='row'>";
 	echo "<div class='col-md-12'>";
@@ -111,7 +115,7 @@
 				}
 				for ($i=0;$i<24; $i++)
 				{
-					if ($data[$i]!='')
+					if ($data[$i] != '')
 					{
 						echo "<td><a style='text-decoration:none; color:black;' href='?filter_by=hour&source_name="._e($source_name_lnk)."&date=$date&hour=$i'>{$data[$i]}</a></td>";	
 					}
@@ -127,32 +131,69 @@
 echo "</div> <!-- ./col-md-12 -->";	
 echo "</div> <!-- ./row -->";
 // **********************************************
+
+$panels = array(
+	'act'  => 'Все действия',
+	'sale' => 'Продажи',
+	'lead' => 'Лиды'
+);
+
 ?>
 
 <div class="row" id='report_toolbar'>
 	<div class="col-md-12">
-		<div class="form-group">
-
-			<div class="btn-group invisible" id='rt_type_section' data-toggle="buttons">
-				<label id="rt_clicks_button" class="btn btn-default active" onclick='update_stats("clicks");'><input type="radio" name="option_report_type">Клики</label>
-				<label id="rt_conversion_button" class="btn btn-default" onclick='update_stats("conversion");'><input type="radio" name="option_report_type">Конверсия</label>	
-				<label id="rt_leadprice_button" class="btn btn-default" onclick='update_stats("lead_price");'><input type="radio" name="option_report_type">Стоимость лида</label>					
-				<label id="rt_roi_button" class="btn btn-default" onclick='update_stats("roi");'><input type="radio" name="option_report_type">ROI</label>	
-				<label id="rt_epc_button" class="btn btn-default" onclick='update_stats("epc");'><input type="radio" name="option_report_type">EPC</label>	
-				<label id="rt_profit_button" class="btn btn-default" onclick='update_stats("profit");'><input type="radio" name="option_report_type">Прибыль</label>
+		<div class="form-group" >
+			<div class="invisible pull-left" id="rt_type_section">
+				<?php
+	
+			$i = 0;
+    		foreach($group_actions as $group => $actions) {
+    			echo '<div class="btn-group rt_types rt_type_'.$group.'" data-toggle="buttons" style="'.($i > 0 ? 'display: none' : '').'">';
+    			foreach($actions as $action) {
+    				echo '<label class="btn btn-default '.($i == 0 ? 'active' : '').'" onclick="update_stats2(\''.$action.'\', '.($report_cols[$action]['money'] == 1 ? 'true' : 'false' ).');"><input type="radio" name="option_report_type">'.$report_cols[$action]['name'].'</label>';
+    			$i++;
+    			}
+    			
+    			echo '</div>';
+    		}
+    		
+    		if(!empty($panels)) {
+        		echo '<div class="btn-group margin5rb" id="rt_sale_section" data-toggle="buttons">'; // data-toggle="buttons"
+        		
+        		$i = 0;
+        		foreach($panels as $value => $name) {
+        			echo '<label class="btn btn-default '.($i == 0 ? 'active' : '').'" onclick="show_conv_mode(\''.$value.'\')"><input type="radio" name="option_leads_type">' . $name . '</label>';
+        			$i++;
+        		}
+        		
+        		
+        		// Все действия, продажи, лиды !!!!!!!!!!!!!!!
+        		/*
+				foreach($option_leads_type as $k => $v) {
+					$new_params = array('col' => $k);
+					if(in_array($params['conv'], array('sale', 'lead', 'act'))) {
+						$new_params['conv'] = $k;
+					}
+					//dmp($new_params);
+  					echo '<a class="btn btn-default'.($col == $k ? ' active' : '').'" href="'.report_lnk($params, $new_params).'">' . $v . '</a>';
+  				}
+        		*/
+        		
+        		echo '</div>';
+    		}
+				
+	?>
+				<div class="btn-group pull-right margin5rb" id="rt_currency_section" data-toggle="buttons" style="display: none">
+	            <?php
+						// Переключение валют
+						foreach($option_currency as $k => $v) {
+		  					echo '<label class="btn btn-default '.($currency == $k ? ' active' : '').'" onclick="show_currency(\''.$k.'\');">
+						<input type="radio" name="option_currency">' . $v . '
+					</label>';
+		  				}
+					?>
+	            </div>
 			</div>
-
-			<div class="btn-group invisible" id='rt_sale_section' data-toggle="buttons">
-				<label class="btn btn-default active" onclick='update_stats("sale_lead");'><input type="radio" name="option_leads_type">Все действия</label>
-				<label class="btn btn-default" onclick='update_stats("sale");'><input type="radio" name="option_leads_type">Продажи</label>
-				<label class="btn btn-default" onclick='update_stats("lead");'><input type="radio" name="option_leads_type">Лиды</label>	
-			</div>
-
-			<div class="btn-group invisible" id='rt_currency_section' data-toggle="buttons">
-				<label class="btn btn-default" onclick='update_stats("currency_rub");'><input type="radio" name="option_currency"><i class="fa fa-rub"></i></label>
-				<label class="btn btn-default active" onclick='update_stats("currency_usd");'><input type="radio" name="option_currency">$</label>	
-			</div>
-
 			<div class="btn-group pull-right">
 				<button type="button" class="btn btn-default" title="Параметры отчета" onclick='toggle_report_toolbar()'><i class='fa fa-cog'></i></button>
 			</div>		
@@ -210,4 +251,8 @@ if(!empty($arr_data)) {
 	}
 }
 ?>
-<script>show_conv_mode('sale', 0);update_stats2('cnt', false); /* show_currency('usd');*/</script>
+<script>
+show_conv_mode('act', 0);
+update_stats2('cnt_act', false); 
+show_currency('usd');
+</script>
