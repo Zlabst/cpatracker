@@ -16,8 +16,6 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 	
 	// Заголовок 
 	
-	//dmp($var['report_params']['mode']);
-		
 	echo "<thead>";
 		echo "<tr>";
 		
@@ -52,7 +50,6 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 		$i++;
 		
 		// Первая колонка, название
-		
 		$source_name_full = param_val($source_name, $var['group_by'], $var['filter'][0]['source_name']);
 		
 		if($var['report_params']['mode'] == 'popular') {
@@ -68,13 +65,20 @@ echo "<table class='table table-condensed table-striped table-bordered dataTable
 		} else {
 			// Ограничиваем глубину фильтров
 			if(empty($var['report_params']['filter'][0]) or count($var['report_params']['filter'][0]) < 5) {
-				$lnk_arr = array('filter_str' => array_merge($var['report_params']['filter_str'], array($var['report_params']['group_by'] => _e($source_name))));
 				
-				// Первый фильтр - переход в режим "Популярные"
-				if(count($var['report_params']['filter'][0]) == 0) {
-					$lnk_arr['mode'] = 'popular';
-					$lnk_arr['group_by'] = '';
+				// Ссылка "Другие"
+				if(is_other_link($source_name, $var['group_by'])) {
+					$lnk_arr = array('no_other' => 1);
+				} else {
+					$lnk_arr = array('filter_str' => array_merge($var['report_params']['filter_str'], array($var['report_params']['group_by'] => _e($source_name))));
+					
+					// Первый фильтр - переход в режим "Популярные"
+					if(count($var['report_params']['filter'][0]) == 0) {
+						$lnk_arr['mode'] = 'popular';
+						$lnk_arr['group_by'] = '';
+					}
 				}
+				
 				$source_name_full = '<a href="'.report_lnk($var['report_params'], $lnk_arr).'">' . _e($source_name_full) . '</a>';
 				
 			} else {

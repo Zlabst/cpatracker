@@ -6,9 +6,6 @@
 	// Increase execution time, useful for the slow DB queries
 	set_time_limit(0);
 
-	// Disable PHP warnings
-	ini_set('display_errors', 'off');
-
 	// Create token to preven сross site request forgery attacks
     define("CSRF_KEY", md5(session_id()));
 
@@ -17,7 +14,10 @@
 	
 	if (isset($_GET['debug'])) {
 		ini_set('display_errors', 1);
-		error_reporting(E_ERROR | E_WARNING | E_PARSE);
+		error_reporting(E_ERROR | E_PARSE);
+	} else {
+		// Disable PHP warnings
+		ini_set('display_errors', 'off');
 	}
 
 	// Set allowed for inclusion files list, security measure

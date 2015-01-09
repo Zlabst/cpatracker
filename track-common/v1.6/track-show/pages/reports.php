@@ -329,7 +329,7 @@ switch ($_REQUEST['type']) {
 	}
     
     function cnv2(m) {
-    	n = $('.clicks', $('<div>' + m + '</div>')).text();
+    	n = $('.cnt', $('<div>' + m + '</div>')).text();
         if(n != '') {
         	n = n.split(':')
 	        if(n.length == 2) {
@@ -353,7 +353,7 @@ switch ($_REQUEST['type']) {
 		} else {
 			x = cnv2(a);
 			y = cnv2(b);
-			return ((x < y) ? -1 : ((x > y) ? 1 : 0));
+			return ((x[0] < y[0]) ? -1 : ((x[0] > y[0]) ? 1 : ((x[1] < y[1]) ? -1 : ((x[1] > y[1]) ? 1 : 0))   ));
 		}
     };
 
@@ -365,7 +365,7 @@ switch ($_REQUEST['type']) {
     	} else { 
     		x = cnv2(a);
 			y = cnv2(b);
-			return ((x < y) ? 1 : ((x > y) ? -1 : 0));
+			return ((x[0] < y[0]) ? 1 : ((x[0] > y[0]) ? -1 : ((x[1] < y[1]) ? 1 : ((x[1] > y[1]) ? -1 : 0))  ));
 		}
     };
 </script>

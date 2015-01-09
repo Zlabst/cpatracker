@@ -2156,7 +2156,7 @@ function tpx($page, $var = null) {
 	if (isset($vars)) {
 		foreach ($vars as $k => $v) {
 			if (!isset($var[$k])) {
-				die('Ошибка в шаблоне <b>' . $page . '</b>, не определена переменная <b>' . $k . '</b>');
+				echo 'Ошибка в шаблоне <b>' . $page . '</b>, не определена переменная <b>' . $k . '</b>';
 			}
 		}
 	}

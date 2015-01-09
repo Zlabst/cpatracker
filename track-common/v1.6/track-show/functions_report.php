@@ -735,31 +735,68 @@
 		// cсылка "Другие", для Площадки, параметров ссылки и перехода 
 		// если не выбран какой-то определенный лэндинг.
 		//
-		if(!isset($params['filter'][1]['out_id']) and
-			$params['mode'] == 'lp_offers' and
-			($params['subgroup_by'] == 'referer'
+		
+		global $pop_sort_by, $pop_sort_order;
+		$max_sub = 50; // После скольки объектов начинаем сворачивать
+		
+		if($params['no_other'] == 0 
+			and !isset($params['filter'][1]['out_id']) 
+			and (
+			
+				(($params['subgroup_by'] == 'referer' and $params['mode'] == 'lp_offers') or ($params['group_by'] == 'referer' and $params['mode'] == '')) 
 			or strstr($params['subgroup_by'], 'click_param_value') !== false)
 		) {
-			$max_sub = 50; // После скольки объектов начинаем сворачивать
-			foreach($data as $k => &$v) {
-				if(isset($v['sub']) and count($v['sub']) > $max_sub) {
-					uasort($v['sub'], 'sub_order');
-					
-					$sub = array_slice($v['sub'], $max_sub);
-					$v['sub'] = array_slice($v['sub'], 0, $max_sub);
-					
-					$other = array(); // Сюда мы соберём всю статистику "других"
-					foreach($sub as $sub_row) {
-						stat_inc($other, $sub_row, -1, 'Другие');
+			
+			
+			if($params['mode'] == 'lp_offers') {
+				foreach($data as $k => &$v) {
+					if(isset($v['sub']) and count($v['sub']) > $max_sub) {
+						uasort($v['sub'], 'sub_order');
+						
+						$sub = array_slice($v['sub'], $max_sub);
+						$v['sub'] = array_slice($v['sub'], 0, $max_sub);
+						
+						$other = array(); // Сюда мы соберём всю статистику "других"
+						foreach($sub as $sub_row) {
+							stat_inc($other, $sub_row, -1, 'Другие');
+						}
+						$v['sub'][-1] = $other;
+						
+						//dmp($other);
 					}
-					$v['sub'][-1] = $other;
-					
-					//dmp($other);
 				}
+			} elseif(($params['mode'] == '' or $params['mode'] == 'lp') and count($data) > $max_sub) {
+				
+				
+				$pop_sort_by = 'cnt';
+				$pop_sort_order = 1;
+				
+				uasort($data, 'params_order');
+				
+				$other_arr = array_slice($data, $max_sub);
+				foreach($other_arr as $row) {
+					if(($params['mode'] == '' and empty($row['out']))
+					or ($params['mode'] == 'lp' and !empty($row['out'])) 
+					) {
+						foreach($row as $k => $v) {
+							if(is_array($v)) {
+								foreach($v as $d => $vd) {
+									$other[$k][$d] += $vd;
+								}
+							} else {
+								$other[$k] += $v;
+							}
+						} 
+					}
+				}
+				
+				$data = array_slice($data, 0, $max_sub);
+				
+				$other['id'] = -1;
+				$other['name'] = 'Другие';
+				$data[-1] = $other;
 			}
 		}
-		
-		//dmp($params);
 		
 		return array(
 			'data' => $data, 
@@ -1062,8 +1099,9 @@
 				'col'  => $params['col'],
 				'from' => $params['from'],
 				'to' => $params['to'],
-			
+				'no_other' => $params['no_other']
 			);
+			
 			return '?' . http_build_query($vars);
 		}
 		
@@ -1136,12 +1174,13 @@
 				'mode' => $mode,
 				'col'  => $col,
 				'from' => rq('from', 4, $from),
-				'to'   => rq('to', 4, $to)
+				'to'   => rq('to', 4, $to),
+				'no_other' => rq('no_other', 2)
 			);
 			return $v;
 		}
 		
-		// Набор функций для вычисления и форматирование показателей в отчётах
+		// Набор функций для вычисления и форматирования показателей в отчётах
 		function t_price($r, $wrap = true, $emp = true) {
 			$r['price'] = round($r['price'], 2);
 			return currencies_span($r['price'], $wrap);
@@ -1404,7 +1443,6 @@
 			global $group_types, $source_config;
 			static $links = array();
 			
-			
 			$name = '';
 			if(is_array($row)) {
 				$v = $row[$type];
@@ -1413,54 +1451,53 @@
 				$v = $row;
 			}
 			
-			if($type == 'referer') {
-				
-				if(substr($v, 0, 4) == 'http' or strstr($v, '/') !== false) {
-					$name = parse_url($v);
-					$name = $name['host'];
-				} else {
-					$name = $v;
-				}
-				
-			} elseif($type == 'source_name') {
-				if($v == 'source' or $v == 'SOURCE') { // значение по умолчанию
-					$name = '';
-				} else {
-					$name = empty($source_config[$v]['name']) ? $v : $source_config[$v]['name'];
-				}
-			} elseif($type == 'ads_name') {
-				if($v != '') {
-					$name = is_array($row) ? ($row['campaign_name'] . '-' . $row['ads_name']) : $row;
-				}
-				//$name = $v;
-				//dmp($v);
-				//dmp($row);
-			} elseif($type == 'out_id') {
-				
-				if(isset($links[$v])) {
-					$name = $links[$v];
-				} else {
-					$name = current(get_out_description($v));
-					$links[$v] = $name;
-				}
-				//dmp($links);
-				//dmp(get_out_description($v));
+			// Ссылка "Другие" для площадок и пользовательских параметров
+			if(is_other_link($v, $type)) {
+				$name = 'Другие';
 			} else {
-				// Специальные поля, определённые для источника в виде списка
-				if(!empty($source_config[$source_name]['params']) 
-					and strstr($type, 'click_param_value') !== false) {
-					$n = intval(str_replace('click_param_value', '', $type));
-					$i = 1;
-					foreach($source_config[$source_name]['params'] as $param) {
-						if($i == $n and !empty($param['list'][$v])) {
-							$name = str_replace(' ', '&nbsp;', $param['list'][$v]);
-							return $name;
-						}
-						$i++;
+				if($type == 'referer') {
+					if(substr($v, 0, 4) == 'http' or strstr($v, '/') !== false) {
+						$name = parse_url($v);
+						$name = $name['host'];
+					} else {
+						$name = $v;
 					}
-					$name = $v;
+					
+				} elseif($type == 'source_name') {
+					if($v == 'source' or $v == 'SOURCE') { // значение по умолчанию
+						$name = '';
+					} else {
+						$name = empty($source_config[$v]['name']) ? $v : $source_config[$v]['name'];
+					}
+				} elseif($type == 'ads_name') {
+					if($v != '') {
+						$name = is_array($row) ? ($row['campaign_name'] . '-' . $row['ads_name']) : $row;
+					}
+				} elseif($type == 'out_id') {
+					
+					if(isset($links[$v])) {
+						$name = $links[$v];
+					} else {
+						$name = current(get_out_description($v));
+						$links[$v] = $name;
+					}
 				} else {
-					$name = $v;
+					// Специальные поля, определённые для источника в виде списка
+					if(!empty($source_config[$source_name]['params']) 
+						and strstr($type, 'click_param_value') !== false) {
+						$n = intval(str_replace('click_param_value', '', $type));
+						$i = 1;
+						foreach($source_config[$source_name]['params'] as $param) {
+							if($i == $n and !empty($param['list'][$v])) {
+								$name = str_replace(' ', '&nbsp;', $param['list'][$v]);
+								return $name;
+							}
+							$i++;
+						}
+						$name = $v;
+					} else {
+						$name = $v;
+					}
 				}
 			}
 			
@@ -1659,5 +1696,12 @@
 				'18', '19', '20', '21', '22', '23',
 			);
 			return $hours;
+		}
+		
+		/*
+		 * Ба! Да это же у нас ссылка "Другие"!
+		 */
+		function is_other_link($val, $type) {
+			return ($val == -1 and ($type == 'referer' or strstr($type, 'click_param_value') !== false));
 		}
 ?>
