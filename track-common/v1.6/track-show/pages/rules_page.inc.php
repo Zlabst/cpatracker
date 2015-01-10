@@ -217,15 +217,21 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                 var tr = rule_table.find('tr').first();
                 prepareTextInput(tr,'os','ОС');               
                 rule_table.find('input.select-link').first().select2('val',$('#rule'+rule_id).find('[name = default_out_id]').val()) ;    
-            }); $('.addplatform').on("click", function(e) {
+            }); 
+            $('.addplatform').on("click", function(e) {
                 e.preventDefault();
-                var template = $('#referTemplate').html();
+                var template = $('#platformTemplate').html();
                 var rule_id = $(this).parent().parent().attr('id');
-                var rule_table =  $('#rule' + rule_id + ' tbody');
+                var rule_table = $('#rule' + rule_id + ' tbody');
+                users_label(rule_table);
+                
                 rule_table.prepend(template);
-                var tr = rule_table.find('tr').first();
-                prepareTextInput(tr,'platform','Платформа');               
-                rule_table.find('input.select-link').first().select2('val',$('#rule'+rule_id).find('[name = default_out_id]').val()) ;    
+                rule_table.find('input.select-platform').select2({data: {results: dictionary_platforms}, width: '250px', containerCssClass: 'form-control select2 noborder-select2'});
+                
+                rule_table.find('input.select-link').select2({data: {results: dictionary_links}, width: 'copy', containerCssClass: 'form-control select2'});
+                
+                rule_table.find('input.select-link').first().select2('val',$('#rule'+rule_id).find('[name = default_out_id]').val());
+                
             });
              $('.addbrowser').on("click", function(e) {
                 e.preventDefault();
@@ -332,7 +338,7 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
             var dictionary_countries = [];
            
             dictionary_countries.push(<?php echo  $js_countries_data; ?>); 
-             
+            
             $('input.select-geo_country').each(function()
             {
                 $(this).select2({data: {results: dictionary_countries}, width: '250px', containerCssClass: 'form-control select2 noborder-select2'});
@@ -341,11 +347,28 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
             
             dictionary_langs = [];
             dictionary_langs.push({text:"", children:[{id:"en", text:"Английский, en"},{id:"ru", text:"Русский, ru"},{id:"uk", text:"Украинский, uk"}]});
-            dictionary_langs.push(<?php echo  $js_langs_data; ?>);
+            dictionary_langs.push(<?php echo $js_langs_data; ?>);
             
             $('input.select-lang').each(function()
             {
                 $(this).select2({data: {results: dictionary_langs}, width: '250px', containerCssClass: 'form-control select2 noborder-select2'});
+                $(this).select2("val", $(this).attr('data-selected-value'));
+            });
+            
+            dictionary_platforms = [];
+            dictionary_platforms.push({text:"", children:[
+            	{id:"DEFINED_IOS",     text:"iOS"},
+            	{id:"DEFINED_ANDROID", text:"Android"},
+            	{id:"DEFINED_WINDOWS", text:"Windows"},
+            	{id:"DEFINED_MACOS",   text:"Mac OS"},
+            	{id:"DEFINED_LINUX",   text:"Linux"},
+            	{id:"DEFINED_MOBILE",  text:"Все мобильные"},
+            	{id:"DEFINED_DESKTOP", text:"Все десктопные"}
+            ]});
+            
+            $('input.select-platform').each(function()
+            {
+                $(this).select2({data: {results: dictionary_platforms}, width: '250px', containerCssClass: 'form-control select2 noborder-select2'});
                 $(this).select2("val", $(this).attr('data-selected-value'));
             });
             
@@ -730,6 +753,28 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                     </tr>
        {{/conditions}}          
 </script>
+<script id="platformTemplate" type="text/template">
+     {{#conditions}}
+                    <tr>
+                        <td>
+                            <div class="form-inline" role="form">                            
+                                <div class="btn-group trash-button">
+                                    <button class='btn btn-default btnrmcountry'><i class="fa fa-trash-o text-muted"></i></button>
+                                </div>
+                                <div class="form-group">
+                                    <span class="label label-default">Платформа</span>
+                                </div>
+                                <div class="form-group">
+                                <input type="hidden" placeholder="Платформа" itemtype='platform' class='select-platform select-item' data-selected-value=''>
+                        		<!-- <button class='btn btn-default' style='border:none;'>  <i class="fa fa-caret-down text-muted"></i></button> -->
+                                </div>
+                                <div class='pull-right' style='width:200px;'><input placeholder="Ссылка" require="" type="hidden" name='out_id[]' class='select-link' data-selected-value=""></div>
+                            </div>
+                        </td>
+                    </tr>
+       {{/conditions}}          
+</script>
+
 <script id="langTemplate" type="text/template">
      {{#conditions}}
                     <tr>

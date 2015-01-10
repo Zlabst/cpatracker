@@ -285,6 +285,15 @@
 						}
 					$flag = true;
                	   }
+               	   
+               } elseif($key == 'platform' and substr($internal_value['value'], 0, 8) == 'DEFINED_') {
+               	   if(check_platform($internal_value['value'], $user_params['os'])) {
+               	   	   $relevant_params[] = $internal_value;
+               	   	   if(!$relevant_param_order){$relevant_param_order = $internal_value['order'];}else{
+                         if($relevant_param_order>$internal_value['order']){$relevant_param_order = $internal_value['order'];}
+                       }
+					   $flag = true;
+               	   }
                } elseif($key == 'ip') {
                	   if(check_ip($internal_value['value'], $user_params[$key])) {
                	   	   $relevant_params[] = $internal_value;
@@ -393,6 +402,5 @@
 	
 	// Redirect
 	header("Location: ".$redirect_link);
-
 	exit();
 ?>

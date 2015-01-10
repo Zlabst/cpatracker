@@ -17,6 +17,61 @@ function dir_files($path, $type = '') {
 }
 
 /*
+* Проверяем платформу
+*/
+function check_platform($mask, $platform) {
+	$platforms = array(
+		'DEFINED_IOS' => array(
+			'iOS'
+		),
+		'DEFINED_ANDROID' => array(
+			'Android'
+		),
+		'DEFINED_WINDOWS' => array(
+			'Windows',
+			'Windows',
+			'Windows 2000',
+			'Windows 7',
+			'Windows 8',
+			'Windows 98',
+			'Windows Vista',
+			'Windows XP'
+		),
+		'DEFINED_MACOS' => array(
+			'Mac OS X'
+		),
+		'DEFINED_LINUX' => array(
+			'Linux',
+			'OpenBSD',
+			'Ubuntu'
+		),
+		'DEFINED_MOBILE' => array(
+			'Symbian OS',
+			'Tizen',
+			'Linux Smartphone OS',
+			'Windows Mobile OS',
+			'Windows Phone OS',
+			'Windows RT'
+		)
+	);
+	
+	if(!empty($platform)) {
+		if($mask == 'DEFINED_DESKTOP') {
+			$mobile = array_merge($platforms['DEFINED_IOS'], $platforms['DEFINED_ANDROID'], $platforms['DEFINED_MOBILE']);
+			return !in_array($platform, $mobile);
+			
+		} elseif($mask == 'DEFINED_MOBILE') {
+			$mobile = array_merge($platforms['DEFINED_IOS'], $platforms['DEFINED_ANDROID'], $platforms['DEFINED_MOBILE']);
+			return in_array($platform, $mobile);
+			
+		} elseif(array_key_exists($mask, $platforms)) {
+			return in_array($platform, $platforms[$mask]);
+		}
+	}
+	return false;
+}
+
+/*
  * Проверка правила IP
  * Примеры верных диапазонов: 8.8.8.9 - 8.8.10.255, 212.11.92.*, 212.11.*.*, 212.10.*.100 
  */
