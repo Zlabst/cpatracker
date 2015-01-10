@@ -57,10 +57,8 @@ class Adwad {
     
     
     function get_links() {
-        $protocol = isset($_SERVER["HTTPS"]) ? (($_SERVER["HTTPS"]==="on" || $_SERVER["HTTPS"]===1 || $_SERVER["SERVER_PORT"]===$pv_sslport) ? "https://" : "http://") :  (($_SERVER["SERVER_PORT"]===$pv_sslport) ? "https://" : "http://");
-        $cur_url = $protocol.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
-        $url = substr($cur_url, 0, strlen($cur_url)-21);
-        $url .= '/track/p.php?n='.$this->net;
+        $url = tracklink() . '/p.php?n='.$this->net;
+        
         foreach ($this->params as $name => $value) {
             $url .= '&'.$name.'={'.$value.'}';
         }
