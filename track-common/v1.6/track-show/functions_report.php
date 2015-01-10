@@ -325,7 +325,6 @@
 				
 			}
 			
-			//dmp($params);
 			
 			// Фильтры показа
 			if(!empty($params['filter'][1])) {
@@ -347,6 +346,10 @@
 					
 					foreach($params['filter'][1] as $name => $value) {
 						list($cur_val, $parent_val) = explode('|', $value);
+						
+						if($name == 'referer') {
+							$v[$name] = param_key($v, $name);
+						}
 						
 						if(
 							$params['subgroup_by'] == 'out_id' and (
