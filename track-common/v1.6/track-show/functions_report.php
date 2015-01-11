@@ -1410,7 +1410,7 @@
 			$arr['name']      =  $name;
 			$arr['sale']      += $r['is_sale'];
 			$arr['lead']      += $r['is_lead'];
-			$arr['act']       += ($r['is_lead'] + $r['is_lead']);
+			$arr['act']       += ($r['is_lead'] + $r['is_sale']);
 			$arr['cnt']       += $r['cnt'];
 			$arr['price']     += $r['click_price'];
 			$arr['unique']    += $r['is_unique'];

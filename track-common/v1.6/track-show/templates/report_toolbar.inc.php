@@ -16,9 +16,9 @@ if(!empty($report['data']) or $params['conv'] != 'all' or $params['col'] != 'act
 				// Есть конверсии
 				if($params['conv'] != 'none') {
 					$group_actions = array(
-						'act'   => array('cnt', 'conversion_a', 'roi', 'epc', 'profit'),
-						'sale'  => array('cnt', 'conversion',   'roi', 'epc', 'profit'),
-						'lead'  => array('cnt', 'conversion_l', 'cpl')
+						'act'   => array('cnt', 'act',  'conversion_a', 'price', 'profit', 'roi'),
+						'sale'  => array('cnt', 'sale', 'conversion',   'price', 'profit', 'epc', 'roi'),
+						'lead'  => array('cnt', 'lead', 'conversion_l', 'price', 'cpl')
 					);
 					
 					$panels = array(

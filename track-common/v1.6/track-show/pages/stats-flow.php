@@ -35,9 +35,7 @@
 	);
 		
 	$arr_report_data = get_clicks_report_grouped2($params); 
-	//$arr_report_data = $arr_report_data['data'];
 	
-	//dmp($arr_report_data);
 	/********/
 	
 	$arr_hourly = array();
