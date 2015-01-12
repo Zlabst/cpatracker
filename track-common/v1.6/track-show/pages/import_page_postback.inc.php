@@ -221,6 +221,11 @@ $custom = new custom();
                 <td><input type="text" id="profit_val" value="{profit}"></td>
             </tr>
             <tr>
+                <td><input type="checkbox" id="txt_param20"></td>
+                <td>Валюта:</td>
+                <td><input type="text" id="txt_param20_val" value="{currency}"></td>
+            </tr>
+            <tr>
                 <td><input type="checkbox" id="subid" checked="checked"></td>
                 <td>SubID:</td>
                 <td><input type="text" id="subid_val" value="{subid}"></td>

@@ -316,7 +316,7 @@
 					$arr['rules'][$i]['default_destination_id']=$default_destination_id;
 					$arr['rules'][$i]['other_users'] = count($cur['items']) > 1 ? 'Остальные посетители' : 'Все посетители';
 					
-					$i++;               
+					$i++;
 				} 
 				echo json_encode($arr);
 

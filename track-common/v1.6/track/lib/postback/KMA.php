@@ -52,7 +52,7 @@ class KMA {
         $data = $data_all['get'];
         $data['network'] = $this->net;
         $data['status'] = 1;
-        $data['txt_param2'] = 'rub';
+        $data['txt_param20'] = 'rub';
         unset($data['net']);   
         $this->common->process_conversion($data);
     }   

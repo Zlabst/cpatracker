@@ -61,7 +61,7 @@ class HotPartner {
         $data = $data_all['get'];
         $data['network'] = $this->net;
         $data['type'] = 'sale';
-        $data['txt_param2'] = 'rub';
+        $data['txt_param20'] = 'rub';
         unset($data['net']);
         
         switch ($data['txt_status']) {

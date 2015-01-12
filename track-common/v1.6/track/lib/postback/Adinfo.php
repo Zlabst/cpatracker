@@ -1,26 +1,25 @@
 <?php
-class Shakes {
-    public $net = 'Shakes';
+class Adinfo {
+    public $net = 'Adinfo';
     
     private $common;
     
     private $params = array(
-        'profit'   => 'cost',
-        'subid'    => 'sub1',
-        'date_add' => 'date', // unix
+        'profit' => 'commission',
+        'subid' => 'sud_id',
+        'date_add' => 'lead_time',
         'txt_status' => 'status',
-        't1' => 'ip',
-        't5' => 'sub2',
-        'i2' => 'offer',
-        'i7' => 'landing',
-        'i11' => 'layer',
+        't1' => 'uip',
+        'i2' => 'offer_id',
+        'i3' => 'order_id',
+        'i4' => 'group_id',
     );
     
     
-    //private $reg_url = 'http://www.cpatracker.ru/networks/shakes';
-    private $reg_url = 'http://shakes.pro';
+    private $reg_url = 'http://www.cpatracker.ru/networks/adinfo';
     
-    private $net_text = 'Конвертируем ваш трафик в деньги!';
+    private $net_text = 'Конвертируем информацию в деньги';
+    
     
     function __construct() {
         $this->common = new common($this->params);
@@ -28,8 +27,8 @@ class Shakes {
     
     
     function get_links() {
-		$url = tracklink() . '/p.php?n='.$this->net;
-       
+        $url = tracklink() . '/p.php?n='.$this->net;
+        
         foreach ($this->params as $name => $value) {
             $url .= '&'.$name.'={'.$value.'}';
         }
@@ -40,7 +39,7 @@ class Shakes {
         $return = array(
             'id' => 0,
             'url' => $url,
-            'description' => 'Вставьте эту ссылку в поле PostBack ссылки в настройках оффера Shakes.'
+            'description' => 'Вставьте эту ссылку в поле PostBack ссылки в настройках оффера Adinfo.'
         );
         
         return array(
@@ -54,25 +53,30 @@ class Shakes {
         $this->common->log($this->net, $data_all['post'], $data_all['get']);
         $data = $data_all['get'];
         $data['network'] = $this->net;
-        $data['txt_param20'] = 'rub';
         $data['type'] = 'sale';
+        $data['txt_param20'] = 'rub';
         unset($data['net']);
         
-         switch ($data['txt_status']) {
-            case 'confirm':
-                $data['txt_status'] = 'Approved';
+        switch ($data['txt_status']) {
+			case 'confirmed':
+			case 'payed':
+                $data['txt_status'] = 'approved';
                 $data['status'] = 1;
                 break;
-            case 'decline':
-            case 'reject':
-                $data['txt_status'] = 'Declined';
+            case 'cancel':
+                $data['txt_status'] = 'declined';
                 $data['status'] = 2;
                 break;
+            case 'new':
+            case 'toconfirmed':
+                $data['txt_status'] = 'waiting';
+                $data['status'] = 3;
             default:
                 $data['txt_status'] = 'Unknown';
                 $data['status'] = 0;
                 break;
-        }
+        } 
+        
         $this->common->process_conversion($data);
     }   
 }

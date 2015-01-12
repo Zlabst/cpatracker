@@ -23,10 +23,12 @@ class common {
         unset($data['is_lead']);
         unset($data['is_sale']);
         
-        switch ($data['txt_param2']) {
+        switch ($data['txt_param20']) {
+        	case 'UAH':
             case 'uah':
                 $data['profit'] = convert_to_usd('uah', $data['profit']);
                 break;
+            case 'USD':
             case 'usd':
                 $data['profit'] = convert_to_usd('usd', $data['profit']);
                 break;
