@@ -20,7 +20,6 @@ class Adinfo {
     
     private $net_text = 'Надежная партнерская программа с большим количеством эксклюзивных офферов.';
     
-    
     function __construct() {
         $this->common = new common($this->params);
     }

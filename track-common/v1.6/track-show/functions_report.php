@@ -105,6 +105,8 @@
 					list($campaign_name, $ads_name) = explode('-', $v);
 					$tmp[] = "`campaign_name` = '".mysql_real_escape_string($campaign_name)."'";
 					$tmp[] = "`ads_name` = '".mysql_real_escape_string($ads_name)."'";
+				} elseif($k == 'source_name' and empty($v)) {
+					$tmp[] = "(`source_name` = '' or `source_name` = 'source' or `source_name` = 'SOURCE')";
 				} else {
 					if($v == '{empty}') { $v = '';}
 					$tmp[] = "`".$k."` = '".mysql_real_escape_string($v)."'";
