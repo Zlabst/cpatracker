@@ -47,7 +47,6 @@
 	}
 	
 	//dmp($arr_hourly);
-	
 
 	echo "<div class='row'>";
 	echo "<div class='col-md-12'>";
@@ -113,9 +112,10 @@
 				}
 				for ($i=0;$i<24; $i++)
 				{
-					if ($data[$i] != '')
+					$i2 = sprintf('%02d', $i);
+					if ($data[$i2] != '')
 					{
-						echo "<td><a style='text-decoration:none; color:black;' href='?filter_by=hour&source_name="._e($source_name_lnk)."&date=$date&hour=$i'>{$data[$i]}</a></td>";	
+						echo "<td><a style='text-decoration:none; color:black;' href='?filter_by=hour&source_name="._e($source_name_lnk)."&date=$date&hour=$i'>{$data[$i2]}</a></td>";	
 					}
 					else
 					{
