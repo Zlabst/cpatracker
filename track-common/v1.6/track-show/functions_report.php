@@ -413,6 +413,7 @@
 						$data[$k][$name]['income'] += $r['conversion_price_main'];
 						$data[$k][$name]['sale']   += $r['is_sale'];
 						$data[$k][$name]['lead']   += $r['is_lead'];
+						$data[$k][$name]['act']    += ($r['is_lead'] + $r['is_sale']);
 						$data[$k][$name]['out']    += $r['out'];
 						
 						// Продажи + Лиды = Действия.
