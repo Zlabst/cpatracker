@@ -53,7 +53,7 @@ function CreateRequest() {
         }
     }
     if (!Request) {
-        console.log("Невозможно создать XMLHttpRequest");
+        console.log("РќРµРІРѕР·РјРѕР¶РЅРѕ СЃРѕР·РґР°С‚СЊ XMLHttpRequest");
     }
     return Request;
 }

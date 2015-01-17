@@ -276,7 +276,7 @@
                   }
                } elseif($key == 'referer') {
                	   $val = strtolower($internal_value['value']);
-               	   // дописываем http:// на случай, если юзер забыл
+               	   // РґРѕРїРёСЃС‹РІР°РµРј http:// РЅР° СЃР»СѓС‡Р°Р№, РµСЃР»Рё СЋР·РµСЂ Р·Р°Р±С‹Р»
                	   if(substr($val, 0, 7) != 'http://') $val = 'http://' . $val;
 					if(trim($user_params[$key]) != '' and strtolower(substr($user_params[$key], 0, strlen($val))) == $val) {
 	           	   		$relevant_params[] = $internal_value;

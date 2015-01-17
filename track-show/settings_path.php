@@ -27,11 +27,11 @@
 	
 	define('_TRACK_MASTER_PATH',   dirname (__FILE__) . '/../track');
 	
-	// Âñïîìîãàòåëüíûå òğåêåğû
+	// Ğ’ÑĞ¿Ğ¾Ğ¼Ğ¾Ğ³Ğ°Ñ‚ĞµĞ»ÑŒĞ½Ñ‹Ğµ Ñ‚Ñ€ĞµĞºĞµÑ€Ñ‹
 	$tracklist = array(
 		/*
 		array(
-			'path' =>  dirname (__FILE__) . '/../track_slave', // Ìîæåò áûòü 'http://www.ÏÓÒÜ_Ê_ÒĞÅÊÅĞÓ.ru/track',
+			'path' =>  dirname (__FILE__) . '/../track_slave', // ĞœĞ¾Ğ¶ĞµÑ‚ Ğ±Ñ‹Ñ‚ÑŒ 'http://www.ĞŸĞ£Ğ¢Ğ¬_Ğš_Ğ¢Ğ Ğ•ĞšĞ•Ğ Ğ£.ru/track',
 			'key'  => 'key123'
 		),
 		*/

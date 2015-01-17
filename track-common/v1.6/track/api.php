@@ -13,7 +13,7 @@ if($act != 'ping') {
 }*/
 
 $out = array(
-	'status' => 1, // Всё хорошо
+	'status' => 1, // Р’СЃС‘ С…РѕСЂРѕС€Рѕ
 	'data'   => array(),
 );
 
@@ -29,10 +29,10 @@ if($track_key != _SELF_TRACK_KEY) {
 	api_error('Invalid track key');
 }
 
-$maxsize = 10000; // максимальный размер отдаваемых данных
+$maxsize = 10000; // РјР°РєСЃРёРјР°Р»СЊРЅС‹Р№ СЂР°Р·РјРµСЂ РѕС‚РґР°РІР°РµРјС‹С… РґР°РЅРЅС‹С…
 
 
-// Получение данных
+// РџРѕР»СѓС‡РµРЅРёРµ РґР°РЅРЅС‹С…
 if($act == 'data_get') {
 	$type = rq('type');
 	if(!in_array($type, array('clicks', 'postback'))) {
@@ -43,13 +43,13 @@ if($act == 'data_get') {
 		$size = 0;
 		foreach($files as $f) {
 			$size += filesize($path . '/' . $f);
-			// Прерываем выполение, если отдаётся больше максимального размера данных
+			// РџСЂРµСЂС‹РІР°РµРј РІС‹РїРѕР»РµРЅРёРµ, РµСЃР»Рё РѕС‚РґР°С‘С‚СЃСЏ Р±РѕР»СЊС€Рµ РјР°РєСЃРёРјР°Р»СЊРЅРѕРіРѕ СЂР°Р·РјРµСЂР° РґР°РЅРЅС‹С…
 			if(!empty($out['data']) and $size >= $maxsize) break;
 			$out['data'][$f] = file_get_contents($path . '/' . $f);
 		}
 	}
 
-// Данные получены сборщиком, теперь их можно удалять
+// Р”Р°РЅРЅС‹Рµ РїРѕР»СѓС‡РµРЅС‹ СЃР±РѕСЂС‰РёРєРѕРј, С‚РµРїРµСЂСЊ РёС… РјРѕР¶РЅРѕ СѓРґР°Р»СЏС‚СЊ
 } elseif($act == 'data_get_confirm') {
 	$type  = rq('type');
 	$files = rq('files');
@@ -69,7 +69,7 @@ if($act == 'data_get') {
 		$out['data'] = $cnt;
 	}
 
-// Обновление кэша правил
+// РћР±РЅРѕРІР»РµРЅРёРµ РєСЌС€Р° РїСЂР°РІРёР»
 } elseif($act == 'rules_update') {
 	$rules_cache = rq('rules');
 	$rules_path  = _CACHE_PATH . '/rules';
@@ -85,12 +85,12 @@ if($act == 'data_get') {
 		if(file_put_contents($path, $str_rules, LOCK_EX)) { 
 			chmod ($path, 0777);
 		} else {
-			$errors[] = 'Ошибка записи в файл ' . $path;
+			$errors[] = 'РћС€РёР±РєР° Р·Р°РїРёСЃРё РІ С„Р°Р№Р» ' . $path;
 		}
 	}
 	
 	
-	// Удаляем неактуальные кэши
+	// РЈРґР°Р»СЏРµРј РЅРµР°РєС‚СѓР°Р»СЊРЅС‹Рµ РєСЌС€Рё
 	$files = dir_files($rules_path);
 	foreach($files as $f) {
 		if(!array_key_exists(substr($f, 1), $rules_cache)) {
@@ -104,7 +104,7 @@ if($act == 'data_get') {
 		$out['data'] = 'success';
 	}
 	
-// Обновление кэша ссылок
+// РћР±РЅРѕРІР»РµРЅРёРµ РєСЌС€Р° СЃСЃС‹Р»РѕРє
 } elseif($act == 'links_update') {
 	$links_cache = rq('links');
 	$outs_path = _CACHE_PATH . '/outs';
@@ -120,11 +120,11 @@ if($act == 'data_get') {
 		if(file_put_contents($path, $link, LOCK_EX)) {
 			chmod ($path, 0777);
 		} else {
-			$errors[] = 'Ошибка записи в файл ' . $path;
+			$errors[] = 'РћС€РёР±РєР° Р·Р°РїРёСЃРё РІ С„Р°Р№Р» ' . $path;
 		}
 	}
 	
-	// Удаляем неактуальные кэши
+	// РЈРґР°Р»СЏРµРј РЅРµР°РєС‚СѓР°Р»СЊРЅС‹Рµ РєСЌС€Рё
 	$files = dir_files($outs_path);
 	foreach($files as $f) {
 		if(!array_key_exists(substr($f, 1), $links_cache)) {

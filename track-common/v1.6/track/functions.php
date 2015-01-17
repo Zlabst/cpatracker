@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Ñïèñîê ôàéëîâ èç äèðåêòîðèè
+ * Ð¡Ð¿Ð¸ÑÐ¾Ðº Ñ„Ð°Ð¹Ð»Ð¾Ð² Ð¸Ð· Ð´Ð¸Ñ€ÐµÐºÑ‚Ð¾Ñ€Ð¸Ð¸
  */
 function dir_files($path, $type = '') {
 	$files = array();
@@ -17,7 +17,7 @@ function dir_files($path, $type = '') {
 }
 
 /*
-* Ïðîâåðÿåì ïëàòôîðìó
+* ÐŸÑ€Ð¾Ð²ÐµÑ€ÑÐµÐ¼ Ð¿Ð»Ð°Ñ‚Ñ„Ð¾Ñ€Ð¼Ñƒ
 */
 function check_platform($mask, $platform) {
 	$platforms = array(
@@ -72,29 +72,29 @@ function check_platform($mask, $platform) {
 }
 
 /*
- * Ïðîâåðêà ïðàâèëà IP
- * Ïðèìåðû âåðíûõ äèàïàçîíîâ: 8.8.8.9 - 8.8.10.255, 212.11.92.*, 212.11.*.*, 212.10.*.100 
+ * ÐŸÑ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð¿Ñ€Ð°Ð²Ð¸Ð»Ð° IP
+ * ÐŸÑ€Ð¸Ð¼ÐµÑ€Ñ‹ Ð²ÐµÑ€Ð½Ñ‹Ñ… Ð´Ð¸Ð°Ð¿Ð°Ð·Ð¾Ð½Ð¾Ð²: 8.8.8.9 - 8.8.10.255, 212.11.92.*, 212.11.*.*, 212.10.*.100 
  */
  
 function check_ip($mask, $ip) {
-	// Óáèðàåì ïðîáåëû ðÿäîì ñ äåôèñîì
+	// Ð£Ð±Ð¸Ñ€Ð°ÐµÐ¼ Ð¿Ñ€Ð¾Ð±ÐµÐ»Ñ‹ Ñ€ÑÐ´Ð¾Ð¼ Ñ Ð´ÐµÑ„Ð¸ÑÐ¾Ð¼
 	$mask = str_replace(' -', '-', $mask);
 	$mask = str_replace('- ', '-', $mask);
 	
-	// Çàìåíÿåì âñå ðàçäåëèòåëè çàïÿòûìè
+	// Ð—Ð°Ð¼ÐµÐ½ÑÐµÐ¼ Ð²ÑÐµ Ñ€Ð°Ð·Ð´ÐµÐ»Ð¸Ñ‚ÐµÐ»Ð¸ Ð·Ð°Ð¿ÑÑ‚Ñ‹Ð¼Ð¸
 	$mask = str_replace(';', ' ', $mask);
 	$mask = str_replace(',', ' ', $mask);
 	$mask = preg_replace("/\s+/", ' ', $mask);
 	
 	$mask = explode(' ', $mask);
 	foreach($mask as $current_mask) {
-		// Èìååì äåëî ñ äèàïàçîíîì IP
+		// Ð˜Ð¼ÐµÐµÐ¼ Ð´ÐµÐ»Ð¾ Ñ Ð´Ð¸Ð°Ð¿Ð°Ð·Ð¾Ð½Ð¾Ð¼ IP
 		if(strstr($current_mask, '-') !== false) {
 			list($ip_start, $ip_end) = explode('-', $current_mask);
 			if(ip_in_range($ip, $ip_start, $ip_end)) {
 				return true;
 			}
-		// Îäèíî÷íûé IP, âîçìîæíî ñ * 
+		// ÐžÐ´Ð¸Ð½Ð¾Ñ‡Ð½Ñ‹Ð¹ IP, Ð²Ð¾Ð·Ð¼Ð¾Ð¶Ð½Ð¾ Ñ * 
 		} else {
 			if(ip_in_range($ip, $current_mask)) {
 				return true;
@@ -106,7 +106,7 @@ function check_ip($mask, $ip) {
 }
 
 /*
- * Ïðåîáðàçóåì ñòðîêîâûé IP â ìàññèâ èç 4-õ ýëåìåíòîâ
+ * ÐŸÑ€ÐµÐ¾Ð±Ñ€Ð°Ð·ÑƒÐµÐ¼ ÑÑ‚Ñ€Ð¾ÐºÐ¾Ð²Ñ‹Ð¹ IP Ð² Ð¼Ð°ÑÑÐ¸Ð² Ð¸Ð· 4-Ñ… ÑÐ»ÐµÐ¼ÐµÐ½Ñ‚Ð¾Ð²
  */
 function ip2arr($ip) {
 	if(empty($ip)) return array();
@@ -115,25 +115,25 @@ function ip2arr($ip) {
 }
 
 /*
- * Ïðîâåðêà ïðèíàäëåæíîñòè IP äèàïàçîíó
- * Ëèáî ÿâíî çàäàí äèàïàçîí ñ äåôèñîì, ëèáî çâ¸äî÷êà
+ * ÐŸÑ€Ð¾Ð²ÐµÑ€ÐºÐ° Ð¿Ñ€Ð¸Ð½Ð°Ð´Ð»ÐµÐ¶Ð½Ð¾ÑÑ‚Ð¸ IP Ð´Ð¸Ð°Ð¿Ð°Ð·Ð¾Ð½Ñƒ
+ * Ð›Ð¸Ð±Ð¾ ÑÐ²Ð½Ð¾ Ð·Ð°Ð´Ð°Ð½ Ð´Ð¸Ð°Ð¿Ð°Ð·Ð¾Ð½ Ñ Ð´ÐµÑ„Ð¸ÑÐ¾Ð¼, Ð»Ð¸Ð±Ð¾ Ð·Ð²Ñ‘Ð´Ð¾Ñ‡ÐºÐ°
  */
 function ip_in_range($ip, $ip_start, $ip_end = '') {
 
-	// Îáû÷íûé IP
+	// ÐžÐ±Ñ‹Ñ‡Ð½Ñ‹Ð¹ IP
 	if(empty($ip_end) and strstr($ip_start, '*') === false) {
 		return $ip == $ip_start;
 		
-	// Äèàïàçîí èëè ìàñêà ñî çâ¸çäî÷êîé
+	// Ð”Ð¸Ð°Ð¿Ð°Ð·Ð¾Ð½ Ð¸Ð»Ð¸ Ð¼Ð°ÑÐºÐ° ÑÐ¾ Ð·Ð²Ñ‘Ð·Ð´Ð¾Ñ‡ÐºÐ¾Ð¹
 	} else {
 		$ip_arr = ip2arr($ip);
 		$ip_start_arr = ip2arr($ip_start);
 		
-		// Äèàïàçîí
+		// Ð”Ð¸Ð°Ð¿Ð°Ð·Ð¾Ð½
 		if(!empty($ip_end)) {
 			$ip_end_arr = ip2arr($ip_end);
 		
-		// Ìàñêà ñî çâ¸çäî÷êîé
+		// ÐœÐ°ÑÐºÐ° ÑÐ¾ Ð·Ð²Ñ‘Ð·Ð´Ð¾Ñ‡ÐºÐ¾Ð¹
 		} else {
 			for ($i=0; $i<4; $i++) {
 				if ($ip_start_arr[$i]=='*') {
@@ -152,7 +152,7 @@ function ip_in_range($ip, $ip_start, $ip_end = '') {
 }
 
 /**
- * Ëîã îøèáîê
+ * Ð›Ð¾Ð³ Ð¾ÑˆÐ¸Ð±Ð¾Ðº
  */
 function track_error($error) {
 	if($error == '') return false;
@@ -174,12 +174,12 @@ function track_error($error) {
 
 
 /*
- * Ïîëó÷åíèå ïåðåìåííîé èç POST|GET|REQUEST 
+ * ÐŸÐ¾Ð»ÑƒÑ‡ÐµÐ½Ð¸Ðµ Ð¿ÐµÑ€ÐµÐ¼ÐµÐ½Ð½Ð¾Ð¹ Ð¸Ð· POST|GET|REQUEST 
  *
- * @param string $name - èìÿ ïåðåìåííîé
- * @param string $type - p|g|r îòêóäà ïîëó÷àåì
- * @param int $num - îæèäàåìûé òèï äàííûõ: 0 - ñòðîêà, 1 - öåëîå ÷èñëî, 2 - öåëîå ïîëîæèòåëüíîå, 3 - json, 4 - date YYYY-MM-DD
- * @param mixed $df - çíà÷åíèå ïî óìîë÷àíèþ
+ * @param string $name - Ð¸Ð¼Ñ Ð¿ÐµÑ€ÐµÐ¼ÐµÐ½Ð½Ð¾Ð¹
+ * @param string $type - p|g|r Ð¾Ñ‚ÐºÑƒÐ´Ð° Ð¿Ð¾Ð»ÑƒÑ‡Ð°ÐµÐ¼
+ * @param int $num - Ð¾Ð¶Ð¸Ð´Ð°ÐµÐ¼Ñ‹Ð¹ Ñ‚Ð¸Ð¿ Ð´Ð°Ð½Ð½Ñ‹Ñ…: 0 - ÑÑ‚Ñ€Ð¾ÐºÐ°, 1 - Ñ†ÐµÐ»Ð¾Ðµ Ñ‡Ð¸ÑÐ»Ð¾, 2 - Ñ†ÐµÐ»Ð¾Ðµ Ð¿Ð¾Ð»Ð¾Ð¶Ð¸Ñ‚ÐµÐ»ÑŒÐ½Ð¾Ðµ, 3 - json, 4 - date YYYY-MM-DD
+ * @param mixed $df - Ð·Ð½Ð°Ñ‡ÐµÐ½Ð¸Ðµ Ð¿Ð¾ ÑƒÐ¼Ð¾Ð»Ñ‡Ð°Ð½Ð¸ÑŽ
  * @return mised
  */
 function rq($name, $num = 0, $df = null, $type = 'r') {
@@ -230,7 +230,7 @@ function stripslashes2($v) {
 }
 
 /**
- * Îòëàäî÷íàÿ èíôîðìàöèÿ
+ * ÐžÑ‚Ð»Ð°Ð´Ð¾Ñ‡Ð½Ð°Ñ Ð¸Ð½Ñ„Ð¾Ñ€Ð¼Ð°Ñ†Ð¸Ñ
  */	
 function dmp(&$v) {
 	echo '<pre>'.print_r($v, true).'</pre>';
