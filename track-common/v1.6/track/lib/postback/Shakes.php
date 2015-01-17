@@ -16,9 +16,7 @@ class Shakes {
         'i11' => 'layer',
     );
     
-    
-    //private $reg_url = 'http://www.cpatracker.ru/networks/shakes';
-    private $reg_url = 'http://shakes.pro';
+    private $reg_url = 'http://www.cpatracker.ru/networks/shakes';
     
     private $net_text = 'Конвертируем ваш трафик в деньги!';
     
