@@ -18,7 +18,7 @@ class Adinfo {
     
     private $reg_url = 'http://www.cpatracker.ru/networks/adinfo';
     
-    private $net_text = 'Конвертируем информацию в деньги';
+    private $net_text = 'Надежная партнерская программа с большим количеством эксклюзивных офферов.';
     
     
     function __construct() {
