@@ -2545,7 +2545,7 @@ function send2trackers($name, $data) {
 	return $out;
 }
 
-function load_plugin($name) {
+function load_plugin($name, $page = '') {
 	$html = '';
 	$plugin_path = _TRACK_SHOW_COMMON_PATH . '/../../plugins/' . $name . '/index.php';
 	if(file_exists($plugin_path)) {

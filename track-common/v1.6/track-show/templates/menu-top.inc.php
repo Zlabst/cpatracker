@@ -55,6 +55,7 @@
             <li <?php if ($_REQUEST['page']=='links'){echo 'class="active"';}?>><a href="?page=links">Офферы</a></li>
             <li <?php if ($_REQUEST['page']=='rules'){echo 'class="active"';}?>><a href="?page=rules">Ссылки</a></li>
             <li <?php if (in_array($_REQUEST['page'], array('import', 'costs', 'postback'))){echo 'class="active"';}?>><a href="?page=import">Инструменты</a></li>
+            <?php echo load_plugin('demo', 'demo_warn'); ?>
           </ul>
 
           <ul class="nav navbar-nav navbar-right">

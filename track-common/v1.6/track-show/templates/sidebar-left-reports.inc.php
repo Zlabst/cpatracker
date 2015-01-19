@@ -18,4 +18,7 @@
             <li <?php if ($_REQUEST['mode']=='lp' or $_REQUEST['mode']=='lp_offers') {echo 'class="active"';}?>><a href="<?php echo $reports_lnk_lp; ?>">Отчёт по целевым страницам</a></li>
 		</ul>
 	</div>
+	<?php 
+		echo load_plugin('demo', 'demo_well');
+	?>
 </div>

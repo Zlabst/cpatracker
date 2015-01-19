@@ -112,4 +112,7 @@
 	</form>
 	
 	</div>
+	<?php 
+		echo load_plugin('demo', 'demo_well');
+	?>
 </div>
