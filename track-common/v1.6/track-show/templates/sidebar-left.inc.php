@@ -24,8 +24,8 @@ if (is_array($arr_left_menu) && count($arr_left_menu)>0)
 <?php
 }
 ?>
-</div>
 <?php
 	echo load_plugin('demo', 'demo_well');
 }
 ?>
+</div>
