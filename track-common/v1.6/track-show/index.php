@@ -166,9 +166,11 @@
     			break;
 			}
 		}
+		
 		list($total, $arr_data) = get_visitors_flow_data ($filter, rq('offset', 2), 100, $_REQUEST['date']);
+		
 		foreach ($arr_data as $row)	{
-			include _HTML_TEMPLATE_PATH . '/../pages/stats-flow-row.php';
+			include _TRACK_SHOW_COMMON_PATH . '/pages/stats-flow-row.php';
 		}
 		exit();
 	}
@@ -237,9 +239,16 @@
 		dmp(cache_links_update());
 		exit();
 	}
+	
+	if ($_REQUEST['ajax_act']=='a1') {
+		//$auth_info=is_auth();
+		echo 1;
+		dmp($auth_info);
+		exit();
+	}
 
 	// Authentification
-	if ($_REQUEST['page']!='login')
+	if ($_REQUEST['page'] != 'login')
 	{
 		$auth_info=is_auth();
 

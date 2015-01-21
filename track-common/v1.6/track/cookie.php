@@ -66,14 +66,27 @@ function _modufy_links(subid) {
 	document.cookie = "cpa_subid="+subid+";path=/;domain=."+domain_name+";expires="+cookie_time;
 
 	var host = '<?php echo $_SERVER['HTTP_HOST']?>';
-	var node = document.getElementsByTagName("body")[0];
-	var els = node.getElementsByTagName("a");
 
-	for(var i=0,j=els.length; i<j; i++) {
-		href = els[i].href;
-		if(href.indexOf(host) != -1 && href.indexOf('_subid=') == -1) {
-			divider = href.indexOf('?') == -1 ? '?' : '&';
-			els[i].href = els[i].href + divider + '_subid=' + subid;
+	if(document.getElementsByTagName("body").length > 0) {
+		var node = document.getElementsByTagName("body")[0];
+		var els = node.getElementsByTagName("a");
+		
+		for(var i=0,j=els.length; i<j; i++) {
+			href = els[i].href;
+			if(href.indexOf(host) != -1 && href.indexOf('_subid=') == -1) {
+				divider = href.indexOf('?') == -1 ? '?' : '&';
+				els[i].href = els[i].href + divider + '_subid=' + subid;
+			}
+		}
+	} else {
+		var els = document.getElementsByTagName("frame");
+		
+		for(var i=0,j=els.length; i<j; i++) {
+			src = els[i].src;
+			if(src.indexOf(host) != -1 && src.indexOf('_subid=') == -1) {
+				divider = src.indexOf('?') == -1 ? '?' : '&';
+				els[i].src = els[i].src + divider + '_subid=' + subid;
+			}
 		}
 	}
 }
