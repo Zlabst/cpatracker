@@ -19,6 +19,52 @@ function dir_files($path, $type = '') {
 /*
 * Проверяем платформу
 */
+function get_platform($os) {
+	switch($os) {
+		case 'Android':
+			$p = 'Android';
+			break;
+		
+		case 'iOS':
+			$p = 'iOS';
+			break;
+		
+		case 'Symbian OS':
+		case 'Tizen':
+		case 'Linux Smartphone OS':
+		case 'Windows Mobile OS':
+		case 'Windows Phone OS':
+		case 'Windows RT':
+			$p = 'Мобильная';
+			break;
+		
+		case 'Windows':
+		case 'Windows':
+		case 'Windows 2000':
+		case 'Windows 7':
+		case 'Windows 8':
+		case 'Windows 98':
+		case 'Windows Vista':
+		case 'Windows XP':
+			$p = 'Windows';
+			break;
+			
+		case 'Mac OS X':
+			$p = 'MacOS';
+			break;
+		
+		case 'Linux':
+		case 'OpenBSD':
+		case 'Ubuntu':
+			$p = 'Linux';
+			break;
+			
+		default:
+			$p = 'Десктоп';
+	}
+	return $p;
+}
+
 function check_platform($mask, $platform) {
 	$platforms = array(
 		'DEFINED_IOS' => array(

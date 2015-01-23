@@ -239,13 +239,6 @@
 		dmp(cache_links_update());
 		exit();
 	}
-	
-	if ($_REQUEST['ajax_act']=='a1') {
-		//$auth_info=is_auth();
-		echo 1;
-		dmp($auth_info);
-		exit();
-	}
 
 	// Authentification
 	if ($_REQUEST['page'] != 'login')

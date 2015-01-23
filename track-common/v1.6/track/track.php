@@ -227,7 +227,7 @@
         if($requestingDevice && (($requestingDevice->getCapability('is_wireless_device') == 'true') || ($requestingDevice->getCapability('is_tablet') == 'true')))
         {               
 			$user_params['os'] = $requestingDevice->getCapability('device_os');
-			$user_params['platform']= $requestingDevice->getCapability('brand_name');
+			$user_params['platform']= get_platform($user_params['os']);//$requestingDevice->getCapability('brand_name');
 			$user_params['browser'] = $requestingDevice->getCapability('mobile_browser');                 
 		}
         else
@@ -236,9 +236,30 @@
 			$result = $parser->parse($user_params['agent']);
 			$user_params['browser'] = $result->ua->family;
 			$user_params['os'] = $result->os->family;                
-			$user_params['platform'] = '';
+			$user_params['platform'] = get_platform($result->os->family);
         }
+        /*
+        dmp($result);
+        dmp($user_params);
+        $platforms = array(
+			'DEFINED_IOS',
+			'DEFINED_ANDROID',
+			'DEFINED_WINDOWS',
+			'DEFINED_MACOS',
+			'DEFINED_LINUX',
+			'DEFINED_MOBILE',
+			'DEFINED_DESKTOP'
+		);
+		
+		foreach($platforms as $p) {
+			if($p == 'DEFINED_MOBILE') echo '</br>';
+			echo $p.': ' . (check_platform($p, $user_params['os']) ? '+' : '-') . '</br>';
+		}
 
+        
+        
+        die();
+		*/
 		$user_params['ip'] = $ip;
 		$user_params['city'] = $cur_city;
 		$user_params['region'] = $cur_state;
