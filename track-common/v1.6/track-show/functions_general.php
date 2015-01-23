@@ -2074,8 +2074,8 @@ function inputtype($type)
         case 'region':
         case 'provider':
         case 'ip':
-        case 'os':
-        //case 'platform':
+        //case 'os':
+        case 'platform':
         case 'browser':
         case 'agent':
             return 1;

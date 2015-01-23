@@ -210,6 +210,21 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
             });
              $('.addos').on("click", function(e) {
                 e.preventDefault();
+                var template = $('#osTemplate').html();
+                var rule_id = $(this).parent().parent().attr('id');
+                var rule_table = $('#rule' + rule_id + ' tbody');
+                users_label(rule_table);
+                
+                rule_table.prepend(template);
+                rule_table.find('input.select-os').select2({data: {results: dictionary_os}, width: '250px', containerCssClass: 'form-control select2 noborder-select2'});
+                
+                rule_table.find('input.select-link').select2({data: {results: dictionary_links}, width: 'copy', containerCssClass: 'form-control select2'});
+                
+                rule_table.find('input.select-link').first().select2('val',$('#rule'+rule_id).find('[name = default_out_id]').val());
+                
+             	 
+             	 /*
+                e.preventDefault();
                 var template = $('#referTemplate').html();
                 var rule_id = $(this).parent().parent().attr('id');
                 var rule_table =  $('#rule' + rule_id + ' tbody');
@@ -217,21 +232,16 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                 var tr = rule_table.find('tr').first();
                 prepareTextInput(tr,'os','ОС');               
                 rule_table.find('input.select-link').first().select2('val',$('#rule'+rule_id).find('[name = default_out_id]').val()) ;    
+                */
             }); 
             $('.addplatform').on("click", function(e) {
-                e.preventDefault();
-                var template = $('#platformTemplate').html();
+                var template = $('#referTemplate').html();
                 var rule_id = $(this).parent().parent().attr('id');
-                var rule_table = $('#rule' + rule_id + ' tbody');
-                users_label(rule_table);
-                
-                rule_table.prepend(template);
-                rule_table.find('input.select-platform').select2({data: {results: dictionary_platforms}, width: '250px', containerCssClass: 'form-control select2 noborder-select2'});
-                
-                rule_table.find('input.select-link').select2({data: {results: dictionary_links}, width: 'copy', containerCssClass: 'form-control select2'});
-                
-                rule_table.find('input.select-link').first().select2('val',$('#rule'+rule_id).find('[name = default_out_id]').val());
-                
+                var rule_table =  $('#rule' + rule_id + ' tbody');
+				rule_table.prepend(template);
+				var tr = rule_table.find('tr').first();
+                prepareTextInput(tr,'platform','Платформа');               
+                rule_table.find('input.select-link').first().select2('val',$('#rule'+rule_id).find('[name = default_out_id]').val()) ;    
             });
              $('.addbrowser').on("click", function(e) {
                 e.preventDefault();
@@ -355,8 +365,8 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                 $(this).select2("val", $(this).attr('data-selected-value'));
             });
             
-            dictionary_platforms = [];
-            dictionary_platforms.push({text:"", children:[
+            dictionary_os = [];
+            dictionary_os.push({text:"", children:[
             	{id:"DEFINED_IOS",     text:"iOS"},
             	{id:"DEFINED_ANDROID", text:"Android"},
             	{id:"DEFINED_WINDOWS", text:"Windows"},
@@ -366,9 +376,8 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
             	{id:"DEFINED_DESKTOP", text:"Все десктопные"}
             ]});
             
-            $('input.select-platform').each(function()
-            {
-                $(this).select2({data: {results: dictionary_platforms}, width: '250px', containerCssClass: 'form-control select2 noborder-select2'});
+            $('input.select-os').each(function() {
+                $(this).select2({data: {results: dictionary_os}, width: '250px', containerCssClass: 'form-control select2 noborder-select2'});
                 $(this).select2("val", $(this).attr('data-selected-value'));
             });
             
@@ -753,7 +762,7 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                     </tr>
        {{/conditions}}          
 </script>
-<script id="platformTemplate" type="text/template">
+<script id="osTemplate" type="text/template">
      {{#conditions}}
                     <tr>
                         <td>
@@ -762,10 +771,10 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                                     <button class='btn btn-default btnrmcountry'><i class="fa fa-trash-o text-muted"></i></button>
                                 </div>
                                 <div class="form-group">
-                                    <span class="label label-default">Платформа</span>
+                                    <span class="label label-default">ОС</span>
                                 </div>
                                 <div class="form-group">
-                                <input type="hidden" placeholder="Платформа" itemtype='platform' class='select-platform select-item' data-selected-value=''>
+                                <input type="hidden" placeholder="ОС" itemtype='os' class='select-os select-item' data-selected-value=''>
                         		<!-- <button class='btn btn-default' style='border:none;'>  <i class="fa fa-caret-down text-muted"></i></button> -->
                                 </div>
                                 <div class='pull-right' style='width:200px;'><input placeholder="Ссылка" require="" type="hidden" name='out_id[]' class='select-link' data-selected-value=""></div>
