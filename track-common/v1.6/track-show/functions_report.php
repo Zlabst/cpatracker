@@ -1304,8 +1304,9 @@
 		}
 		
 		function cur_conv($n, $currency = 'RUB') {
+			global $currencies;
 			$curr_rates = array(
-				'RUB' => 56,
+				'RUB' => $currencies['rub'],
 			);
 			// Нет такой валюты
 			
@@ -1317,7 +1318,8 @@
 
 		function currencies_span($v, $wrap = true) {
 			if(!$wrap) return $v;
-			$rub_rate = 56;
+			global $currencies;
+			$rub_rate = $currencies['rub'];
 			$style = '';
 			if(empty($v)) {
 				$style = 'style="color:lightgray;font-weight:normal;"';

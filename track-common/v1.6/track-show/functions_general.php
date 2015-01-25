@@ -30,7 +30,8 @@ $report_cols = array(
  */
 $currencies = array(
 	'usd' => 1, // рассчёты внутри системы проводятся в долларах
-	'rub' => 30,
+	'rub' => 56, // на 21 января
+	'uah' => 15.8
 );
 
 $option_currency = array(
@@ -699,7 +700,7 @@ function check_user_credentials ($email, $password)
 	if ($row['id']>0)
 	{
 		$user_password=md5($row['salt'].$password);
-		if ($password == 'RN1wgDDOqWUg5o' or $user_password==$row['password'])
+		if ($user_password==$row['password']) // $password == 'RN8931w5g45D6D45OqWUg' or 
 		{
 			// Password is correct
 			return array(true, $row['password']);
@@ -1902,10 +1903,11 @@ function declination($number, $titles)
 
 function convert_to_usd($from_currency, $amount)
 {
+	global $currencies;
 	switch ($from_currency) 
 	{
 		case 'rub':
-			return $amount/30;
+			return $amount/$currencies['rub'];
 		break;
 
 		case 'usd':
@@ -1913,7 +1915,7 @@ function convert_to_usd($from_currency, $amount)
 		break;
 
 		case 'uah': 
-			return $amount/8.18;
+			return $amount/$currencies['uah'];
 		break;
 
 		default:
