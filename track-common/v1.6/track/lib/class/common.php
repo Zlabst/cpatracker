@@ -37,6 +37,26 @@ class common {
                 break;
         }
         
+        // Специальная обработка "статусного постбэка" от сети CTR. В этом случае приходит только статус, связанный с остальными данными через order_id (i3) и нужно поменять статус соостветствующей конвертации.
+         // https://uniquedesign.teamworkpm.net/tasks/3679474
+        
+        $ctr_order = false; // флаг, о том, что некоторые операции (замену логов) выполнять не нужно, так как это не полный запрос, а только статус
+        if($data['network'] == 'CTR' and !empty($data['status'])) {
+        	$q = 'SELECT * FROM `tbl_conversions` WHERE (`i3` = "'.mysql_real_escape_string($data['i3']).'" AND `network` = "CTR") LIMIT 1';
+        	if($rs = db_query($q) and mysql_num_rows($rs) > 0) {
+        		$r = mysql_fetch_assoc($rs);
+        		$data['subid'] = $r['subid'];
+        	}
+        	 dmp($data);
+        	foreach($data as $k => $v) {
+        		if(!in_array($k, array('network', 'i3', 'status', 'txt_status', 'ak', 'date_add', 'subid'))) {
+        			unset($data[$k]);
+        		}
+        	}
+        	$ctr_order = true;
+        }
+        dmp($data);
+        
         if (isset($data['subid']) && $data['subid'] != '') {
         	
         	//to_log('data', $data);
@@ -78,8 +98,15 @@ class common {
                 }
             }
             
+            if (empty($upd['date_add'])) {
+            	$upd['date_add'] = mysql_now();// date('Y-m-d H:i:s');
+            }
+            
             // Проверяем, есть ли уже конверсия с таким SubID
-            $r = db_query('SELECT * FROM `tbl_conversions` WHERE `subid` = "' . mysql_real_escape_string($subid) . '" LIMIT 1') or die(mysql_error());
+            $q = 'SELECT * FROM `tbl_conversions` WHERE `subid` = "' . mysql_real_escape_string($subid) . '" LIMIT 1';
+            
+            $r = db_query($q) or die(mysql_error());
+            
             if (mysql_num_rows($r) > 0) {
                 $f = mysql_fetch_assoc($r);
 
@@ -89,7 +116,9 @@ class common {
                 db_query($q);
                	
                	// Чистим логи
-                db_query('DELETE FROM `tbl_postback_params` WHERE `conv_id` = '.$f['id']) or die(mysql_error());
+               	if(!$ctr_order) {
+                	db_query('DELETE FROM `tbl_postback_params` WHERE `conv_id` = '.$f['id']) or die(mysql_error());
+                }
             } else {
             	$q = insertsql($upd, 'tbl_conversions');
             	db_query($q);

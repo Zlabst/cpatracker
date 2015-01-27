@@ -1397,7 +1397,12 @@ function delete_sale ($click_id, $conversion_id, $type)
 			$sql="update tbl_clicks set is_sale='0', conversion_price_main='0' where id='"._str($click_id)."'";
 			mysql_query($sql);
 		break;
+		
+		default:
+			$sql="update tbl_clicks set is_lead='0', is_sale='0', conversion_price_main='0' where id='"._str($click_id)."'";
+			mysql_query($sql);
 	}
+	echo $sql;
 
 	return ;
 }	
@@ -2586,6 +2591,13 @@ function tracklink() {
 }
 
 //dmp($tracklist);
+
+function mysql_now() {
+	$q  = "SELECT NOW() as `now`";
+	$rs = mysql_query($q);
+	$r  = mysql_fetch_assoc($rs);
+	return $r['now'];
+}
 
 function parse_search_refer($refer, $tail = 1) {
 	  // База данных поисковых систем 

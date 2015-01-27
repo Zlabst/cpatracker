@@ -419,9 +419,9 @@
 			break;
 			
 			case 'delete_sale':
-				$type=$_REQUEST['type'];
-				$click_id=$_REQUEST['click_id'];
-				$conversion_id=$_REQUEST['conversion_id'];
+				$type          = $_REQUEST['type'];
+				$click_id      = rq('click_id', 2);
+				$conversion_id = rq('conversion_id', 2);
 				delete_sale ($click_id, $conversion_id, $type);
 				exit();
 			break;
