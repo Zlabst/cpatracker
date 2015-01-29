@@ -98,9 +98,9 @@ class common {
                 }
             }
             
-            if (empty($upd['date_add'])) {
+            //if (empty($upd['date_add'])) {
             	$upd['date_add'] = mysql_now();// date('Y-m-d H:i:s');
-            }
+            //}
             
             // Проверяем, есть ли уже конверсия с таким SubID
             $q = 'SELECT * FROM `tbl_conversions` WHERE `subid` = "' . mysql_real_escape_string($subid) . '" LIMIT 1';
