@@ -104,8 +104,6 @@ function modufy_links() {
 		echo json_encode($parents);
 	?>;
 	
-	//console.log(parents);
-	
 	for(var i = 0; i < hashes.length; i++) {
 		vars2.push(hashes[i]);
 	    hash = hashes[i].split('=');
@@ -141,9 +139,6 @@ function modufy_links() {
 			}
 		}
 	}
-
-	console.log(vars);
-	//console.log(subid);
 	
 	if(vars['rule_name'] !== undefined && subid == '') {
 		//vars2.push('redirect_link=' + escape(window.location.href));
