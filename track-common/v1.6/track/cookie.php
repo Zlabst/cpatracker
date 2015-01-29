@@ -65,7 +65,7 @@ function _modufy_links(subid) {
 	var cookie_time=exp.getTime() + (365*10*24*60*60*1000);
 	document.cookie = "cpa_subid="+subid+";path=/;domain=."+domain_name+";expires="+cookie_time;
 
-	var host = '<?php echo $_SERVER['HTTP_HOST']?>';
+	var host = '<?php echo str_replace(array(':80', ':443', 'www.'), '', end(explode('//', _HTML_TRACK_PATH)))?>';
 
 	if(document.getElementsByTagName("body").length > 0) {
 		var node = document.getElementsByTagName("body")[0];
