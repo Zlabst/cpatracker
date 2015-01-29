@@ -1,5 +1,5 @@
 <?php
-	header("Content-Type: text/javascript");
+	header("Content-Type: text/javascript; charset=utf-8");
 ?>
 function cpatracker_add_lead(profit) {
 	var api_key = "ec63b5ea28";
