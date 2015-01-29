@@ -1207,12 +1207,12 @@ function import_sale_info ($lead_type, $amount, $subid)
 	if ($row['id']>0)
 	{
 		$id=$row['id'];
-		$sql="update tbl_conversions set amount='"._str($amount)."', date_add=NOW() where id='"._str($id)."'";
+		$sql="update tbl_conversions set profit='"._str($amount)."', date_add=NOW() where id='"._str($id)."'";
 		mysql_query($sql) or die(mysql_error());
 	}
 	else
 	{
-		$sql="insert into tbl_conversions (profit, subid, date_add) values ('"._str($amount)."', '"._str($subid)."', NOW()) ON DUPLICATE KEY UPDATE `date_add` = NOW()";
+		$sql="insert into tbl_conversions (profit, subid, date_add, type) values ('"._str($amount)."', '"._str($subid)."', NOW(), '"._str($lead_type)."') ON DUPLICATE KEY UPDATE `date_add` = NOW()";
 		mysql_query($sql) or die(mysql_error());
 	}
 
