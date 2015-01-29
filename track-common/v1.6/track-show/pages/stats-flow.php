@@ -38,6 +38,7 @@
 	
 	/********/
 	
+	
 	$arr_hourly = array();
 
 	foreach ($arr_report_data['data'] as $row_name => $row_data) {
@@ -45,8 +46,6 @@
 			$arr_hourly[$row_name][$cur_hour] = get_clicks_report_element2 ($data, true, false, $group_actions);
 		}
 	}
-	
-	//dmp($arr_hourly);
 
 	echo "<div class='row'>";
 	echo "<div class='col-md-12'>";

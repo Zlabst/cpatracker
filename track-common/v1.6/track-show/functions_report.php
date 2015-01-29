@@ -15,8 +15,10 @@
 			switch ($filter['filter_by'])
 			{
 				case 'hour': 
-					$filter_str .= " and source_name='".mysql_real_escape_string($filter['source_name'])."' AND CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."') BETWEEN '"._str($filter['date'])." "._str($filter['hour']).":00:00' AND '"._str($filter['date'])." "._str($filter['hour']).":59:59' ";				
+					$filter_str .= " and source_name='" . mysql_real_escape_string($filter['source_name']) . "' AND CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."') BETWEEN STR_TO_DATE('"._str($filter['date'])." "._str(sprintf('%02d', $filter['hour'])).":00:00', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('"._str($filter['date'])." "._str(sprintf('%02d', $filter['hour'])).":59:59', '%Y-%m-%d %H:%i:%s')";				
 				break;
+				
+				//STR_TO_DATE('2014-12-14 00:00:00', '%Y-%m-%d %H:%i:%s')
 				
 				// поиск по названию кампании, объявления, рефереру, SubID, источнику, IP адресу 
 				case 'search':
@@ -32,6 +34,7 @@
 						)";
 					}
 				break;
+				//sprintf('%02d', $i)
 				
 				default:
 					$filter_str .= " and ".mysql_real_escape_string ($filter['filter_by'])."='".mysql_real_escape_string ($filter['filter_value'])."'";
@@ -42,10 +45,10 @@
 		$sql="select SQL_CALC_FOUND_ROWS *, date_format(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '"._str($timezone_shift)."'), '%d.%m.%Y %H:%i') as dt, timediff(NOW(), tbl_clicks.date_add) as td from tbl_clicks 
 		where 1
 		{$filter_str}
-		".($date ? "and date_format(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '"._str($timezone_shift)."'), '%Y-%m-%d %H:%i:%s') between '".$date." 00:00:00' and '".$date." 23:59:59'" : '' )."
+		".($date ? "and CONVERT_TZ(tbl_clicks.date_add, '+00:00', '"._str($timezone_shift)."') between STR_TO_DATE('".$date." 00:00:00', '%Y-%m-%d %H:%i:%s') and STR_TO_DATE('".$date." 23:59:59', '%Y-%m-%d %H:%i:%s')" : '' )."
 		order by date_add desc limit $offset, $limit";
 
-		$result=mysql_query($sql);
+		$result=mysql_query($sql) or die(mysql_error());
 		$arr_data=array();
 		
 		$q="SELECT FOUND_ROWS() as `cnt`";
@@ -138,7 +141,7 @@
 			1 as `cnt`,
 			t1.id,
 			t1.source_name,
-			UNIX_TIMESTAMP(t1.date_add) as `time_add`,
+			UNIX_TIMESTAMP(CONVERT_TZ(t1.`date_add`, '+00:00', '"._str($timezone_shift)."')) as `time_add`,
 			t1.rule_id,
 			t1.out_id,
 			t1.parent_id,
@@ -151,14 +154,15 @@
 			t1.is_parent,
 			t1.is_connected ".$select."
 			FROM `tbl_clicks` t1
-			WHERE DATE(CONVERT_TZ(t1.`date_add_day`, '+00:00', '"._str($timezone_shift)."')) BETWEEN '" . $params['from'] . "' AND '" . $params['to'] . "'" . $where . (empty($params['where']) ? '' : " and " . $params['where'] ). "
+			WHERE CONVERT_TZ(t1.`date_add`, '+00:00', '"._str($timezone_shift)."') BETWEEN STR_TO_DATE('" . $params['from'] . " 00:00:00', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('" . $params['to'] . " 23:59:59', '%Y-%m-%d %H:%i:%s')" . $where . (empty($params['where']) ? '' : " and " . $params['where'] ). "
 			ORDER BY t1.id ASC
 			LIMIT $start, $limit";
 		
-		
+		/*
 		if($_SERVER['REMOTE_ADDR'] == '178.121.223.216') {
 			echo $q . '<br />';
-		}
+		}*/
+		//echo $q . '<br />';
 		
 		$rs = db_query($q);
 		
@@ -182,8 +186,48 @@
 			}
 		}
 		
+		
 		return array($total, $rows, $campaign_params, $click_params);
 	}
+	
+	function php_date_default_timezone_set($GMT) { 
+              $timezones = array( 
+                  '-12:00'=>'Pacific/Kwajalein', 
+                  '-11:00'=>'Pacific/Samoa', 
+                  '-10:00'=>'Pacific/Honolulu', 
+                  '-09:00'=>'America/Juneau', 
+                  '-08:00'=>'America/Los_Angeles', 
+                  '-07:00'=>'America/Denver', 
+                  '-06:00'=>'America/Mexico_City', 
+                  '-05:00'=>'America/New_York', 
+                  '-04:00'=>'America/Caracas', 
+                  '-03:30'=>'America/St_Johns', 
+                  '-03:00'=>'America/Argentina/Buenos_Aires', 
+                  '-02:00'=>'Atlantic/Azores',
+                  '-01:00'=>'Atlantic/Azores', 
+                  '+00:00'=>'Europe/London', 
+                  '+01:00'=>'Europe/Paris', 
+                  '+02:00'=>'Europe/Helsinki', 
+                  '+03:00'=>'Europe/Moscow', 
+                  '+03:30'=>'Asia/Tehran', 
+                  '+04:00'=>'Asia/Baku', 
+                  '+04:30'=>'Asia/Kabul', 
+                  '+05:00'=>'Asia/Karachi', 
+                  '+05:30'=>'Asia/Calcutta', 
+                  '+06:00'=>'Asia/Colombo', 
+                  '+07:00'=>'Asia/Bangkok', 
+                  '+08:00'=>'Asia/Singapore', 
+                  '+09:00'=>'Asia/Tokyo', 
+                  '+09:00'=>'Australia/Darwin', 
+                  '+10:00'=>'Pacific/Guam', 
+                  '+11:00'=>'Asia/Magadan', 
+                  '+12:00'=>'Asia/Kamchatka' 
+              ); 
+
+    date_default_timezone_set($timezones[$GMT]);
+
+    return  date_default_timezone_get();
+} 
 	
 	/**
 	 * Подготовка данных для отчётов:
@@ -226,6 +270,13 @@
 		
 		// Смещение часового пояса
 		$timezone_shift = get_current_timezone_shift();
+		$timezone_shift_sec = get_current_timezone_shift(true);
+		
+		$timezone_backup = date_default_timezone_get();
+		date_default_timezone_set("GMT");
+		
+		// Поправка на разницу времени PHP и Базы 
+		$timezone_shift_sec += time() - strtotime(mysql_now());
 		
 		$rows = array(); // все клики за период
 		$data = array(); // сгруппированные данные
@@ -428,7 +479,7 @@
 						if($params['part'] != 'all') {
 							
 							//$k1 = (trim($r['name']) == '' ? '{empty}' : $r['name']);
-							$k2 = date($date_formats[$params['part']], $r['time_add']);
+							$k2 = date($date_formats[$params['part']], $r['time_add'] + $timezone_shift_sec);
 							//$k3 = $groups[$r['is_sale'].$r['is_lead']];
 							/*
 							$data2[$k][$name][$k2][$k3]['cnt'] += 1;
@@ -498,7 +549,7 @@
 							
 							// Информация о датах 
 							if($params['part'] != 'all') {
-								$timekey = date($date_formats[$params['part']], $r['time_add']);
+								$timekey = date($date_formats[$params['part']], $r['time_add'] + $timezone_shift_sec);
 
 								stat_inc($data[$k]['sub'][$k1][$timekey], $r, $k1, $r['name']);
 							}
@@ -539,7 +590,7 @@
 						// Запрошена информация по дням
 						if($params['part'] != 'all') {
 							
-							$k2 = date($date_formats[$params['part']], $r['time_add']);
+							$k2 = date($date_formats[$params['part']], $r['time_add'] + $timezone_shift_sec);
 							
 							$id   = param_key($r, $params['subgroup_by']);
 							$name = param_val($r, $params['subgroup_by']);
@@ -553,7 +604,7 @@
 
 						// Информация о датах
 						if($params['part'] != 'all') {
-							$timekey = date($date_formats[$params['part']], $r['time_add']);
+							$timekey = date($date_formats[$params['part']], $r['time_add'] + $timezone_shift_sec);
 							stat_inc($data[$k][$timekey], $r, $k, $name);
 						}
 					}
@@ -587,7 +638,7 @@
 					foreach($rows as $r) {
 						//$k1 = (trim($r['name']) == '' ? '{empty}' : $r['name']);
 						$k1      = param_key($r, $params['group_by']);
-						$timekey = date($date_formats[$params['part']], $r['time_add']);
+						$timekey = date($date_formats[$params['part']], $r['time_add'] + $timezone_shift_sec);
 						//$k3      = $groups[$r['is_sale'].$r['is_lead']];
 						
 						// Обрезаем реферер до домена
@@ -803,6 +854,8 @@
 				$data[-1] = $other;
 			}
 		}
+		
+		date_default_timezone_set($timezone_backup);
 		
 		return array(
 			'data' => $data, 
