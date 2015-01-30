@@ -100,9 +100,9 @@ function getrecordwithdnsservice($str){
       $record->longitude = $value;
     }
   }
-  $number = $GLOBALS['GEOIP_COUNTRY_CODE_TO_NUMBER'][$record->country_code];
-  $record->country_code3 = $GLOBALS['GEOIP_COUNTRY_CODES3'][$number];
-  $record->country_name = $GLOBALS['GEOIP_COUNTRY_NAMES'][$number];
+  $number = $GLOBALS['GEOIP2_COUNTRY_CODE_TO_NUMBER'][$record->country_code];
+  $record->country_code3 = $GLOBALS['GEOIP2_COUNTRY_CODES3'][$number];
+  $record->country_name = $GLOBALS['GEOIP2_COUNTRY_NAMES'][$number];
   if ($record->region != "") {
     if (($record->country_code == "US") || ($record->country_code == "CA")){
       $record->regionname = $GLOBALS['ISO'][$record->country_code][$record->region];
@@ -126,9 +126,9 @@ function _get_record($gi,$ipnum){
 
   $record_pointer = $seek_country + (2 * $gi->record_length - 1) * $gi->databaseSegments;
   
-  if ($gi->flags & GEOIP_MEMORY_CACHE) {
+  if ($gi->flags & GEOIP2_MEMORY_CACHE) {
     $record_buf = substr($gi->memory_buffer,$record_pointer,FULL_RECORD_LENGTH);
-  } elseif ($gi->flags & GEOIP_SHARED_MEMORY){
+  } elseif ($gi->flags & GEOIP2_SHARED_MEMORY){
     $record_buf = @shmop_read($gi->shmid,$record_pointer,FULL_RECORD_LENGTH);
   } else {
     fseek($gi->filehandle, $record_pointer, SEEK_SET);
@@ -137,10 +137,10 @@ function _get_record($gi,$ipnum){
   $record = new geoiprecord;
   $record_buf_pos = 0;
   $char = ord(substr($record_buf,$record_buf_pos,1));
-    $record->country_code = $gi->GEOIP_COUNTRY_CODES[$char];
-    $record->country_code3 = $gi->GEOIP_COUNTRY_CODES3[$char];
-    $record->country_name = $gi->GEOIP_COUNTRY_NAMES[$char];
-  $record->continent_code = $gi->GEOIP_CONTINENT_CODES[$char];
+    $record->country_code = $gi->GEOIP2_COUNTRY_CODES[$char];
+    $record->country_code3 = $gi->GEOIP2_COUNTRY_CODES3[$char];
+    $record->country_name = $gi->GEOIP2_COUNTRY_NAMES[$char];
+  $record->continent_code = $gi->GEOIP2_CONTINENT_CODES[$char];
   $record_buf_pos++;
   $str_length = 0;
     // Get region
@@ -189,7 +189,7 @@ function _get_record($gi,$ipnum){
     $longitude += ($char << ($j * 8));
   }
   $record->longitude = ($longitude/10000) - 180;
-  if (GEOIP_CITY_EDITION_REV1 == $gi->databaseType){
+  if (GEOIP2_CITY_EDITION_REV1 == $gi->databaseType){
     $metroarea_combo = 0;
     if ($record->country_code == "US"){
       for ($j = 0;$j < 3;++$j){
