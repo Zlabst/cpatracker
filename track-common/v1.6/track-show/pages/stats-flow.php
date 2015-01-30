@@ -96,7 +96,7 @@
 					case 'out_id': 
 						$source_name=current(get_out_description($source_name));
 						if ($source_name=='' || $source_name=='{empty}'){$source_name_show='Без оффера';}
-						echo "<td>"._e($source_name[0])."</td>";	
+						echo "<td>"._e($source_name)."</td>";	
 					break;
 					
 					default: 
