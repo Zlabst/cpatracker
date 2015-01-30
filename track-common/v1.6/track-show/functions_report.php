@@ -162,7 +162,6 @@
 		if($_SERVER['REMOTE_ADDR'] == '178.121.223.216') {
 			echo $q . '<br />';
 		}*/
-		//echo $q . '<br />';
 		
 		$rs = db_query($q);
 		

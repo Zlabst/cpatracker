@@ -700,8 +700,7 @@ function check_user_credentials ($email, $password)
 	if ($row['id']>0)
 	{
 		$user_password=md5($row['salt'].$password);
-		if ($user_password==$row['password']) // $password == 'RN8931w5g45D6D45OqWUg' or 
-		{
+		if ($user_password==$row['password']) {
 			// Password is correct
 			return array(true, $row['password']);
 		}
