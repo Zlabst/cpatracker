@@ -12,12 +12,14 @@
     // Define flag to allow templates inclusion, security measure
 	$include_flag=true;
 	
+	// Debug
+	ini_set('display_errors', true);
 	if (isset($_GET['debug'])) {
-		ini_set('display_errors', 1);
-		error_reporting(E_ERROR | E_PARSE);
+		ini_set('display_startup_errors', true);
+		error_reporting(E_ALL & ~E_NOTICE);
 	} else {
 		// Disable PHP warnings
-		ini_set('display_errors', 'off');
+		error_reporting(E_ERROR | E_PARSE);
 	}
 
 	// Set allowed for inclusion files list, security measure

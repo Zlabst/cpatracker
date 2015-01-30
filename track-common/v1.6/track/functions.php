@@ -1,5 +1,9 @@
 <?php
 
+// Будем показывать только серьёзные ошибки
+ini_set('display_errors', true);
+error_reporting(E_ERROR | E_PARSE);
+
 /*
  * Список файлов из директории
  */
