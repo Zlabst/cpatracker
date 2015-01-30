@@ -11,7 +11,9 @@
 	define('_CACHE_COMMON_PATH',   _TRACK_PATH . '/cache');
 	define('_TRACK_SHOW_COMMON_PATH', dirname (__FILE__) . '/../track-common/' . _TRACK_VER . '/track-show');
 
-	$html_delta_path = explode('/',substr($_SERVER['SCRIPT_FILENAME'], strlen($_SERVER['DOCUMENT_ROOT'])));
+	$doc_root = $_SERVER['DOCUMENT_ROOT'];
+	if(substr($doc_root, -1) == '/') $doc_root = substr($doc_root, 0, -1); // на случай лишнего слэша в DOCUMENT_ROOT
+	$html_delta_path = explode('/', substr($_SERVER['SCRIPT_FILENAME'], strlen($doc_root)));
 	$delta_uri = join('/', array_slice($html_delta_path, 0, count($html_delta_path) - 2));
 
 $s = (empty($_SERVER["HTTPS"]) && empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) ? '' : ((!empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") || $_SERVER['HTTP_X_FORWARDED_PROTO']=='https' ) ? "s" : "";
