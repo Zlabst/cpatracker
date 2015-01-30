@@ -8,14 +8,19 @@
 		}
 		
 		$timezone_shift = get_current_timezone_shift();
-		//echo '*' . $timezone_shift . '*';
+
 		$filter_str='';
 		if ($filter!='')
 		{
 			switch ($filter['filter_by'])
 			{
 				case 'hour': 
-					$filter_str .= " and source_name='" . mysql_real_escape_string($filter['source_name']) . "' AND CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."') BETWEEN STR_TO_DATE('"._str($filter['date'])." "._str(sprintf('%02d', $filter['hour'])).":00:00', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('"._str($filter['date'])." "._str(sprintf('%02d', $filter['hour'])).":59:59', '%Y-%m-%d %H:%i:%s')";				
+					if(empty($filter['source_name'])) {
+						$where = "(`source_name` = '' OR `source_name` = 'source' OR `source_name` = 'SOURCE' OR `source_name` = '{empty}')";
+					} else {
+						$where = "`source_name` = '".mysql_real_escape_string($filter['source_name'])."'";
+					}
+					$filter_str .= " and " . $where . " AND CONVERT_TZ(date_add, '+00:00', '"._str($timezone_shift)."') BETWEEN STR_TO_DATE('"._str($filter['date'])." "._str(sprintf('%02d', $filter['hour'])).":00:00', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('"._str($filter['date'])." "._str(sprintf('%02d', $filter['hour'])).":59:59', '%Y-%m-%d %H:%i:%s')";				
 				break;
 				
 				//STR_TO_DATE('2014-12-14 00:00:00', '%Y-%m-%d %H:%i:%s')
@@ -109,7 +114,7 @@
 					$tmp[] = "`campaign_name` = '".mysql_real_escape_string($campaign_name)."'";
 					$tmp[] = "`ads_name` = '".mysql_real_escape_string($ads_name)."'";
 				} elseif($k == 'source_name' and empty($v)) {
-					$tmp[] = "(`source_name` = '' or `source_name` = 'source' or `source_name` = 'SOURCE')";
+					$tmp[] = "(`source_name` = '' or `source_name` = 'source' or `source_name` = 'SOURCE' or `source_name` = '{empty}')";
 				} else {
 					if($v == '{empty}') { $v = '';}
 					$tmp[] = "`".$k."` = '".mysql_real_escape_string($v)."'";
@@ -159,7 +164,7 @@
 			LIMIT $start, $limit";
 		
 		/*
-		if($_SERVER['REMOTE_ADDR'] == '178.121.223.216') {
+		if($_SERVER['REMOTE_ADDR'] == '37.44.76.80') {
 			echo $q . '<br />';
 		}*/
 		
@@ -1409,6 +1414,10 @@
 		
 		function param_key($row, $type) {
 			
+			if(!is_array($row)) {
+				$row = array($type => $row);
+			}
+			
 			if(trim($row[$type]) != '') {
 				// Обрезаем реферер до домена
 				if($type == 'referer') {
@@ -1427,6 +1436,12 @@
 						$out = $row[$type];
 					} else {
 						$out = '';
+					}
+				} elseif($type == 'out_id') {
+					if($row[$type] == '{empty}') {
+						$out = '';
+					} else {
+						$out = $row[$type];
 					}
 				} elseif($type == 'source_name') {
 					if($row[$type] == 'source' or $row[$type] == 'SOURCE') {

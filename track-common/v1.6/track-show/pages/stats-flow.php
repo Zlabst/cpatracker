@@ -91,6 +91,15 @@
 			
 			foreach ($arr_hourly as $source_name=>$data)
 			{
+				echo "<td>"._e(param_val($source_name, $main_type))."</td>";
+				
+				if($main_type == 'source_name') {
+					$source_name_lnk = param_key($source_name, 'source_name');
+				} else {
+					$source_name_lnk = '';
+				}
+				
+				/*
 				switch ($main_type)
 				{
 					case 'out_id': 
@@ -109,6 +118,7 @@
 						echo "<td>"._e($source_name)."</td>";	
 					break;
 				}
+				*/
 				for ($i=0;$i<24; $i++)
 				{
 					$i2 = sprintf('%02d', $i);
