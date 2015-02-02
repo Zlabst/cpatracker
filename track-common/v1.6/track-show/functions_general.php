@@ -467,6 +467,10 @@ $source_config = array(
 	),
 	'vk' => array(
 		'name' => 'ВКонтакте',
+		'params' => array(
+			'adv_id'      => array('name' => 'ID объявления', 'url' => '{ad_id}'),
+			'campaign_id' => array('name' => 'ID кампании',   'url' => '{campaign_id}'),
+		)
 	),
 	'facebook' => array(
 		'name' => 'Facebook',
