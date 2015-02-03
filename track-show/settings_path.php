@@ -5,6 +5,7 @@
 	define('_TRACK_SETTINGS_PATH', dirname (__FILE__) . '/../track/cache');
 	
 	define('_CACHE_PATH',          dirname (__FILE__) . '/../track/cache');
+	define('_CACHE_COMMON_PATH',   dirname (__FILE__) . '/../track/cache');
 	define('_TRACK_PATH',          dirname (__FILE__) . '/../track-common/' . _TRACK_VER . '/track');
 	define('_TRACK_SHOW_PATH',     dirname (__FILE__));
 	define('_TRACK_SHOW_COMMON_PATH', dirname (__FILE__) . '/../track-common/' . _TRACK_VER . '/track-show');

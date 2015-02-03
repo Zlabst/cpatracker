@@ -111,9 +111,9 @@
         $wurflDir = _TRACK_LIB_PATH . '/wurfl/WURFL';
         $resourcesDir = _TRACK_LIB_PATH . '/wurfl/resources';	
         require_once $wurflDir.'/Application.php';
-        $persistenceDir = _CACHE_PATH.'/wurfl-persistence';
+        $persistenceDir = _CACHE_COMMON_PATH.'/wurfl-persistence';
         //$persistenceDir = dirname(__FILE__).'/cache/wurfl-persistence';
-        $cacheDir = _CACHE_PATH.'/wurfl-cache';
+        $cacheDir = _CACHE_COMMON_PATH.'/wurfl-cache';
         $wurflConfig = new WURFL_Configuration_InMemoryConfig();
         $wurflConfig->wurflFile(_TRACK_STATIC_PATH.'/wurfl/wurfl.zip');
         $wurflConfig->matchMode('accuracy');
