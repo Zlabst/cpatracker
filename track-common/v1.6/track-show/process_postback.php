@@ -71,14 +71,15 @@
         foreach ($conversions as $conv) 
         {
             $data = unserialize($conv);
-            if (!isset($data['get']['n']) || $data['get']['n'] == 'custom') {
+            $network = isset($data['get']['n']) ? $data['get']['n'] : (isset($data['post']['n']) ? $data['post']['n'] : '');
+            if (empty($network) || $network == 'custom') {
                 $custom->process_conversion($data);
             }
-            elseif ($data['get']['n'] == 'pixel') {
+            elseif ($network == 'pixel') {
                 $custom->process_pixel($data);
             }
             else {
-                $net = new $data['get']['n']();
+                $net = new $network();
                 $net->process_conversion($data);
             }
         }
