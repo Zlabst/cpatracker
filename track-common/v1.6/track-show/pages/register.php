@@ -49,7 +49,10 @@
         <label for="exampleInputPassword1">Пароль для входа</label>
         <input type="password" class="form-control" id="password" name="password" placeholder="Введите пароль">
       </div>
-
+      <div class="form-group">
+        <input type="checkbox" id="subscribe" name="subscribe" checked="checked">
+        <label for="subscribe" style="display: inline">Получать информацию об обновлениях трекера на e-mail</label>
+      </div>
       <button type="submit" class="btn btn-success">Сохранить</button>
     </form>
   </div>
