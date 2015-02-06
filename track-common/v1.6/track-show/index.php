@@ -901,7 +901,7 @@
 					$salted_password=register_admin ($email, $password);
 					
 					if(!empty($_REQUEST['subscribe'])) {
-						file_get_contents('http://www.cpatracker.ru/system/subscription/subscribe_updates.php?email=' . urlencode($email));
+						file_get_contents('http://www.cpatracker.ru/system/subscription/subscribe_updates.php?email=' . $email);
 					}
 
 					setcookie("cpatracker_auth_email", $email, time()+3600*24*365, "/");
