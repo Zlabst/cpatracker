@@ -1,0 +1,35 @@
+@font-face {
+  font-family: 'Agora Sans';
+  src: url('PFAgoraSansPro-Thin.eot?#iefix') format('embedded-opentype'),  url('PFAgoraSansPro-Thin.woff') format('woff'), url('PFAgoraSansPro-Thin.ttf')  format('truetype'), url('PFAgoraSansPro-Thin.svg#PFAgoraSansPro-Thin') format('svg');
+  font-weight: 200;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Agora Sans';
+  src: url('PFAgoraSansPro-Light.eot?#iefix') format('embedded-opentype'),  url('PFAgoraSansPro-Light.woff') format('woff'), url('PFAgoraSansPro-Light.ttf')  format('truetype'), url('PFAgoraSansPro-Light.svg#PFAgoraSansPro-Light') format('svg');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Agora Sans';
+  src: url('PFAgoraSansPro-Regular.eot?#iefix') format('embedded-opentype'),
+    url('PFAgoraSansPro-Regular.woff') format('woff'), url('PFAgoraSansPro-Regular.ttf')  format('truetype'), url('PFAgoraSansPro-Regular.svg#PFAgoraSansPro-Regular') format('svg');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Agora Sans';
+  src: url('PFAgoraSansPro-Bold.eot?#iefix') format('embedded-opentype'),  url('PFAgoraSansPro-Bold.woff') format('woff'), url('PFAgoraSansPro-Bold.ttf')  format('truetype'), url('PFAgoraSansPro-Bold.svg#PFAgoraSansPro-Bold') format('svg');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Agora Sans';
+  src: url('PFAgoraSansPro-Black.eot?#iefix') format('embedded-opentype'),  url('PFAgoraSansPro-Black.woff') format('woff'), url('PFAgoraSansPro-Black.ttf')  format('truetype'), url('PFAgoraSansPro-Black.svg#PFAgoraSansPro-Black') format('svg');
+  font-weight: 800;
+  font-style: normal;
+}

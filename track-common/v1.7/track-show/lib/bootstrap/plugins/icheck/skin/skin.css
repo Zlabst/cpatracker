@@ -1,0 +1,61 @@
+/* iCheck plugin CPA skin
+----------------------------------- */
+.icheckbox-cpa-blue {
+    display: inline-block;
+    *display: inline;
+    vertical-align: middle;
+    margin: 0;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    background: url(checkboxes.png) no-repeat;
+    border: none;
+    cursor: pointer;
+}
+
+.icheckbox-cpa-blue {
+    background-position: 0 0;
+}
+.icheckbox-cpa-blue.hover {
+    background-position: -16px 0;
+}
+.icheckbox-cpa-blue.checked {
+    background-position: -32px 0;
+}
+/*.icheckbox_minimal-blue.disabled {
+    background-position: -48px 0;
+    cursor: default;
+}
+.icheckbox_minimal-blue.checked.disabled {
+    background-position: -64px 0;
+}*/
+
+.icheckbox-cpa-star {
+    display: inline-block;
+    *display: inline;
+    vertical-align: middle;
+    margin: 0;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    background: url(checkboxes.png) no-repeat;
+    border: none;
+    cursor: pointer;
+}
+
+.icheckbox-cpa-star {
+    background-position: 0 -16px;
+}
+.icheckbox-cpa-star.hover {
+    background-position: -16px -16px;
+}
+.icheckbox-cpa-star.checked {
+    background-position: -32px -16px;
+}
+/*.icheckbox_minimal-star.disabled {
+    background-position: -48px -16px;
+    cursor: default;
+}
+.icheckbox_minimal-star.checked.disabled {
+    background-position: -64px -16px;
+}*/
