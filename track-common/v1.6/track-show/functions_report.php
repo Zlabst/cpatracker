@@ -335,7 +335,7 @@
 		$limit = 5000;
 		$total = 30000;
 		
-		for($start = 0; $limit + $start <= $total; $start += $limit) {
+		for($start = 0; $start <= $total; $start += $limit) {
 			$rows = array();
 			
 			// Получаем порцию данных
