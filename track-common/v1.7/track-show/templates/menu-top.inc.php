@@ -13,7 +13,7 @@
     }
 ?>
 <!-- BEGIN TOP NAV -->
-	<div class="top-navbar">
+	<div class="top-navbar<?php echo $menu_toggle_class;?>">
 		<div class="top-nav-content">
 			<div class="container-fluid" >
 			
@@ -158,9 +158,14 @@
 					
 					</li>
 				</ul>
-								
+				
 				<!-- Nav dropdown -->
 				<ul class="nav navbar-nav navbar-right navbar-link">
+					<?php if(1) { // Сделать проверку на многопользовательность ?>
+					<li class="text-info">
+						<a class="dropdown-link" href="?page=logout">Выход</a>
+					</li>
+					<?php } else { ?>
 					<li class="dropdown">
 						<a href="#fakelink"  class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
 							<?php echo $auth_info[1]?>
@@ -169,16 +174,13 @@
 						<ul class="dropdown-menu dropdown-menu-right" role="menu">
 							<!--<li>
 								<a class="dropdown-link" href="#">lov@gmail.com</a>
-							</li>
-							<li>
-								<a class="dropdown-link" href="#">v@gmail.com</a>
 							</li>-->
 							<li class="dropdown-footer text-info">
 								<a class="dropdown-link" href="?page=logout"><i class="icon icon-abs icon-logout"></i>Выход</a>
 							</li>
 						</ul>
 					</li>
-
+					<?php } ?>
 				</ul>
 			
 			</div><!--container-fluid-->

@@ -401,6 +401,19 @@
 					import_sale_info ($leadsType, $amount, $subid);
 				}
 			break;
+			
+			case 'arch_link':
+				$ids  = rq('id', -2);
+				$arch = rq('arch', 2);
+				delete_offer($ids, $arch ? 2 : 0);
+				cache_links_update();
+				break;
+			
+			case 'fave_link':
+				$ids  = rq('id', 2);
+				$fave = rq('fave', 2);
+				delete_offer($ids, $fave ? 3 : 0);
+				break;
 
 			case 'delete_link': 
 				$ids = rq('id', -2);

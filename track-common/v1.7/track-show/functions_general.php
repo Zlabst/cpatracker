@@ -1173,21 +1173,25 @@ function cache_set_rule($rule_name) {
 	return $arr_rules;
 }
 
+function offers_have_status($status) {
+	$q="select status from `tbl_offers` where `status` = '".intval($status)."' limit 1";
+	if($rs = mysql_query($q) and mysql_num_rows($rs) > 0) {
+		return 1;
+	}
+	return 0;
+}
+
 function get_links_categories_list()
 {
 	// Get links count for categories
-	$sql="select tbl_links_categories.category_id, count(tbl_offers.id) as cnt from tbl_offers left join tbl_links_categories on tbl_links_categories.offer_id=tbl_offers.id where tbl_offers.status=0 and tbl_offers.network_id=0 group by tbl_links_categories.category_id";
+	$sql="select tbl_links_categories.category_id, count(tbl_offers.id) as cnt from tbl_offers left join tbl_links_categories on tbl_links_categories.offer_id=tbl_offers.id where (tbl_offers.status=0 or tbl_offers.status=3)and tbl_offers.network_id=0 group by tbl_links_categories.category_id";
 	$result=mysql_query($sql);
 	$arr_categories_count=array();
-	while ($row=mysql_fetch_assoc($result))
-	{
-		if ($row['category_id']=='')
-		{
-			$arr_categories_count[0]=$row['cnt'];
-		}
-		else
-		{
-			$arr_categories_count[$row['category_id']]=$row['cnt'];				
+	while ($row=mysql_fetch_assoc($result)) {
+		if (empty($row['category_id'])) {
+			$arr_categories_count[0] = $row['cnt'];
+		} else {
+			$arr_categories_count[$row['category_id']] = $row['cnt'];				
 		}
 	}
 
@@ -2376,7 +2380,7 @@ function cache_links_update($id = 0) {
 
 	$sql = "select id, offer_tracking_url 
 		from tbl_offers
-		where `status` = '0'";
+		where `status` = '0' or `status` = '3'"; 
 	if($id > 0) $sql .= " and `id` = '" . intval($id) . "'";
 	
 	$links = array();

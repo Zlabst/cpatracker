@@ -8,4 +8,4 @@
 <script src="<?php echo _HTML_LIB_PATH;?>/bootstrap/plugins/bootstrap-select/dist/js/i18n/defaults-ru_RU.min.js"></script>
 
 <!-- Include local script calls -->  
-<script src="<?php echo _HTML_LIB_PATH;?>/bootstrap/js/custom.min.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/bootstrap/js/custom.js"></script>

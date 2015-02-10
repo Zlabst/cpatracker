@@ -34,6 +34,7 @@ $(document).ready(function() {
 		$(this).toggleClass("rotate-180");
 		$(".sidebar-menu").toggle();
 		
+		$.cookie('cpa_menu_main', $(".top-navbar").hasClass("toggle-left") ? 1 : 0, {expires: 7});
 	});	
 	
 	<!-- =============================================== -->

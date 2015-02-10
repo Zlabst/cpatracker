@@ -9,12 +9,12 @@
 		$reports_lnk_lp = report_lnk($params, array('filter_str' => array(), 'mode' => 'lp', 'type' => 'basic', 'part' => 'all', 'col' => 'act', 'conv' => 'all', 'group_by' => 'out_id'));
 	}
 ?>
-<div class="sidebar-left">
+<div class="sidebar-left<?php echo $menu_toggle_class;?>">
 	<!-- Button sidebar left toggle -->
-	<div class="btn-collapse-sidebar-left icon-dynamic"  data-toggle="tooltip" data-placement="bottom" title="Свернуть левое меню"></div>
-	<ul class="sidebar-menu">
+	<div class="btn-collapse-sidebar-left icon-dynamic<?php echo $menu_icon_class;?>"  data-toggle="tooltip" data-placement="bottom" title="Свернуть левое меню"></div>
+	<ul class="sidebar-menu"<?php echo $menu_sidebar_style;?>>
 		<li>
-			<a class="logo-brand" href="/">
+			<a class="logo-brand" href="<?php echo _HTML_ROOT_PATH; ?>">
 				<span>CPA </span>Tracker
 			</a>
 		</li>

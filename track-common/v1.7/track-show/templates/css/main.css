@@ -464,7 +464,7 @@ ul.sidebar-menu li ul.submenu li {
 }
 ul.sidebar-menu li ul.submenu li::before {
   content: "";
-  background: url(./img/arrow.svg) no-repeat;
+  background: url('../img/icons/arrow.svg') no-repeat;
   width: 13px;
   height: 13px;
   position: absolute;
@@ -643,6 +643,6 @@ ul.sidebar-menu li ul.submenu li.highlighted a .span-sidebar {
   color: #7b9cb3;
   float: left;
 }
-.links_category_add_form {
-    display:none;
+.show-if-offer-checked {
+	display: none;
 }

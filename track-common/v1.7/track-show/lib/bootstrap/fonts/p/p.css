@@ -1,0 +1,21 @@
+@font-face {
+  font-family: 'Agora Sans';
+  src: url('preg.eot?#iefix') format('embedded-opentype'),
+    url('preg.woff') format('woff'), url('preg.ttf')  format('truetype'), url('preg.svg#preg') format('svg');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Agora Sans';
+  src: url('pb.eot?#iefix') format('embedded-opentype'),  url('pb.woff') format('woff'), url('pb.ttf')  format('truetype'), url('pb.svg#pb') format('svg');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Agora Sans';
+  src: url('pbl.eot?#iefix') format('embedded-opentype'),  url('pbl.woff') format('woff'), url('pbl.ttf')  format('truetype'), url('pbl.svg#pbl') format('svg');
+  font-weight: 800;
+  font-style: normal;
+}

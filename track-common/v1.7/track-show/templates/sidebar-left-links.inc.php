@@ -1,7 +1,6 @@
 <?php if (!$include_flag){exit();} ?>
 <script>
-	function add_new_category()
-	{
+	function add_new_category() {
 		var category_name = $('.links_category_add_form input[name=category_name]').val();
 		if (category_name=='') {
 			$('.links_category_add_form input[name=category_name]').focus();
@@ -18,18 +17,16 @@
 			$('.links_category_add_form input[name=category_name]').focus();
 			$('#category_add_form')[0].reset();
 			
-			/*
-			li = $('<li>');
-			a = $('<a>');
-			a.attr('href', '?page=links&category_id=' / )
-			*/
-			$('#submenu_all_offers').append('<li><a href="?page=links&category_id='+category_id+'">'+htmlEncode(category_name)+'</a></li>');
+			submenu = $('#submenu_all_offers');
+			add_form = submenu.children().last();
+			submenu.html(submenu.children().splice(0, submenu.children().length - 1));
+			submenu.append('<li><a href="?page=links&category_id='+category_id+'">'+htmlEncode(category_name)+'</a></li>');
+			submenu.append(add_form);
 		});
 
 		return false;
 	}
-	function toggle_add_category_form()
-	{
+	function toggle_add_category_form() {
 		$('.links_category_add_form').toggle();
 		switch ($('.links_category_add_form').css('display')){
 			case 'none':
@@ -48,7 +45,16 @@
 	    } else {
 	        return '';
 	    }
-	}	
+	}
+	
+	$(function() {
+		// Отслеживаем состояние меню
+		$('#lnk_all_offers').on('click', function (e) {
+		   show = $('#submenu_all_offers').css('display') == 'none';
+		   $.cookie('cpa_menu_offers_all', show ? 1 : 0, {expires: 7});
+		   return false;
+		});
+	});
 </script>
 <? /* ?>
 <div class="col-md-3" id="categories_left_menu">
@@ -122,28 +128,39 @@
 		echo load_plugin('demo', 'demo_well');
 	?>
 </div>
+
 <? */ 
-	$cat_group = empty($_REQUEST['cat_group']) ? 'all' : $_REQUEST['cat_group'];
+	
+	$cat_types = array(
+		'favorits' => 'Избранное',
+		'all'      => 'Все офферы',
+		'archive'  => 'Архив'
+	);
+	$cat_type = rq('type');
+	if(empty($cat_type) or !array_key_exists($cat_type, $cat_types)) {
+		$cat_type = 'all';
+	}
+	
+	$have_favorits = offers_have_status(3);
+	$have_archive  = offers_have_status(2);
 ?><!-- BEGIN SIDEBAR LEFT -->
-	<div class="sidebar-left">
+	<div class="sidebar-left<?php echo $menu_toggle_class;?>">
 	
 		<!-- Button sidebar left toggle -->
-		<div class="btn-collapse-sidebar-left icon-dynamic"  data-toggle="tooltip" data-placement="bottom" title="Свернуть левое меню"></div>
+		<div class="btn-collapse-sidebar-left icon-dynamic<?php echo $menu_icon_class;?>"  data-toggle="tooltip" data-placement="bottom" title="Свернуть левое меню"></div>
 
-		<ul class="sidebar-menu">
+		<ul class="sidebar-menu"<?php echo $menu_sidebar_style;?>>
 			<li>
-				<a class="logo-brand" href="/">
+				<a class="logo-brand" href="<?php echo _HTML_ROOT_PATH; ?>">
 					<span>CPA </span>Tracker
 				</a>
 			</li>
-			<li <?php if($cat_group == 'favorits') { echo 'class="active"';} ?> >
-				<a href="#fakelink">Избранное</a>
+			<?php if($have_favorits) { ?>
+			<li <?php if($cat_type == 'favorits') { echo 'class="active"';} ?> >
+				<a href="?page=links&type=favorits">Избранное</a>
 			</li>
-			<li <?php if($cat_group == 'archive') { echo 'class="active"';} ?>>
-				<a href="#fakelink">Архив</a>
-			</li>
-			<li <?php if($cat_group == 'all') { echo 'class="active"';} ?>>
-				<a href="#">Все офферы</a>
+			<?php } ?>
+			<li <?php if($cat_type == 'all') { echo 'class="active"';} ?>>
 				<?php
 					$result = get_links_categories_list();
 			    	$arr_categories = array_merge(
@@ -155,22 +172,38 @@
 			    		),
 			    		$result['categories']
 			    	);
-			    	//dmp($result['categories']);
+			    	
 			    	$arr_categories_count = $result['categories_count'];
-			    	//$arr_categories_count[0] = array_sum($result['categories_count']);
 			    	
-			    	//dmp($result);
-			    	
-		    		echo '<ul id="submenu_all_offers" class="submenu" '.($cat_group == 'all' ? 'style="display: block;"' : '').'>';
+		    		echo '<a href="#" id="lnk_all_offers">Все офферы</a><ul id="submenu_all_offers" class="submenu" '.((($cat_group == 'all' and $_COOKIE['cpa_menu_offers_all'] !== '0') or $_COOKIE['cpa_menu_offers_all'] == '1') ? 'style="display: block;"' : '').'>';
 		    		foreach ($arr_categories as $cur) {
 		    			$highlight = $_REQUEST['category_id'] == $cur['id'] ? ' class="highlighted"' : '' ;
 		    			echo '<li'.$highlight.'><a href="?page=links&category_id='._e($cur['id']).'">' . _e($cur['category_caption']) . '<span class="span-sidebar">'._e($arr_categories_count[$cur['id']]).'</span></a></li>';
 		    		}
+		    		
+		    		echo '<li>
+<div class="input has-feedback">
+<form class="form-inline links_category_add_form" role="form" method="post" onsubmit="return add_new_category()" id="category_add_form">
+<input type="hidden" name="ajax_act" value="add_category">
+<input type="hidden" name="csrfkey" value="'.CSRF_KEY.'">
+<input class="form-control form-control-alt" type="text" placeholder="Добавить категорию" name="category_name" >
+<span class="form-control-feedback single-icon">
+<i class="icon icon-plus-small "></i>
+</span>
+</form>
+</div>
+</li>';
+		    		
 		    		echo '</ul>';
 			    	
 				?>
 			</li>
-			<li>
+			<?php if($have_archive) { ?>
+			<li <?php if($cat_type == 'archive') { echo 'class="active"';} ?>>
+				<a href="?page=links&type=archive">Архив</a>
+			</li>
+			<?php } ?>
+			<!--<li>
 				<a href="#" onclick="toggle_add_category_form(); return false;">Добавить категорию</a>
 				<form class="form-inline links_category_add_form" role="form" method="post" onsubmit="return add_new_category()" id="category_add_form">
 					<input type="hidden" name="ajax_act" value="add_category">
@@ -180,7 +213,7 @@
 <span class="form-control-feedback single-icon">
 					</div>
 				</form>
-			</li>
+			</li>-->
 		</ul><!--sidebar-menu-->
 	</div><!-- /.sidebar-left -->
 	<!-- END SIDEBAR LEFT -->

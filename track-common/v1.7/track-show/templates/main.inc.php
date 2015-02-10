@@ -1,4 +1,16 @@
-<?php if (!$include_flag){exit();} ?>
+<?php if (!$include_flag) exit; 
+
+	// Состояние главного меню
+	if(empty($_COOKIE['cpa_menu_main'])) {
+		$menu_toggle_class = '';
+		$menu_sidebar_style = '';
+		$menu_icon_class = '';
+	} else {
+		$menu_toggle_class = ' toggle-left';
+		$menu_sidebar_style = ' style="display: none;"';
+		$menu_icon_class = ' rotate-180';
+	}
+?>
 <!-- CPA Tracker, http://www.cpatracker.ru -->
 <!DOCTYPE html>
 <html lang="en">
@@ -15,7 +27,7 @@
             
             //if ($bHideLeftSidebar!==true){$main_container_class='col-sm-9';} else {$main_container_class='col-sm-12';}
         ?>
-        <div class="page-content">
+        <div class="page-content<?php echo $menu_toggle_class;?>">
         	<?php
             	if($_REQUEST['page']!='login') {
                 	echo load_plugin('payreminder');

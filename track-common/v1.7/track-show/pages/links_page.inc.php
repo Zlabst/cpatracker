@@ -31,15 +31,18 @@ if ($category_id>0) {
 			// Get list of offers from network
 			$sql="select * from tbl_offers where network_id='".mysql_real_escape_string($network_id)."' and status=0 order by date_add desc, id asc";
 			$result=mysql_query($sql);
-			while ($row=mysql_fetch_assoc($result))
-			{
+			while ($row=mysql_fetch_assoc($result)) {
 				$arr_offers[]=$row;	
 			}
 		break;
 		
 		default:
 			// Get list of offers in category
-			$sql="select tbl_offers.* from tbl_offers left join tbl_links_categories on tbl_offers.id=tbl_links_categories.offer_id where tbl_links_categories.category_id='".mysql_real_escape_string($category_id)."' and tbl_offers.network_id='0' and tbl_offers.status=0 order by tbl_offers.date_add desc, tbl_offers.id asc";
+			$sql="select tbl_offers.* 
+				from tbl_offers 
+				left join tbl_links_categories on tbl_offers.id=tbl_links_categories.offer_id 
+				where tbl_links_categories.category_id='".mysql_real_escape_string($category_id)."' and tbl_offers.network_id='0' and tbl_offers.status=0 
+				order by tbl_offers.date_add desc, tbl_offers.id asc";
 			$result=mysql_query($sql);
 			$arr_offers=array();
 			$offers_id=array();
@@ -59,11 +62,26 @@ if ($category_id>0) {
 			}
 		break;
 	}
-}
-else
-{
+} else {
+	switch($cat_type) {
+		case 'favorits':
+			$cond_status = 'tbl_offers.status = 3';
+			break;
+		case 'archive':
+			$cond_status = 'tbl_offers.status = 2';
+			break;
+		default:
+			$cond_status = 'tbl_offers.status IN (0,3)';
+			break;
+	}
+	
 	// Get list of offers without category
-	$sql="select tbl_offers.* from tbl_offers left join tbl_links_categories on tbl_offers.id=tbl_links_categories.offer_id where tbl_links_categories.id IS NULL and tbl_offers.network_id='0' and tbl_offers.status=0 order by tbl_offers.date_add desc, tbl_offers.id asc";
+	$sql="select tbl_offers.* 
+		from tbl_offers 
+		left join tbl_links_categories on tbl_offers.id=tbl_links_categories.offer_id 
+		where tbl_links_categories.id IS NULL and tbl_offers.network_id='0' 
+			and " . $cond_status . " 
+			order by tbl_offers.date_add desc, tbl_offers.id asc";
 	$result=mysql_query($sql);
 	$arr_offers=array();
 	$offers_id=array();
@@ -197,40 +215,82 @@ else
 		  type: 'POST',
 		  url: 'index.php',
 		  data: 'csrfkey=<?php echo CSRF_KEY;?>&ajax_act=move_link_to_category&offer_id='+offer_id+'&category_id='+category_id
-		}).done(function( msg ) {
+		}).done(function(msg) {
 			window.location.reload();
 		});
 		return false;
 	}
-        
-        
-        function restore_link() {
+	
+	function arch_links(arch) {
+		action_arr = checked_offers();
+		arch_link(action_arr.join(','), arch);
+		return false;
+	}
+    
+    function arch_link(id, arch) {
+    	$.ajax({
+		  type: 'POST',
+		  url: 'index.php',
+		  data: 'csrfkey=<?php echo CSRF_KEY;?>&ajax_act=arch_link&id=' + id + '&arch=' + (arch ? 1 : 0)
+		}).done(function(msg) {
+		  window.location.reload();
+		});
+		return false;
+    }
+    
+    function fave_link(id, fave) {
+    	$.ajax({
+		  type: 'POST',
+		  url: 'index.php',
+		  data: 'csrfkey=<?php echo CSRF_KEY;?>&ajax_act=fave_link&id=' + id + '&fave=' + (fave ? 1 : 0)
+		}).done(function(msg) {});
+	 	return false;
+    }
+    
+    function restore_link() {
        	var id = last_removed;
 		$.ajax({
 		  type: 'POST',
 		  url: 'index.php',
 		  data: 'csrfkey=<?php echo CSRF_KEY;?>&ajax_act=restore_link&id='+id
-		}).done(function( msg ) 
-		{
-//			$(obj).parent().parent().parent().parent().parent().remove();
-                        $('#linkrow-' + id).show();
-                        $('#remove_alert').hide();
+		}).done(function(msg) {
+            $('#linkrow-' + id).show();
+            $('#remove_alert').hide();
 		});
-                last_removed = 0;
+        last_removed = 0;
 		return false;
-        }
-        
-        
-        $(function() {
-        	$('.offer_checkbox').iCheck('uncheck');
-			$('.check-all').on('ifChanged', function(e){
-				$('.offer_checkbox').iCheck(e.target.checked ? 'check' : 'uncheck');
-			});
+    }
+    
+ 	$(function() {
+    	// Убираем отметки (фикс глюка при обновлении)
+    	$('.offer_checkbox').iCheck('uncheck');
+    	
+    	// Показать кнопки действий, если отмечена хотя бы один оффер
+    	$('.offer_checkbox').on('ifChanged', function(e) {
+    		$('.show-if-offer-checked').toggle($('.offer_checkbox:checked').length > 0)
+    	});
+    	
+    	// Действие для галки "Отметить все"
+		$('.check-all').on('ifChanged', function(e) {
+			$('.offer_checkbox').iCheck(e.target.checked ? 'check' : 'uncheck');
 		});
+		
+		$('.i-star').on('ifChanged', function(e) {
+			id = $(e.target).attr('id').replace('fav', '');
+			fave_link(id, e.target.checked)
+    	});
+	});
 </script>
 <?php
-if ($category_name!='{empty}')
-{
+
+if ($category_name == '{empty}') {
+	$page_headers[0] = '';
+	$page_headers[1] = $cat_types[$cat_type];
+} else {
+	$page_headers[0] = $cat_types[$cat_type];
+	$page_headers[1] = $category_name;
+}	
+	
 /*
 ?>
 	<?php
@@ -257,7 +317,7 @@ if ($category_name!='{empty}')
 
 	echo "</div>";
 	*/
-}
+
 ?>
 <?php
 if ($page_type=='network')
@@ -274,20 +334,22 @@ else
 
 <!-- Page heading -->
 		<div class="page-heading">
-			<!--<p>Admitad</p>-->
+			<p><?php echo $page_headers[0]; ?></p>
 			<div class="header-content">
 			
 				<!--Header-->
 				<div class="btn-group header-left">
-					<h2>Все офферы
+					<h2><?php echo $page_headers[1]; 
+						if($page_headers[0] != '') { ?>
 						<a id="alert-warning-toggle" href=""><i class="icon icon-edit"></i></a>
 						<a id="alert-danger-toggle" href=""><i class="icon icon-trash"></i></a>
+						<?php } ?>
 					</h2>
 				</div>
 				
 				<!--Left buttons-->
 				<div role="toolbar" class="btn-toolbar">
-					<div class="btn-group dropdown">
+					<div class="btn-group dropdown show-if-offer-checked">
 						<a class="btn btn-default" href="#" data-toggle="dropdown">
 							<i class="icon icon-folder"></i>
 							<i class="fa fa-angle-down"></i>
@@ -301,8 +363,8 @@ else
 							?>
 						</ul>
 					</div>
-					<div class="btn-group">
-						<a class="btn btn-default single-icon" href="fakelink">
+					<div class="btn-group show-if-offer-checked">
+						<a class="btn btn-default single-icon" href="#" onclick="arch_links(<?php echo $cat_type == 'archive' ? 0 : 1;?>)">
 							<i class="icon icon-drawer"></i>
 						</a>
 						<a class="btn btn-default single-icon" href="fakelink">
@@ -318,10 +380,11 @@ else
 <!--					<div class="btn-group pull-right">
 						<a class="btn btn-default" href="fakelink"><i class="fa fa-angle-double-down"></i></a>
 					</div>-->
+					<?php if($cat_type == 'all') { ?>
 					<div class="btn-group pull-right">
 						<a class="btn btn-default single-icon" href="#" onclick="$('#add_offer_form').toggle(); return false;"><i class="icon icon-plus"></i></a>
 					</div>
-					
+					<?php } ?>
 				</div><!--Toolbar-->
 			</div><!--Header-content-->
 		</div><!--page-heading-->
@@ -379,13 +442,17 @@ if (count($arr_offers)>0) {
 							<form role="form">
 								<div class="checkbox">
 								  <label>
-									<input type="checkbox" value="" class="i-star">
+									<input type="checkbox" value="" class="i-star" id="fav<?php echo $cur['offer_id'];?>" <?php if($cur['status'] == 3) { echo 'checked="checked"'; } ?>>
 								  </label>
 								</div>
 							</form>
 						</td>
 						<td><?php echo _e($cur['offer_name']); ?></td>
-						<td></td>
+						<td><?php
+							if(strstr($tracking_url, '[SUBID]') !== false) {
+								echo '<i class="icon icon-one"></i>';
+							}
+						?></td>
 						<td><?php echo $tracking_url; ?></td>
 						<td class="dropdown-cell">
 							<div class="dropdown">
@@ -394,7 +461,11 @@ if (count($arr_offers)>0) {
 								</a>
 								<ul class="dropdown-menu dropdown-menu-right" role="menu">
 									<li>
-										<a class="dropdown-link" href="#">В архив</a>
+									  <?php if($cat_type == 'archive') { ?>
+										<a class="dropdown-link" href="#" onclick="return arch_link(<?php echo $cur['offer_id'];?>, 0)">Из  архива</a>
+									   <?php } else { ?>
+									   		<a class="dropdown-link" href="#" onclick="return arch_link(<?php echo $cur['offer_id'];?>, 1)">В архив</a>
+									   	<?php } ?>
 									</li>
 									<li>
 										<a class="dropdown-link" href="#">Изменить</a>
@@ -423,7 +494,7 @@ if (count($arr_offers)>0) {
 							</form>
 						</td>
 						<td colspan="3">Итого: <?php echo count($arr_offers);?> из <?php echo count($arr_offers);?> ссылок выводится</td>
-						<td colspan="2" class="text-right"><a class="hover-underline" href="fakelink">Показать все</a></td>
+						<td colspan="2" class="text-right"><!-- <a class="hover-underline" href="fakelink">Показать все</a>--></td>
 					</tr>
 				</tfoot>
 			</table>
