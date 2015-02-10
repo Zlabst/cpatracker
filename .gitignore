@@ -5,3 +5,4 @@ track/cache/rules/*
 track/cache/wurfl-persistence/*
 track/cache/settings.php
 track-common/plugins/*
+/nbproject
