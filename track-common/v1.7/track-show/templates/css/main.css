@@ -646,3 +646,9 @@ ul.sidebar-menu li ul.submenu li.highlighted a .span-sidebar {
 .show-if-offer-checked {
 	display: none;
 }
+.category_edit {
+	display: none;
+}
+#offer_sale {
+	display: none;
+}
