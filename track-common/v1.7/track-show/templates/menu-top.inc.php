@@ -21,7 +21,7 @@
 				<ul class="nav navbar-nav navbar-left main-menu">
 					<li <?php if ($_REQUEST['type']=='' and $_REQUEST['page']==''){echo 'class="active"';}?>><a href="?act=">Лента</a></li>
             		<li <?php if ($_REQUEST['act'] =='reports'){echo 'class="active"';}?>><a href="?act=reports&type=basic">Отчеты</a></li>
-            		<li <?php if ($_REQUEST['page']=='links'){echo 'class="active"';}?>><a href="?page=links">Офферы</a></li>
+            		<li <?php if ($_REQUEST['page']=='links'){echo 'class="active"';}?>><a href="?page=links&type=favorits">Офферы</a></li>
             		<li <?php if ($_REQUEST['page']=='rules'){echo 'class="active"';}?>><a href="?page=rules">Ссылки</a></li>
             		<li <?php if (in_array($_REQUEST['page'], array('import', 'costs', 'postback'))){echo 'class="active"';}?>><a href="?page=import">Инструменты</a></li>
 				</ul>

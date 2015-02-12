@@ -334,6 +334,9 @@ label {
 .offer-form .form-group:last-child {
   margin-bottom: 0;
 }
+.sidebar-left.toggle-left {
+  cursor: pointer;
+}
 .sidebar-left {
   position: absolute;
   top: 0;
@@ -439,12 +442,12 @@ ul.sidebar-menu li a.btn-alt i {
   top: 18px;
   right: 22px;
 }
-ul.sidebar-menu li.selected > a,
+/*ul.sidebar-menu li.active > a:hover,
 ul.sidebar-menu li.selected > a:hover,
 ul.sidebar-menu li.selected > a:focus,
-ul.sidebar-menu li.active > a,
-ul.sidebar-menu li.active > a:hover,
-ul.sidebar-menu li.active > a:focus {
+ul.sidebar-menu li.active > a:focus*/
+ul.sidebar-menu li.selected > a,
+ul.sidebar-menu li.active > a {
   background-color: #314b66;
   font-weight: 700;
 }
@@ -481,7 +484,7 @@ ul.sidebar-menu li ul.submenu li:first-child {
 ul.sidebar-menu li ul.submenu li a {
   border-top: 0;
   border-bottom: 1px solid #16212b;
-  font-weight: 300;
+  /* font-weight: 300; */
 }
 ul.sidebar-menu li ul.submenu li a .span-sidebar {
   position: absolute;
@@ -650,5 +653,11 @@ ul.sidebar-menu li ul.submenu li.highlighted a .span-sidebar {
 	display: none;
 }
 #offer_sale {
+	display: none;
+}
+#remove_alert {
+	display: none;
+}
+#add_cat_form {
 	display: none;
 }

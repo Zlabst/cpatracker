@@ -1,5 +1,16 @@
-$(document).ready(function() {
+var toggle_sidebar = function(event){
+		event.stopPropagation();
+		"use strict";
+		$(".top-navbar").toggleClass("toggle-left");
+		$(".sidebar-left").toggleClass("toggle-left");
+		$(".page-content").toggleClass("toggle-left");
+		$(".btn-collapse-sidebar-left").toggleClass("rotate-180");
+		$(".sidebar-menu").toggle();
+		
+		$.cookie('cpa_menu_main', $(".top-navbar").hasClass("toggle-left") ? 1 : 0, {expires: 7});
+};
 
+$(document).ready(function() {
 	<!-- =============================================== -->
 	<!-- ============= Sidebar functions  ============== -->
 	<!-- =============================================== --> 
@@ -26,16 +37,12 @@ $(document).ready(function() {
 	<!-- =============================================== -->
 	<!-- ============= Sidebar toggle button  ========== -->
 	<!-- =============================================== --> 
-	$(".btn-collapse-sidebar-left").click(function(){
-		"use strict";
-		$(".top-navbar").toggleClass("toggle-left");
-		$(".sidebar-left").toggleClass("toggle-left");
-		$(".page-content").toggleClass("toggle-left");
-		$(this).toggleClass("rotate-180");
-		$(".sidebar-menu").toggle();
-		
-		$.cookie('cpa_menu_main', $(".top-navbar").hasClass("toggle-left") ? 1 : 0, {expires: 7});
-	});	
+	$(".btn-collapse-sidebar-left").click(toggle_sidebar);
+	$(".sidebar-left").click(function(event) { 
+		if($(this).hasClass('toggle-left')) {
+			console.log('tl');
+		toggle_sidebar(event);}
+	});
 	
 	<!-- =============================================== -->
 	<!-- =========== Icheck - CPA Skins  ========== -->
@@ -61,7 +68,7 @@ $(document).ready(function() {
 	<!-- =============================================== --> 
 	 $('[data-toggle="tooltip"]').tooltip({
 	 	container: 'body',
-	 	delay: { "show": 500, "hide": 100 }
+		delay: { "show": 1000, "hide": 100 }
 	 });
 	 
 	<!-- =============================================== -->
