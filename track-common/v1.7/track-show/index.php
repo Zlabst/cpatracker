@@ -487,7 +487,6 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
 
                     // Переключаемся на последнюю категорию
                     $categories = get_links_categories_list();
-                    dmp($categories);
                     $last_cat_id = 0;
                     if(count($categories['categories']) > 0) {
                         $last_cat = end($categories['categories']);

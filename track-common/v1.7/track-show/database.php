@@ -1,4 +1,4 @@
-<?
+<?php
     $arr_sql[]="SET SQL_MODE='NO_AUTO_VALUE_ON_ZERO';";
 
     $arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_clicks` (
