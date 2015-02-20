@@ -1,8 +1,7 @@
 <?php
 	function get_visitors_flow_data($filter='', $offset = 0, $limit = 20, $date = 0)
-	{			
+	{
 		if(empty($date) or !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-			//echo '123';
 			$timezone_shift_simple = get_current_timezone_shift(true);
 			$date = date('Y-m-d', time() + $timezone_shift_simple);
 		}
@@ -52,7 +51,20 @@
 		{$filter_str}
 		".($date ? "and CONVERT_TZ(tbl_clicks.date_add, '+00:00', '"._str($timezone_shift)."') between STR_TO_DATE('".$date." 00:00:00', '%Y-%m-%d %H:%i:%s') and STR_TO_DATE('".$date." 23:59:59', '%Y-%m-%d %H:%i:%s')" : '' )."
 		order by date_add desc limit $offset, $limit";
+                /*
+                if($_SERVER['REMOTE_ADDR'] == '93.84.51.67') {
+                    $timezone_shift_sec = get_current_timezone_shift(true);
 
+                    
+                    date_default_timezone_set("GMT");
+                            
+                    $timezone_shift_sec += time() - strtotime(mysql_now());
+
+                    echo $timezone_shift_sec;
+                    echo '<br />';
+                    echo $sql;
+                }*/
+                
 		$result=mysql_query($sql) or die(mysql_error());
 		$arr_data=array();
 		

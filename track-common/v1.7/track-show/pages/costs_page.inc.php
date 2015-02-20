@@ -94,7 +94,7 @@
 		    <label class="col-sm-2 control-label">Источник</label>
 		    <div class='col-sm-4'>
 				<select class='select2' style='width:100%' name='source_name'>
-					<?
+					<?php
 						foreach ($arr_sources as $cur)
 						{
 							echo "<option value='"._e($cur['source_name'])."'>"._e($cur['name'])."</option>";
@@ -110,7 +110,7 @@
 		    <div class='col-sm-4'>
 				<select class='select2' style='width:100%;' name='campaign_name'>
 					<option value='' selected>Все</option>
-					<?
+					<?php
 						foreach ($arr_campaigns as $cur)
 						{
 							echo "<option value='"._e($cur['campaign_name'])."'>"._e($cur['campaign_name'])."</option>";
@@ -125,7 +125,7 @@
 		    <div class='col-sm-4'>
 				<select class='select2' style='width:100%;' name='ads_name'>
 					<option value='' selected>Все</option>
-					<?
+					<?php
 						foreach ($arr_ads as $cur)
 						{
 							echo "<option value='"._e($cur['ads_name'])."'>"._e($cur['ads_name'])."</option>";

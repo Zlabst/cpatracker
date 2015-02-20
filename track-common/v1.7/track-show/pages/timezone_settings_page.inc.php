@@ -1,5 +1,5 @@
 <?php if (!$include_flag){exit();} ?>
-<?
+<?php
 	$arr_timezone_settings=get_timezone_settings();
 ?>
 <script>
@@ -71,7 +71,7 @@
 			<th nowrap>Смещение от времени сервера</th>
 		</thead>
 		<tbody>
-			<?
+			<?php
 				foreach ($arr_timezone_settings as $cur)
 				{
 					echo "<tr style='cursor:pointer;' onclick='edit_timezone(this, {$cur['id']})'>
