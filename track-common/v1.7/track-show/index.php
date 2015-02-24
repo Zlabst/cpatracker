@@ -69,6 +69,40 @@ if ($_REQUEST['ajax_act'] == 'create_database') {
                 exit();
             }
 
+            // Try create table
+            $access_ok = false;
+
+            $q = "CREATE TABLE IF NOT EXISTS `tbl_users_test` ("
+                    . "`id` int(11) NOT NULL AUTO_INCREMENT,"
+                    . "`email` varchar(255) CHARACTER SET utf8 NOT NULL,"
+                    . "`password` varchar(255) CHARACTER SET utf8 NOT NULL,"
+                    . "`salt` varchar(255) NOT NULL,"
+                    . "PRIMARY KEY (`id`)"
+                    . ") ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
+            if (mysql_query($q)) {
+                $q = "INSERT INTO `tbl_users_test` (`email`, `password`) VALUES ('email', 'password')";
+                if (mysql_query($q)) {
+                    $id = mysql_insert_id();
+                    if ($id > 0) {
+                        $q = "DELETE FROM `tbl_users_test` WHERE `id` = '" . $id . "'";
+                        if (mysql_query($q)) {
+                            $ar = mysql_affected_rows();
+                            if ($ar > 0) {
+                                $q = "DROP TABLE `tbl_users_test`";
+                                if (mysql_query($q)) {
+                                    $access_ok = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            if (!$access_ok) {
+                echo json_encode(array(false, 'table_not_create', $dbname));
+                exit();
+            }
+
             // Create tables
             if (!is_file(_TRACK_SHOW_COMMON_PATH . '/database.php')) {
                 echo json_encode(array(false, 'schema_not_found', $dbname));
@@ -475,7 +509,7 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
         case 'category_edit':
             $category_id = rq('category_id', 2);
             $is_delete = rq('is_delete', 1, -1);
-            
+
             if ($is_delete != -1) {
                 $sql = "update `tbl_links_categories_list` set `status` = '" . $is_delete . "' where id='" . mysql_real_escape_string($category_id) . "'";
                 mysql_query($sql);
@@ -488,7 +522,7 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
                     // Переключаемся на последнюю категорию
                     $categories = get_links_categories_list();
                     $last_cat_id = 0;
-                    if(count($categories['categories']) > 0) {
+                    if (count($categories['categories']) > 0) {
                         $last_cat = end($categories['categories']);
                         $last_cat_id = $last_cat['id'];
                     }

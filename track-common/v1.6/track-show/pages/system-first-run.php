@@ -141,7 +141,12 @@
 					case 'db_not_found': 
 						$('#info_message_text').html('База данных '+result[2]+' не найдена. Вам необходимо ее создать.');
 						$('#info_message').show();
-					break;		
+					break;
+                                        
+                                        case 'table_not_create':
+						$('#info_message_text').html('Не удается создать таблицу в базе данных. Проверьте права доступа для пользователя БД.');
+						$('#info_message').show();
+					break;
 					
 					case 'schema_not_found': 
 						$('#info_message_text').html('Файл database.php со структурой базы данных не найден.<br />Установите последнюю версию скрипта с официального сайта.');
