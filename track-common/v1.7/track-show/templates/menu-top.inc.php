@@ -13,6 +13,21 @@
     }
 ?>
 <!-- BEGIN TOP NAV -->
+<script>
+    function change_current_timezone(id)
+    {
+        $.ajax({
+          type: "get",
+          url: "index.php",
+          data: { csrfkey:"<?php echo CSRF_KEY?>", ajax_act: "change_current_timezone", id: id }
+        })
+          .done(function( msg ) 
+          {
+            location.reload(true); 
+          });        
+        return false;
+    }
+</script>
 	<div class="top-navbar<?php echo $menu_toggle_class;?>">
 		<div class="top-nav-content">
 			<div class="container-fluid" >

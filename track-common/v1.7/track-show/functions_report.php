@@ -2,7 +2,6 @@
 
 function get_visitors_flow_data($filter = '', $offset = 0, $limit = 20, $date = 0) {
     if (empty($date) or !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
-	//echo '123';
 	$timezone_shift_simple = get_current_timezone_shift(true);
 	$date = date('Y-m-d', time() + $timezone_shift_simple);
     }
@@ -160,7 +159,8 @@ function get_clicks_rows($params, $start = 0, $limit = 0, $campaign_params, $cli
 			WHERE CONVERT_TZ(t1.`date_add`, '+00:00', '" . _str($timezone_shift) . "') BETWEEN STR_TO_DATE('" . $params['from'] . " 00:00:00', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('" . $params['to'] . " 23:59:59', '%Y-%m-%d %H:%i:%s')" . $where . (empty($params['where']) ? '' : " and " . $params['where'] ) . "
 			ORDER BY t1.id ASC
 			LIMIT $start, $limit";
-
+	
+	//echo $q;
     /*
       if($_SERVER['REMOTE_ADDR'] == '37.44.76.80') {
       echo $q . '<br />';
@@ -274,10 +274,11 @@ function get_clicks_report_grouped2($params) {
     $timezone_shift_sec = get_current_timezone_shift(true);
 
     $timezone_backup = date_default_timezone_get();
-    date_default_timezone_set("GMT");
-
+    
+    //date_default_timezone_set("GMT");
+    
     // Поправка на разницу времени PHP и Базы 
-    $timezone_shift_sec += time() - strtotime(mysql_now());
+    $timezone_shift_sec += strtotime(mysql_now()) - time();
 
     $rows = array(); // все клики за период
     $data = array(); // сгруппированные данные
@@ -478,7 +479,7 @@ function get_clicks_report_grouped2($params) {
 		    if ($params['part'] != 'all') {
 
 			//$k1 = (trim($r['name']) == '' ? '{empty}' : $r['name']);
-			$k2 = date($date_formats[$params['part']], $r['time_add'] + $timezone_shift_sec);
+			$k2 = date($date_formats[$params['part']], $r['time_add']);
 			//$k3 = $groups[$r['is_sale'].$r['is_lead']];
 			/*
 			  $data2[$k][$name][$k2][$k3]['cnt'] += 1;
@@ -552,7 +553,7 @@ function get_clicks_report_grouped2($params) {
 
 			// Информация о датах 
 			if ($params['part'] != 'all') {
-			    $timekey = date($date_formats[$params['part']], $r['time_add'] + $timezone_shift_sec);
+			    $timekey = date($date_formats[$params['part']], $r['time_add']);
 
 			    stat_inc($data[$k]['sub'][$k1][$timekey], $r, $k1, $r['name']);
 			}
@@ -593,7 +594,7 @@ function get_clicks_report_grouped2($params) {
 		    // Запрошена информация по дням
 		    if ($params['part'] != 'all') {
 
-			$k2 = date($date_formats[$params['part']], $r['time_add'] + $timezone_shift_sec);
+			$k2 = date($date_formats[$params['part']], $r['time_add']);
 
 			$id = param_key($r, $params['subgroup_by']);
 			$name = param_val($r, $params['subgroup_by']);
@@ -607,7 +608,7 @@ function get_clicks_report_grouped2($params) {
 
 		    // Информация о датах
 		    if ($params['part'] != 'all') {
-			$timekey = date($date_formats[$params['part']], $r['time_add'] + $timezone_shift_sec);
+			$timekey = date($date_formats[$params['part']], $r['time_add']);
 			stat_inc($data[$k][$timekey], $r, $k, $name);
 		    }
 		}
@@ -636,11 +637,17 @@ function get_clicks_report_grouped2($params) {
 
 		// Статистика по дням
 	    } else {
+	    	
+	    	//echo mysql_now() . ' ' . time() . ' ' . date('Y-m-d H:i:s'). '<br>' ;
 
 		foreach ($rows as $r) {
 		    //$k1 = (trim($r['name']) == '' ? '{empty}' : $r['name']);
 		    $k1 = param_key($r, $params['group_by']);
-		    $timekey = date($date_formats[$params['part']], $r['time_add'] + $timezone_shift_sec);
+		    
+		    $timekey = date($date_formats[$params['part']], $r['time_add']);
+		    
+		    //echo $r['time_add'] . ' ' .$timekey. ' ' . $timezone_shift_sec .'<br >';
+		    
 		    //$k3      = $groups[$r['is_sale'].$r['is_lead']];
 		    // Обрезаем реферер до домена
 		    /*
@@ -852,7 +859,7 @@ function get_clicks_report_grouped2($params) {
 	}
     }
 
-    date_default_timezone_set($timezone_backup);
+    //date_default_timezone_set($timezone_backup);
 
     return array(
 	'data' => $data,
