@@ -26,7 +26,9 @@ function api_error($error = '') {
 }
 
 if($track_key != _SELF_TRACK_KEY) {
-	api_error('Invalid track key');
+	$out = api_error('Invalid track key');
+	echo json_encode($out);
+	exit;
 }
 
 $maxsize = 10000; // максимальный размер отдаваемых данных
