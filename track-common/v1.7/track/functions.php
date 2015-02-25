@@ -17,6 +17,7 @@ function dir_files($path, $type = '') {
 			}
 		}
 	}
+	sort($files);
 	return $files;
 }
 

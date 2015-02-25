@@ -52,7 +52,7 @@ if($act == 'data_get') {
 // Данные получены сборщиком, теперь их можно удалять
 } elseif($act == 'data_get_confirm') {
 	$type  = rq('type');
-	$files = rq('files');
+	$confirm_files = explode(',', rq('file'));
 	if(!in_array($type, array('clicks', 'postback'))) {
 		$out = api_error('Unknown type');
 	} else {
@@ -61,8 +61,9 @@ if($act == 'data_get') {
 		
 		$cnt = 0;
 		foreach($files as $f) {
-			if(in_array($f, $files)) {
-				unlink($path . '/' . $f);
+			if(in_array($f, $confirm_files)) {
+				// unlink($path . '/' . $f);
+				rename($path . '/' . $f, $path . '/' . $f.'*');
 				$cnt++;
 			}
 		}
