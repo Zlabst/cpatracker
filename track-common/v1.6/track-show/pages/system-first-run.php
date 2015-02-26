@@ -142,8 +142,18 @@
 						$('#info_message_text').html('База данных '+result[2]+' не найдена. Вам необходимо ее создать.');
 						$('#info_message').show();
 					break;
-                                        
-                                        case 'table_not_create':
+                    
+					case 'htaccess_not_found':
+						$('#info_message_text').html('Проверьте наличие файлов .htaccess в каталогах /track и /track-show.');
+						$('#info_message').show();
+					break;
+					
+					case 'wurfl_not_writable':
+						$('#info_message_text').html('Файл ' + result[2] + ' не доступен для записи.');
+						$('#info_message').show();
+					break;
+                    
+					case 'table_not_create':
 						$('#info_message_text').html('Не удается создать таблицу в базе данных. Проверьте права доступа для пользователя БД.');
 						$('#info_message').show();
 					break;

@@ -3,6 +3,8 @@
 // Turn on output buffering to be able to send headers anytime
 ob_start();
 
+header('Content-Type: text/html; charset=utf-8'); 
+
 // Increase execution time, useful for the slow DB queries
 set_time_limit(0);
 
@@ -49,6 +51,38 @@ if ($_REQUEST['ajax_act'] == 'create_database') {
             break;
 
         case 'first_run':
+        	
+        	// Check file system
+			
+			// We have .htaccess files
+			
+        	if(!file_exists(dirname(__FILE__) . '/.htaccess')
+        		or !file_exists(dirname(__FILE__) . '/../track/.htaccess')
+        	) {
+        		echo json_encode(array(false, 'htaccess_not_found'));
+                exit();
+        	}
+        	
+        	// tmp file for WURFL
+        	
+        	$temp_dir = ini_get('upload_tmp_dir');
+			if (!$temp_dir) $temp_dir = '/tmp';
+			$temp_dir = realpath($temp_dir); 
+			$wbase = $temp_dir . '/wurfl.xml';
+			
+			if(file_exists($wbase)) {
+				unlink($wbase);
+				if(file_exists($wbase)) {
+					rename($wbase, $wbase . '.old');
+					if(file_exists($wbase)) {
+						echo json_encode(array(false, 'wurfl_not_writable', $wbase));
+                		exit();
+					}
+				}
+			}
+			
+        	// Check datababase
+        	
             $login = $_REQUEST['login'];
             $password = $_REQUEST['password'];
             $dbname = $_REQUEST['dbname'];
