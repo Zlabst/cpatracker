@@ -293,7 +293,7 @@ krsort($sales);
 							<td>"._e($cur['country'])."</td>
 							<td>"._e($source_name)."</td>
 							<td>"._e($cur['campaign_name'])." "._e($cur['ads_name'])."</td>
-							<td><a target='_blank' href='http://anonym.to/?"._e($cur['referer'])."'>"._e($cur_referrer)."</a></td>
+							<td><a target='_blank' href='"._e($cur['referer'])."'>"._e($cur_referrer)."</a></td>
 					<td>"._e($cur['subid'])."</a>";
 					echo "</td>";
 				echo "</tr>";

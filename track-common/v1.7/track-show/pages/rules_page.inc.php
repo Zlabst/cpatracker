@@ -926,7 +926,7 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                     <td>
                     	
                     	
-                    	<button type='button' class='btn-rule-copy for_text' onclick="window.open('http://anonym.to/' + $('#rule-link-text-{{id}}').val());"><i class="fa fa-external-link"></i></button>
+                    	<button type='button' class='btn-rule-copy for_text' onclick="window.open($('#rule-link-text-{{id}}').val());"><i class="fa fa-external-link"></i></button>
                     		
                     	<input type="text" class="rule-link-text" id="rule-link-text-{{id}}" value="{{url}}" />
                     	
