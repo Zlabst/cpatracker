@@ -965,12 +965,11 @@ function get_sales($from, $to, $days, $month) {
     $q = "SELECT *, `cnv`.`date_add` as `date` 
         FROM `tbl_conversions` `cnv` 
         LEFT JOIN `tbl_clicks` `clc` ON `cnv`.`subid` = `clc`.`subid`  
-        WHERE `cnv`.`status` = 0 
+        WHERE (`cnv`.`status` = 0 or `cnv`.`status` = 1)
             AND CONVERT_TZ(`cnv`.`date_add`, '+00:00', '" . _str($timezone_shift) . "') BETWEEN STR_TO_DATE('" . _str($from) . " 00:00:00', '%Y-%m-%d %H:%i:%s') 
             AND STR_TO_DATE('" . _str($to) . " 23:59:59', '%Y-%m-%d %H:%i:%s') 
         ORDER BY `cnv`.`date_add` ASC";
-
-    $rs = mysql_query($q);
+    $rs = db_query($q);
 
     if (mysql_num_rows($rs) == 0) {
 	return false;
@@ -980,7 +979,7 @@ function get_sales($from, $to, $days, $month) {
     $return = array();
 
     while ($f = mysql_fetch_assoc($rs)) {
-	$data[] = $f;
+		$data[] = $f;
     }
 
     foreach ($data as $row) {

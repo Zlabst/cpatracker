@@ -962,7 +962,13 @@ function get_clicks_report_element2($data, $emp = true, $sub = true, $cols = fal
 
 function get_sales($from, $to, $days, $month) {
     $timezone_shift = get_current_timezone_shift();
-    $sql = 'SELECT *, `cnv`.`date_add` as `date` FROM `tbl_conversions` `cnv` LEFT JOIN `tbl_clicks` `clc` ON `cnv`.`subid` = `clc`.`subid`  WHERE `cnv`.`status` = 0 AND CONVERT_TZ(`cnv`.`date_add`, "+00:00", "' . _str($timezone_shift) . '") BETWEEN "' . _str($from) . ' 00:00:00" AND "' . _str($to) . ' 23:59:59" ORDER BY `cnv`.`date_add` ASC';
+    $sql = "SELECT *, `cnv`.`date_add` as `date` 
+        FROM `tbl_conversions` `cnv` 
+        LEFT JOIN `tbl_clicks` `clc` ON `cnv`.`subid` = `clc`.`subid`  
+        WHERE (`cnv`.`status` = 0 or `cnv`.`status` = 1)
+            AND CONVERT_TZ(`cnv`.`date_add`, '+00:00', '" . _str($timezone_shift) . "') BETWEEN STR_TO_DATE('" . _str($from) . " 00:00:00', '%Y-%m-%d %H:%i:%s') 
+            AND STR_TO_DATE('" . _str($to) . " 23:59:59', '%Y-%m-%d %H:%i:%s') 
+        ORDER BY `cnv`.`date_add` ASC";
 
     $r = mysql_query($sql);
 
