@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -23,6 +23,7 @@
  * @property string $configFilePath
  * @property string $configurationFileDir
  * @property boolean $allowReload
+ * @property array $capabilityFilter
  * @property string $wurflFile
  * @property array $wurflPatches
  * @property array $persistence 
@@ -42,6 +43,7 @@ abstract class  WURFL_Configuration_Config {
 	const PARAMS = "params";
 	const LOG_DIR = "logDir";
 	const ALLOW_RELOAD = "allow-reload";
+	const CAPABILITY_FILTER = "capability-filter";
 	const DIR = "dir";
 	const EXPIRATION = "expiration";
 	const MATCH_MODE = "match-mode";
@@ -68,6 +70,10 @@ abstract class  WURFL_Configuration_Config {
 	 * @var array Array of WURFL patches
 	 */
 	protected $wurflPatches;
+	/**
+	 * @var array Array of capabilities to be loaded
+	 */
+	protected $capabilityFilter = array();
 	/**
 	 * @var array
 	 */

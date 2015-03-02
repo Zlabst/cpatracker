@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -22,33 +22,17 @@
  */
 class WURFL_Xml_DeviceIterator extends WURFL_Xml_AbstractIterator {
 	
-	private $capabilitiesToSelect = array ();
-	private $filterCapabilities;
+	private $capabilityFilter = array ();
+	private $useCapabilityFilter = false;
 	
 	/**
 	 * @param string $inputFile XML file to be processed
-	 * @param array $capabilities Capabiities to process
+	 * @param array $capabilityFilter Capabilities to process
 	 */
-	public function __construct($inputFile, $capabilities = array()) {
+	public function __construct($inputFile, $capabilityFilter = array()) {
 		parent::__construct($inputFile);
-		foreach($capabilities as $groupId => $capabilityNames){
-			$trimmedCapNames = $this->removeSpaces($capabilityNames);
-			$capabilitiesAsArray = array ();
-			if (strlen($trimmedCapNames)!= 0) {
-				$capabilitiesAsArray = explode(',', $trimmedCapNames);
-			}
-			$this->capabilitiesToSelect [$groupId] = $capabilitiesAsArray;
-		}
-		$this->filterCapabilities = empty($this->capabilitiesToSelect)? false : true;
-	}
-	
-	/**
-	 * Removes spaces from the given $subject
-	 * @param string $subject
-	 * @return string $subject without spaces
-	 */
-	private function removeSpaces($subject) {
-		return str_replace(" ", "", $subject);
+		$this->capabilityFilter = $capabilityFilter;
+		$this->useCapabilityFilter = !empty($this->capabilityFilter);
 	}
 	
 	public function readNextElement() {
@@ -78,18 +62,17 @@ class WURFL_Xml_DeviceIterator extends WURFL_Xml_AbstractIterator {
 						
 						case WURFL_Xml_Interface::GROUP:
 							$groupId = $this->xmlReader->getAttribute(WURFL_Xml_Interface::GROUP_ID);
-							if ($this->needToReadGroup($groupId)) {
-								$groupIDCapabilitiesMap[$groupId] = array ();
-							} else {
-								$this->moveToGroupEndElement();
-								break 2;
+							if ($groupId !== 'virtual_capabilities') {
+								$groupIDCapabilitiesMap[$groupId] = array();
 							}
 							break;
 						
 						case WURFL_Xml_Interface::CAPABILITY:
-							
+							if ($groupId === 'virtual_capabilities') {
+								break;
+							}
 							$capabilityName = $this->xmlReader->getAttribute(WURFL_Xml_Interface::CAPABILITY_NAME);
-							if ($this->neededToReadCapability($groupId, $capabilityName)) {
+							if ($this->needToReadCapability($capabilityName)) {
 								$capabilityValue = $this->xmlReader->getAttribute(WURFL_Xml_Interface::CAPABILITY_VALUE);
 								$currentCapabilityNameValue[$capabilityName] = $capabilityValue;
 								$groupIDCapabilitiesMap[$groupId][$capabilityName] = $capabilityValue;
@@ -109,51 +92,14 @@ class WURFL_Xml_DeviceIterator extends WURFL_Xml_AbstractIterator {
 	}
 	
 	/**
-	 * Returns true if the group element needs to be processed
-	 * @param string $groupId
-	 * @return bool
-	 */
-	private function needToReadGroup($groupId) {
-		if ($this->filterCapabilities) {
-			return array_key_exists($groupId, $this->capabilitiesToSelect);
-		}
-		return true;
-	}
-	
-	/**
-	 * Returns true if the given $groupId's $capabilityName needs to be read
-	 * @param string $groupId
+	 * Returns true if the given $capabilityName needs to be read
 	 * @param string $capabilityName
 	 * @return bool
 	 */
-	private function neededToReadCapability($groupId, $capabilityName) {
-		if (array_key_exists($groupId, $this->capabilitiesToSelect)) {
-			$capabilities = $this->capabilitiesToSelect[$groupId];
-			if (empty($capabilities)) {
-				return true;
-			}
-			foreach ($capabilities as $capability) {
-				if (strcmp($capabilityName, $capability) === 0) {
-					return true;
-				}
-			}
-			return false;
+	private function needToReadCapability($capabilityName) {
+		if (!$this->useCapabilityFilter) {
+			return true;
 		}
-		return true;
-	
-	}
-	
-	private function moveToGroupEndElement() {
-		while (!$this->groupEndElement()) {
-			$this->xmlReader->read();
-		}
-	}
-	
-	/**
-	 * Returns true if the current element is the ending tag of a group
-	 * @return bool
-	 */
-	private function groupEndElement() {
-		return ($this->xmlReader->name === "group") && ($this->xmlReader->nodeType === XMLReader::END_ELEMENT);
+		return in_array($capabilityName, $this->capabilityFilter);
 	}
 }

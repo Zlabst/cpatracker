@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -34,10 +34,11 @@ class WURFL_Handlers_WindowsPhoneDesktopHandler extends WURFL_Handlers_Handler {
 	public static $constantIDs = array(
 		'generic_ms_phone_os7_desktopmode',
 		'generic_ms_phone_os7_5_desktopmode',
+		'generic_ms_phone_os8_desktopmode',
 	);
 	
 	public function canHandle($userAgent) {
-		return WURFL_Handlers_Utils::checkIfContains($userAgent, 'ZuneWP7');
+		return WURFL_Handlers_Utils::checkIfContainsAnyOf($userAgent, array('WPDesktop', 'ZuneWP7'));
 	}
 	
 	public function applyConclusiveMatch($userAgent) {
@@ -46,6 +47,7 @@ class WURFL_Handlers_WindowsPhoneDesktopHandler extends WURFL_Handlers_Handler {
 	}
 	
 	public function applyRecoveryMatch($userAgent){
+		if (WURFL_Handlers_Utils::checkIfContains($userAgent, 'WPDesktop')) return 'generic_ms_phone_os8_desktopmode';
 		if (WURFL_Handlers_Utils::checkIfContains($userAgent, 'Trident/5.0')) return 'generic_ms_phone_os7_5_desktopmode';
 		return 'generic_ms_phone_os7_desktopmode';
 	}

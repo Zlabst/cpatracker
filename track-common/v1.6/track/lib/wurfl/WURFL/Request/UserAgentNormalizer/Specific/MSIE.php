@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -23,7 +23,7 @@
 class WURFL_Request_UserAgentNormalizer_Specific_MSIE implements WURFL_Request_UserAgentNormalizer_Interface  {
 	
 	public function normalize($userAgent) {
-		return $this->msieWithVersion($userAgent);				
+		return $this->msieWithVersion($userAgent);
 	}
 	/**
 	 * Returns version info
@@ -31,7 +31,6 @@ class WURFL_Request_UserAgentNormalizer_Specific_MSIE implements WURFL_Request_U
 	 * @return string Version info
 	 */
 	private function msieWithVersion($userAgent) {
-		// return preg_replace('/( \.NET CLR [\d\.]+;?| Media Center PC [\d\.]+;?| OfficeLive[a-zA-Z0-9\.\d]+;?| InfoPath[\.\d]+;?)/', '', $userAgent)
-		return substr($userAgent, strpos($userAgent, "MSIE"), 8);
+		return preg_replace('/( \.NET CLR [\d\.]+;?| Media Center PC [\d\.]+;?| OfficeLive[a-zA-Z0-9\.\d]+;?| InfoPath[\.\d]+;?)/', '', $userAgent);
 	}
 }

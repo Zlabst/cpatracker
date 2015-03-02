@@ -1,5 +1,10 @@
 <?php
+	
 	ob_start();
+	/*
+	error_reporting(E_ALL);
+	ini_set('display_errors', 1);	
+	*/
 	
 	require _TRACK_COMMON_PATH . '/functions.php';
 	
@@ -58,14 +63,14 @@
             $persistenceDir = _CACHE_COMMON_PATH.'/wurfl-persistence';
             $cacheDir = _CACHE_COMMON_PATH.'/wurfl-cache';	
             $wurflConfig = new WURFL_Configuration_InMemoryConfig();
-            $wurflConfig->wurflFile(_TRACK_STATIC_PATH.'/wurfl/wurfl.zip');
+            $wurflConfig->wurflFile(_TRACK_STATIC_PATH.'/wurfl/wurfl_1.5.3.xml');
             $wurflConfig->matchMode('accuracy');
             $wurflConfig->allowReload(true);
             $wurflConfig->persistence('file', array('dir' => $persistenceDir));
             $wurflConfig->cache('file', array('dir' => $cacheDir, 'expiration' => 36000));
             $wurflManagerFactory = new WURFL_WURFLManagerFactory($wurflConfig);
             $wurflManager = $wurflManagerFactory->create();
-            $requestingDevice = $wurflManager->getDeviceForUserAgent($_SERVER['HTTP_USER_AGENT']); 
+            $requestingDevice = $wurflManager->getDeviceForUserAgent($_SERVER['HTTP_USER_AGENT']);
         }
 
 	if (!function_exists('get_geodata'))

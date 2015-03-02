@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -61,13 +61,13 @@ class WURFL_Storage_Mysql extends WURFL_Storage_Base {
 		}
 
 		/* Initializes link to database */
-		$success=mysql_selectdb($this->db,$this->link);
+		$success=mysql_select_db($this->db,$this->link);
 		if (!$success) {
 			throw new WURFL_Storage_Exception("Couldn't change to database $this->db (".mysql_error($this->link).")");
 		}
 
 		/* Is Table there? */
-		$test = mysql_query("SHOW TABLES FROM $this->db LIKE '$this->table'",$this->link);
+		$test = mysql_query("SHOW TABLES FROM `$this->db` LIKE '$this->table'",$this->link);
 		if (!is_resource($test)) {
 			throw new WURFL_Storage_Exception("Couldn't show tables from database $this->db (".mysql_error($this->link).")");
 		}
@@ -108,22 +108,26 @@ class WURFL_Storage_Mysql extends WURFL_Storage_Base {
 	}
 
 	public function load($objectId) {
+		$return = null;
 		$objectId = $this->encode("", $objectId);
 		$objectId = mysql_real_escape_string($objectId);
 
-		$sql="select `$this->valuecolumn` from `$this->db`.`$this->table` where `$this->keycolumn`='$objectId'";
-		$result=mysql_query($sql,$this->link);
+		$sql = "select `$this->valuecolumn` from `$this->db`.`$this->table` where `$this->keycolumn`='$objectId'";
+		$result = mysql_query($sql,$this->link);
 		if (!is_resource($result)) {
 			throw new WURFL_Storage_Exception("MySql error ".mysql_error($this->link)."in $this->db");
 		}
 
 		$row = mysql_fetch_assoc($result);
 		if (is_array($row)) {
-			$return = unserialize($row['value']);
-		} else {
-			$return=false;
+			$return = @unserialize($row['value']);
+			if ($return === false) {
+				$return = null;
+			}
 		}
+		
 		if (is_resource($result)) mysql_free_result($result);
+		
 		return $return;
 	}
 

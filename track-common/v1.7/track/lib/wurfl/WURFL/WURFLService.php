@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -59,7 +59,7 @@ class WURFL_WURFLService {
 	 */
 	public function getDeviceForRequest(WURFL_Request_GenericRequest $request) {
 		$deviceId = $this->deviceIdForRequest($request);
-		return $this->getWrappedDevice($deviceId, $request->matchInfo);
+		return $this->getWrappedDevice($deviceId, $request);
 	
 	}
 	
@@ -67,10 +67,11 @@ class WURFL_WURFLService {
 	 * Retun a WURFL_Xml_ModelDevice for the given device id
 	 *
 	 * @param string $deviceID
+	 * @param WURFL_Request_GenericRequest $request
 	 * @return WURFL_Xml_ModelDevice
 	 */
-	public function getDevice($deviceID) {
-		return $this->getWrappedDevice($deviceID);
+	public function getDevice($deviceID, $request=null) {
+		return $this->getWrappedDevice($deviceID, $request);
 	}
 	
 	/**
@@ -128,18 +129,17 @@ class WURFL_WURFLService {
 	 * Device ID and returns the WURFL_CustomDevice with all capabilities.
 	 *
 	 * @param string $deviceID
-	 * @param string $matchInfo
+	 * @param WURFL_Request_GenericRequest|null $request
 	 * @return WURFL_CustomDevice
 	 */
-	private function getWrappedDevice($deviceID, $matchInfo = null) {
+	private function getWrappedDevice($deviceID, $request = null) {
 		$device = $this->_cacheProvider->load('DEV_'.$deviceID);
 		if (empty($device)) {
 			$modelDevices = $this->_deviceRepository->getDeviceHierarchy($deviceID);
-			$device = new WURFL_CustomDevice($modelDevices, $matchInfo);
+			$device = new WURFL_CustomDevice($modelDevices, $request);
 			$this->_cacheProvider->save('DEV_'.$deviceID, $device);
 		}
 		return $device;
-		//return new WURFL_Device ( $modelDevice, new WURFL_CapabilitiesHolder ( $modelDevice, $this->_deviceRepository, $this->_cacheProvider ) );
 	}
 }
 

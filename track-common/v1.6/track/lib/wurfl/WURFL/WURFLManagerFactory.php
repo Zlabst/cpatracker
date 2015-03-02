@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -31,8 +31,7 @@
 class WURFL_WURFLManagerFactory {
 	
 	const DEBUG = false;
-	const WURFL_LAST_MODIFICATION_TIME = "WURFL_LAST_MODIFICATION_TIME";
-	const WURFL_CURRENT_MODIFICATION_TIME = "WURFL_CURRENT_MODIFICATION_TIME";
+	const WURFL_API_STATE = 'WURFL_API_STATE';
 	
 	/**
 	 * WURFL Configuration
@@ -90,8 +89,7 @@ class WURFL_WURFLManagerFactory {
 		$this->persistenceStorage->setWURFLLoaded(false);
 		$this->invalidateCache();
 		$this->init();
-		$mtime = filemtime($this->wurflConfig->wurflFile);
-		$this->persistenceStorage->save(self::WURFL_LAST_MODIFICATION_TIME, $mtime);
+		$this->persistenceStorage->save(self::WURFL_API_STATE, $this->getState());
 	}
 	
 	/**
@@ -102,9 +100,27 @@ class WURFL_WURFLManagerFactory {
 		if (!$this->wurflConfig->allowReload) {
 			return false;
 		}
-		$lastModificationTime = $this->persistenceStorage->load(self::WURFL_LAST_MODIFICATION_TIME);
-		$currentModificationTime = filemtime($this->wurflConfig->wurflFile);
-		return $currentModificationTime > $lastModificationTime;
+		$state = $this->persistenceStorage->load(self::WURFL_API_STATE);
+		return !$this->isStateCurrent($state);
+	}
+	
+	/**
+	 * Returns true if the current application state is the same as the given state
+	 * @param string $state
+	 * @return boolean
+	 */
+	private function isStateCurrent($state) {
+		return (strcmp($this->getState(), $state) === 0);
+	}
+	
+	/**
+	 * Generates a string specific to the loaded WURFL API and WURFL Data to be used for checking cache state.
+	 * If the API Version or the WURFL data file timestamp changes, the state string changes.
+	 * @return string
+	 */
+	private function getState() {
+		$wurflMtime = filemtime($this->wurflConfig->wurflFile);
+		return WURFL_Constants::API_VERSION.'::'.$wurflMtime;
 	}
 	
 	/**
@@ -147,6 +163,6 @@ class WURFL_WURFLManagerFactory {
 	private function deviceRepository($persistenceStorage, $userAgentHandlerChain) {
 		$devicePatcher = new WURFL_Xml_DevicePatcher();
 		$deviceRepositoryBuilder = new WURFL_DeviceRepositoryBuilder($persistenceStorage, $userAgentHandlerChain, $devicePatcher);
-		return $deviceRepositoryBuilder->build($this->wurflConfig->wurflFile, $this->wurflConfig->wurflPatches);
+		return $deviceRepositoryBuilder->build($this->wurflConfig->wurflFile, $this->wurflConfig->wurflPatches, $this->wurflConfig->capabilityFilter);
 	}
 }

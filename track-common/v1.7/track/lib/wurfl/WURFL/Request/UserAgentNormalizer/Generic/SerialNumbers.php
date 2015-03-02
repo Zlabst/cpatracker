@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -22,10 +22,10 @@
  */
 class WURFL_Request_UserAgentNormalizer_Generic_SerialNumbers implements WURFL_Request_UserAgentNormalizer_Interface {
 	
-	const SERIAL_NUMBERS_PATTERN = "/(\[(TF|NT|ST)[\d|X]+\])|(\/SN[\d|X]+)/";
-
 	public function normalize($userAgent) {
-		return preg_replace(self::SERIAL_NUMBERS_PATTERN, "", $userAgent);
+		$userAgent = preg_replace('/\/SN[\dX]+/', '/SNXXXXXXXXXXXXXXX', $userAgent);
+		$userAgent = preg_replace('/\[(ST|TF|NT)[\dX]+\]/', 'TFXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX', $userAgent);
+		return $userAgent;
 	}
 
 }

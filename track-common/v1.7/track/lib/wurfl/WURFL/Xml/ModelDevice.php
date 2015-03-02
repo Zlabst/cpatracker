@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -72,7 +72,6 @@ class WURFL_Xml_ModelDevice {
 				$this->groupIdCapabilitiesNameMap[$groupId] = array_keys($capabilitiesNameValue); 
 				$this->capabilities = array_merge($this->capabilities, $capabilitiesNameValue);
 			}
-			
 		}
 	}
  
@@ -113,6 +112,10 @@ class WURFL_Xml_ModelDevice {
 		return null;
 	}
 	
+	public function getCapabilityNames() {
+		return array_keys($this->capabilities);
+	}
+	
 	/**
 	 * Returns true if the capability exists
 	 * @param string $capabilityName
@@ -132,8 +135,12 @@ class WURFL_Xml_ModelDevice {
 			foreach ($capabilitiesName as $capabilityName) {
 				$groupIdCapabilitiesMap[$groupId][$capabilityName] = $this->capabilities[$capabilityName];
 			}
-		}		
+		}
 		return $groupIdCapabilitiesMap;		
+	}
+	
+	public function getGroupNames() {
+		return array_keys($this->groupIdCapabilitiesNameMap);
 	}
 	
 	/**

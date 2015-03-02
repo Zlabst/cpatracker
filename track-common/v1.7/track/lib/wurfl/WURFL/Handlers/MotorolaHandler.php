@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -52,6 +52,6 @@ class WURFL_Handlers_MotorolaHandler extends WURFL_Handlers_Handler {
 		if (WURFL_Handlers_Utils::checkIfContainsAnyOf($userAgent, array('MIB/2.2', 'MIB/BER2.2'))) {
 			return "mot_mib22_generic";
 		}
-		return null;
+		return WURFL_Constants::NO_MATCH;
 	}
 }

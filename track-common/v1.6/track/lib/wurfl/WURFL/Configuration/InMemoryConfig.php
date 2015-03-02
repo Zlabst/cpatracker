@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -44,6 +44,16 @@ class WURFL_Configuration_InMemoryConfig extends  WURFL_Configuration_Config {
 		$this->wurflPatches[] = $wurflPatch;
 		return $this;
 	}
+	
+	/**
+	 * @param array $capabilityFilter
+	 * @return WURFL_Configuration_InMemoryConfig $this
+	 */
+	public function capabilityFilter(array $capabilityFilter) {
+		$this->capabilityFilter = $capabilityFilter;
+		return $this;
+	}
+	
 	/**
 	 * Set persistence provider
 	 * @param string $provider

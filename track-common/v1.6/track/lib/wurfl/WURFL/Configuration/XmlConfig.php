@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -29,6 +29,7 @@ class WURFL_Configuration_XmlConfig extends WURFL_Configuration_Config {
 		$this->wurflFile = $this->wurflFile($xmlConfig->xpath('/wurfl-config/wurfl/main-file'));
 		$this->wurflPatches = $this->wurflPatches($xmlConfig->xpath('/wurfl-config/wurfl/patches/patch'));
 		$this->allowReload = $this->allowReload($xmlConfig->xpath('/wurfl-config/allow-reload'));
+		$this->capabilityFilter = $this->capabilityFilter($xmlConfig->xpath('/wurfl-config/capability-filter/capability'));
 		$this->persistence = $this->persistence($xmlConfig->xpath('/wurfl-config/persistence'));
 		$this->cache = $this->persistence($xmlConfig->xpath('/wurfl-config/cache'));
 		$this->logDir = $this->logDir($xmlConfig->xpath('/wurfl-config/logDir'));
@@ -58,6 +59,21 @@ class WURFL_Configuration_XmlConfig extends WURFL_Configuration_Config {
 		}
 		return $patches;
 	}
+	
+	/**
+	 * Returns an array of WURFL Capabilities
+	 * @param array $capabilityFilter array of SimpleXMLElement objects
+	 * @return array WURFL Capabilities
+	 */
+	private function capabilityFilter($capabilityFilter) {
+		$filter = array();
+		if ($capabilityFilter) {
+			foreach ($capabilityFilter as $filterElement) {
+				$filter[] = (string)$filterElement;
+			}
+		}
+		return $filter;
+	}
 
 	/**
 	 * Returns true if reload is allowed, according to $allowReloadElement
@@ -66,7 +82,7 @@ class WURFL_Configuration_XmlConfig extends WURFL_Configuration_Config {
 	 */
 	private function allowReload($allowReloadElement) {
 		if (!empty($allowReloadElement)) {
-			return (bool)$allowReloadElement[0];
+			return ($allowReloadElement[0] == 'true')? true: false;
 		}
 		return false;
 	}

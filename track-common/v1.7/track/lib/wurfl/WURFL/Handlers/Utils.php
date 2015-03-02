@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -94,6 +94,9 @@ class WURFL_Handlers_Utils {
 		'opera tv',
 		'viera',
 		'konfabulator',
+		'sony bravia',
+		'crkey',
+        'sonycebrowser',
 	);
 	
 	private static $desktopBrowsers = array(
@@ -110,62 +113,20 @@ class WURFL_Handlers_Utils {
 		'epiphany',
 	);
 	
-	/**
-	 * Keyword => deviceID pair collection used for Catch-All matching
-	 * @var array Array of (string)keyword => (string)deviceID
-	 */
-	private static $mobileCatchAllIds = array(
-		 // Openwave
-		'UP.Browser/7.2' => 'opwv_v72_generic',
-		'UP.Browser/7' => 'opwv_v7_generic',
-		'UP.Browser/6.2' => 'opwv_v62_generic',
-		'UP.Browser/6' => 'opwv_v6_generic',
-		'UP.Browser/5' => 'upgui_generic',
-		'UP.Browser/4' => 'uptext_generic',
-		'UP.Browser/3' => 'uptext_generic',
-
-		// Series 60
-		'Series60' => 'nokia_generic_series60',
-
-		// Access/Net Front
-		'NetFront/3.0' => 'generic_netfront_ver3',
-		'ACS-NF/3.0' => 'generic_netfront_ver3',
-		'NetFront/3.1' => 'generic_netfront_ver3_1',
-		'ACS-NF/3.1' => 'generic_netfront_ver3_1',
-		'NetFront/3.2' => 'generic_netfront_ver3_2',
-		'ACS-NF/3.2' => 'generic_netfront_ver3_2',
-		'NetFront/3.3' => 'generic_netfront_ver3_3',
-		'ACS-NF/3.3' => 'generic_netfront_ver3_3',
-		'NetFront/3.4' => 'generic_netfront_ver3_4',
-		'NetFront/3.5' => 'generic_netfront_ver3_5',
-		'NetFront/4.0' => 'generic_netfront_ver4_0',
-		'NetFront/4.1' => 'generic_netfront_ver4_1',
-		
-		// CoreMedia
-		'CoreMedia' => 'apple_iphone_coremedia_ver1',
-		
-		// Windows CE
-		'Windows CE' => 'generic_ms_mobile',
-
-		// Generic XHTML
-		'Obigo' => WURFL_Constants::GENERIC_XHTML,
-	   	'AU-MIC/2' => WURFL_Constants::GENERIC_XHTML,
-		'AU-MIC-' =>  WURFL_Constants::GENERIC_XHTML,
-		'AU-OBIGO/' =>  WURFL_Constants::GENERIC_XHTML,
-		'Teleca Q03B1' =>  WURFL_Constants::GENERIC_XHTML,
-
-		// Opera Mini
-		'Opera Mini/1' => 'generic_opera_mini_version1',
-		'Opera Mini/2' => 'generic_opera_mini_version2',
-		'Opera Mini/3' => 'generic_opera_mini_version3',
-		'Opera Mini/4' => 'generic_opera_mini_version4',
-		'Opera Mini/5' => 'generic_opera_mini_version5',
-
-		// DoCoMo
-		'DoCoMo' => 'docomo_generic_jap_ver1',
-		'KDDI' => 'docomo_generic_jap_ver1',
+	private static $robots = array(
+		'+http',
+		'bot',
+		'crawler',
+		'spider',
+		'novarra',
+		'transcoder',
+		'yahoo! searchmonkey',
+		'yahoo! slurp',
+		'feedfetcher-google',
+		'mowser'
 	);
 	
+
 	/** 
 	 * Alias of WURFL_Handlers_Matcher_RISMatcher::match()
 	 * @param array $collection
@@ -191,37 +152,46 @@ class WURFL_Handlers_Utils {
 	}
 	
 	/**
-	 * Char index of the first instance of $string found in $target, starting at $startingIndex;
-	 * if no match is found, the length of the string is returned
-	 * @param string $string haystack
-	 * @param string $target needle
-	 * @param int $startingIndex Char index for start of search
-	 * @return int Char index of match or length of string
-	 */
-	public static function indexOfOrLength($string, $target, $startingIndex = 0) {
-		$length = strlen ( $string );
-		$pos = strpos ( $string, $target, $startingIndex );
-		return $pos === false ? $length : $pos;
+     * Returns the character position (index) of the $target in $string, starting from a given index.  If target is not found, returns length of user agent.
+     * @param string $haystack Haystack to be searched in
+     * @param string $needle Target string to search for
+     * @param int $startingIndex Character postition to start looking for the target
+     * @return int Character position (index) or full length
+     */
+	public static function indexOfOrLength($haystack, $needle, $startingIndex=0) {
+		$length = strlen($haystack);
+		
+		if ($startingIndex === false || $startingIndex > $length) {
+			return $length;
+		}
+
+		$pos = strpos($haystack, $needle, $startingIndex);
+		return ($pos === false)? $length : $pos;
 	}
+	
 	
 	/**
 	 * Lowest char index of the first instance of any of the $needles found in $userAgent, starting at $startIndex;
 	 * if no match is found, the length of the string is returned
 	 * @param string $userAgent haystack
 	 * @param array $needles Array of (string)needles to search for in $userAgent
-	 * @param int $startIndex Char index for start of search
+	 * @param int $startingIndex Char index for start of search
 	 * @return int Char index of left-most match or length of string
 	 */
-	public static function indexOfAnyOrLength($userAgent, $needles = array(), $startIndex) {
-		$positions = array ();
-		foreach ( $needles as $needle ) {
-			$pos = strpos ( $userAgent, $needle, $startIndex );
-			if ($pos !== false) {
-				$positions [] = $pos;
+	public static function indexOfAnyOrLength($userAgent, $needles = array(), $startingIndex=0) {
+		if (count($needles) === 0) {
+			return strlen($userAgent);
+		}
+		
+		$min = strlen($userAgent);
+		foreach ($needles as $needle) {
+			$index = WURFL_Handlers_Utils::indexOfOrLength($userAgent, $needle, $startingIndex);
+			if ($index < $min) {
+				$min = $index;
 			}
 		}
-		sort ( $positions );		
-		return count ( $positions ) > 0 ? $positions [0] : strlen ( $userAgent );
+		
+		return $min;
 	}
 	
 	/**
@@ -231,6 +201,7 @@ class WURFL_Handlers_Utils {
 		self::$_is_desktop_browser = null;
 		self::$_is_mobile_browser = null;
 		self::$_is_smarttv = null;
+		self::$_is_robot = null;
 	}
 	
 	/**
@@ -272,18 +243,23 @@ class WURFL_Handlers_Utils {
 	private static $_is_desktop_browser;
 	
 	/**
-	 * Returns true if the give $userAgent is from a mobile device
+	 * Returns true if the give $userAgent is from a robot
 	 * @param string $userAgent
 	 * @return bool
 	 */
-	public static function getMobileCatchAllId($userAgent) {
-		foreach (self::$mobileCatchAllIds as $key => $deviceId) {
+	public static function isRobot($userAgent) {
+		if (self::$_is_robot !== null) return self::$_is_robot;
+		self::$_is_robot = false;
+		$userAgent = strtolower($userAgent);
+		foreach (self::$robots as $key) {
 			if (strpos($userAgent, $key) !== false) {
-				return $deviceId;
+				self::$_is_robot = true;
+				break;
 			}
 		}
-		return WURFL_Constants::NO_MATCH;
+		return self::$_is_robot;
 	}
+	private static $_is_robot;
 	
 	/**
 	 * Is the given user agent very likely to be a desktop browser
@@ -299,7 +275,7 @@ class WURFL_Handlers_Utils {
 		if (WURFL_Handlers_Utils::isMobileBrowser($userAgent)) return false;
 
 		if (WURFL_Handlers_Utils::checkIfContains($userAgent, 'PPC')) return false; // PowerPC; not always mobile, but we'll kick it out
-		// Firefox;  fennec is already handled in the WurflConstants::$MOBILE_BROWSERS keywords
+		// Firefox;  fennec is already handled in the WURFL_Constants::$MOBILE_BROWSERS keywords
 		if (WURFL_Handlers_Utils::checkIfContains($userAgent, 'Firefox') && !WURFL_Handlers_Utils::checkIfContains($userAgent, 'Tablet')) return true;
 		// Safari
 		if (preg_match('#^Mozilla/5\.0 \((?:Macintosh|Windows)[^\)]+\) AppleWebKit/[\d\.]+ \(KHTML, like Gecko\) Version/[\d\.]+ Safari/[\d\.]+$#', $userAgent)) return true;
@@ -307,10 +283,14 @@ class WURFL_Handlers_Utils {
 		if (WURFL_Handlers_Utils::checkIfStartsWith($userAgent, 'Opera/9.80 (Windows NT', 'Opera/9.80 (Macintosh')) return true;
 		// Check desktop keywords
 		if (WURFL_Handlers_Utils::isDesktopBrowser($userAgent)) return true;
-		// Internet Explorer 9
-		if (preg_match('/^Mozilla\/5\.0 \(compatible; MSIE 9\.0; Windows NT \d\.\d/', $userAgent)) return true;
+
+		// Internet Explorer 11
+		if (preg_match('/^Mozilla\/5\.0 \(Windows NT.+?Trident.+?; rv:\d\d\.\d+\)/', $userAgent)) return true;
+		// Internet Explorer 9 or 10
+		if (preg_match('/^Mozilla\/5\.0 \(compatible; MSIE (9|10)\.0; Windows NT \d\.\d/', $userAgent)) return true;
 		// Internet Explorer <9
 		if (preg_match('/^Mozilla\/4\.0 \(compatible; MSIE \d\.\d; Windows NT \d\.\d/', $userAgent)) return true;
+
 		return false;
 	}
 	
@@ -517,6 +497,11 @@ class WURFL_Handlers_Utils {
 		return false;
 	}
 	
+	/**
+	 * Returns the string position of the end of the RIS delimiter, or false if there is no RIS delimiter
+	 * @param string $userAgent
+	 * @return int|bool
+	 */
 	public static function toleranceToRisDelimeter($userAgent) {
 		$tolerance = strpos($userAgent, WURFL_Constants::RIS_DELIMITER);
 		if ($tolerance === false) {
@@ -532,6 +517,6 @@ class WURFL_Handlers_Utils {
 	 * @return string User agent without language string
 	 */
 	public static function removeLocale($userAgent) {
-		return preg_replace('/; ?[a-z]{2}(?:-[a-zA-Z]{2})?(?:\.utf8|\.big5)?\b-?/', '; xx-xx', $userAgent);
+		return preg_replace('/; ?[a-z]{2}(?:-r?[a-zA-Z]{2})?(?:\.utf8|\.big5)?\b-?(?!:)/', '; xx-xx', $userAgent);
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -51,6 +51,6 @@ class WURFL_Handlers_NokiaHandler extends WURFL_Handlers_Handler {
 		if (WURFL_Handlers_Utils::checkIfContains($userAgent, 'Series60')) return 'nokia_generic_series60';
 		if (WURFL_Handlers_Utils::checkIfContains($userAgent, 'Series80')) return 'nokia_generic_series80';
 		if (WURFL_Handlers_Utils::checkIfContains($userAgent, 'MeeGo')) return 'nokia_generic_meego';
-		return null;
+		return WURFL_Constants::NO_MATCH;
 	}
 }

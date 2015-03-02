@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -66,6 +66,7 @@ class WURFL_FileUtils {
 	 * @return mixed Unserialized data or null if file does not exist
 	 */
 	public static function read($file) {
+		if (!is_readable($file)) return null;
 		$data = @file_get_contents($file);
 		if ($data === false) return null;
 		$value = @unserialize($data);

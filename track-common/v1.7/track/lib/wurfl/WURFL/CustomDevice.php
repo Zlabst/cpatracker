@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -49,21 +49,32 @@ class WURFL_CustomDevice {
 	private $modelDevices;
 	
 	/**
-	 * @var WURFL_Request_MatchInfo
+	 * @var WURFL_Request_GenericRequest
 	 */
-	private $matchInfo;
+	private $request;
+	
+	/**
+	 * @var WURFL_VirtualCapabilityProvider
+	 */
+	private $virtualCapabilityProvider;
 	
 	/**
 	 * @param array $modelDevices Array of WURFL_Xml_ModelDevice objects
-	 * @param WURFL_Request_MatchInfo $matchInfo
+	 * @param WURFL_Request_GenericRequest $request
 	 * @throws InvalidArgumentException if $modelDevices is not an array of at least one WURFL_Xml_ModelDevice
 	 */
-	public function __construct($modelDevices, $matchInfo = null) {
+	public function __construct(Array $modelDevices, $request = null) {
 		if (! is_array ( $modelDevices ) || count ( $modelDevices ) < 1) {
 			throw new InvalidArgumentException ( "modelDevices must be an array of at least one ModelDevice." );
 		}
 		$this->modelDevices = $modelDevices;
-		$this->matchInfo = $matchInfo;
+		if ($request === null) {
+			// This might happen if a device is looked up by its ID directly, without providing a user agent
+			$requestFactory = new WURFL_Request_GenericRequestFactory();
+			$request = $requestFactory->createRequestForUserAgent($this->userAgent);
+		}
+		$this->request = $request;
+		$this->virtualCapabilityProvider = new WURFL_VirtualCapabilityProvider($this, $request);
 	}
 	
 	/**
@@ -73,20 +84,20 @@ class WURFL_CustomDevice {
 	 * @return string
 	 */
 	public function __get($name) {
-		if (isset($name)) {
-			switch ($name) {
-				case "id" :
-				case "userAgent" :
-				case "fallBack" :
-				case "actualDeviceRoot" :
-					return $this->modelDevices[0]->$name;
-					break;
-				default :
-					throw new WURFL_WURFLException("the field " . $name . " is not defined");
-					break;
-			}
+		switch ($name) {
+			case "id":
+			case "userAgent":
+			case "fallBack":
+			case "actualDeviceRoot":
+				return $this->modelDevices[0]->$name;
+				break;
+			default :
+				if ($this->virtualCapabilityProvider->exists($name)) {
+					return $this->virtualCapabilityProvider->get($name);
+				}
+				return $this->getCapability($name);
+				break;
 		}
-		throw new WURFL_WURFLException("the field " . $name . " is not defined");
 	}
 	
 	/**
@@ -115,7 +126,7 @@ class WURFL_CustomDevice {
 		if (empty($capabilityName)) {
 			throw new InvalidArgumentException("capability name must not be empty");
 		}
-		if(!$this->isCapabilityDefined($capabilityName)) {
+		if(!$this->getRootDevice()->isCapabilityDefined($capabilityName)) {
 			throw new InvalidArgumentException("no capability named [$capabilityName] is present in wurfl.");	
 		}
 		foreach ($this->modelDevices as $modelDevice) {
@@ -149,7 +160,7 @@ class WURFL_CustomDevice {
 	 * @return WURFL_Request_MatchInfo
 	 */
 	public function getMatchInfo() {
-		return $this->matchInfo;
+		return ($this->request instanceof WURFL_Request_GenericRequest)? $this->request->matchInfo: null;
 	}
 	
 	/**
@@ -161,12 +172,11 @@ class WURFL_CustomDevice {
 	}
 	
 	/**
-	 * @param string $capabilityName
-	 * @return bool true if capability is defined
-	 * @see WURFL_Xml_ModelDevice::isCapabilityDefined()
+	 * Returns the top-most device.  This is the "generic" device.
+	 * @return WURFL_Xml_ModelDevice
 	 */
-	private function isCapabilityDefined($capabilityName) {
-		return $this->modelDevices[count($this->modelDevices)-1]->isCapabilityDefined($capabilityName);
+	public function getRootDevice() {
+		return $this->modelDevices[count($this->modelDevices)-1];
 	}
 	
 	/**
@@ -180,5 +190,13 @@ class WURFL_CustomDevice {
 			$capabilities = array_merge($capabilities, $modelDevice->getCapabilities());
 		}
 		return $capabilities;
+	}
+	
+	public function getVirtualCapability($name) {
+		return $this->virtualCapabilityProvider->get($name);
+	}
+	
+	public function getAllVirtualCapabilities() {
+		return $this->virtualCapabilityProvider->getAll();
 	}
 }

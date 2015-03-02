@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -27,19 +27,32 @@
  * // config.php
  * $configuration = array(
  *   'wurfl' => array(
- *	 'main-file' => "wurfl.xml",
- *	 'patches' => array("web_browsers_patch.xml"),
+ *	   'main-file' => "wurfl.xml",
+ *	   'patches' => array("web_browsers_patch.xml"),
  *   ),
  *   'match-mode' => 'high-accuracy',
  *   'allow-reload' => true,
+ *   'capability-filter' => array(
+ *     'is_wireless_device',
+ *     'preferred_markup',
+ *     'xhtml_support_level',
+ *     'xhtmlmp_preferred_mime_type',
+ *     'device_os',
+ *     'device_os_version',
+ *     'is_tablet',
+ *     'mobile_browser_version',
+ *     'pointing_method',
+ *     'mobile_browser',
+ *     'resolution_width',
+ *   ),
  *   'persistence' => array(
- *	 'provider' => "file",
- *	 'params' => array(
- *	   'dir' => "storage/persistence",
- *	 ),
+ *	   'provider' => "file",
+ *	   'params' => array(
+ *	     'dir' => "storage/persistence",
+ *	   ),
  *   ),
  *   'cache' => array(
- *	 'provider' => "null",
+ *	   'provider' => "null",
  *   ),
  * );
  * ?>
@@ -59,6 +72,7 @@
  * ?>
  * </code>
  * @package	WURFL_Configuration
+ * @deprecated
  */
 class WURFL_Configuration_ArrayConfig extends WURFL_Configuration_Config {
 	
@@ -87,7 +101,11 @@ class WURFL_Configuration_ArrayConfig extends WURFL_Configuration_Config {
 		}
 		
 		if (array_key_exists(WURFL_Configuration_Config::CACHE, $configuration)) {
-			$this->setCacheConfiguration($configuration [WURFL_Configuration_Config::CACHE]);
+			$this->setCacheConfiguration($configuration[WURFL_Configuration_Config::CACHE]);
+		}
+		
+		if (array_key_exists(WURFL_Configuration_Config::CAPABILITY_FILTER, $configuration)) {
+			$this->capabilityFilter = $configuration[WURFL_Configuration_Config::CAPABILITY_FILTER];
 		}
 		
 		if (array_key_exists(WURFL_Configuration_Config::LOG_DIR, $configuration)) {

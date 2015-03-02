@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -23,11 +23,10 @@
 class WURFL_Request_UserAgentNormalizer_Generic_BlackBerry implements WURFL_Request_UserAgentNormalizer_Interface  {
 
 	public function normalize($userAgent) {
-		// Normalize mixed-case BlackBerry
 		$userAgent = str_ireplace('blackberry', 'BlackBerry', $userAgent);
-		$index = strrpos($userAgent, "BlackBerry");
-		if ($index > 0 && strpos($userAgent, "AppleWebKit") === false) {
-			return substr($userAgent, $index);
+		$pos = strpos($userAgent, 'BlackBerry');
+		if ($pos !== false && $pos > 0) {
+			$userAgent = substr($userAgent, $pos);
 		}
 		return $userAgent;
 	}

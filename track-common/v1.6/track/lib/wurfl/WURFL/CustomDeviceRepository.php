@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -100,7 +100,7 @@ class WURFL_CustomDeviceRepository implements WURFL_DeviceRepository {
 	public function getDevice($deviceId) {
 		if (!isset($this->_deviceCache[$deviceId])) {
 			$device = $this->persistenceStorage->load($deviceId);
-			if (is_null($device)) {
+			if (!$device) {
 				throw new Exception("There is no device with ID [$deviceId] in the loaded WURFL Data");
 			}
 			$this->_deviceCache[$deviceId] = $device;

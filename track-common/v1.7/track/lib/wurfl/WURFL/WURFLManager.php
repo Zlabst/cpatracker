@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -89,7 +89,7 @@ class WURFL_WURFLManager {
 		WURFL_Handlers_Utils::reset();
 		if (WURFL_Configuration_ConfigHolder::getWURFLConfig()->isHighPerformance() && WURFL_Handlers_Utils::isDesktopBrowserHeavyDutyAnalysis($request->userAgent)) {
 			// This device has been identified as a web browser programatically, so no call to WURFL is necessary
-			return $this->_wurflService->getDevice(WURFL_Constants::GENERIC_WEB_BROWSER);
+			return $this->_wurflService->getDevice(WURFL_Constants::GENERIC_WEB_BROWSER, $request);
 		}
 		return $this->_wurflService->getDeviceForRequest($request);
 	}
@@ -98,14 +98,15 @@ class WURFL_WURFLManager {
 	 * Return a device for the given http request(user-agent..)
 	 *
 	 * @param array $httpRequest HTTP Request array (normally $_SERVER)
+     * @param bool $override_sideloaded_browser_ua
 	 * @return WURFL_CustomDevice device
 	 * @throws Exception if $httpRequest is not set
 	 */
-	public function getDeviceForHttpRequest($httpRequest) {
+	public function getDeviceForHttpRequest($httpRequest, $override_sideloaded_browser_ua = true) {
 		if (!isset($httpRequest)) {
 			throw new Exception("The $httpRequest parameter must be set.");
 		}
-		$request = $this->_requestFactory->createRequest($httpRequest);
+		$request = $this->_requestFactory->createRequest($httpRequest, $override_sideloaded_browser_ua);
 		return $this->getDeviceForRequest($request);
 	}
 	

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -40,7 +40,7 @@ class WURFL_Handlers_ChromeHandler extends WURFL_Handlers_Handler {
 	}
 	
 	public function applyConclusiveMatch($userAgent) {
-		$tolerance = WURFL_Handlers_Utils::indexOfOrLength('/', $userAgent, strpos($userAgent, 'Chrome'));
+		$tolerance = WURFL_Handlers_Utils::indexOfOrLength('.', $userAgent, strpos($userAgent, 'Chrome'));
 		return $this->getDeviceIDFromRIS($userAgent, $tolerance);
 	}
 	

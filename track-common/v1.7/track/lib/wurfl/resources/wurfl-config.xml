@@ -47,7 +47,7 @@ Caching is used to store requested devices so subsequent lookups are very fast
 
 <wurfl-config>
 	<wurfl>
-		<main-file>wurfl.zip</main-file>
+		<main-file>wurfl_1.5.3.xml</main-file>
 	</wurfl>
 	<allow-reload>true</allow-reload>
 	<match-mode>performance</match-mode>

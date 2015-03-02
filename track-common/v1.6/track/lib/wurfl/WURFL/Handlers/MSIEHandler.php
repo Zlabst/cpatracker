@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -31,54 +31,59 @@ class WURFL_Handlers_MSIEHandler extends WURFL_Handlers_Handler {
 	protected $prefix = "MSIE";
 	
 	public static $constantIDs = array(
-		'msie',
-		'msie_4',
-		'msie_5',
-		'msie_5_5',
-		'msie_6',
-		'msie_7',
-		'msie_8',
-		'msie_9',
+		0     => 'msie',
+		4     => 'msie_4',
+		5     => 'msie_5',
+		'5.5' => 'msie_5_5',
+		6     => 'msie_6',
+		7     => 'msie_7',
+		8     => 'msie_8',
+		9     => 'msie_9',
+		10    => 'msie_10',
+		11    => 'msie_11',
 	);
 	
 	public function canHandle($userAgent) {
 		if (WURFL_Handlers_Utils::isMobileBrowser($userAgent)) return false;
 		if (WURFL_Handlers_Utils::checkIfContainsAnyOf($userAgent, array('Opera', 'armv', 'MOTO', 'BREW'))) return false;
-		return WURFL_Handlers_Utils::checkIfStartsWith($userAgent, 'Mozilla') && WURFL_Handlers_Utils::checkIfContains($userAgent, 'MSIE');
+		
+		// IE 11 signature
+		$has_trident_rv = (WURFL_Handlers_Utils::checkIfContains($userAgent, 'Trident') && WURFL_Handlers_Utils::checkIfContains($userAgent, 'rv:'));
+		// IE < 11 signature
+		$has_msie = WURFL_Handlers_Utils::checkIfContains($userAgent, 'MSIE');
+		return ($has_msie || $has_trident_rv);
 	}
 	
 	public function applyConclusiveMatch($userAgent) {
 		$matches = array();
-		if(preg_match('/^Mozilla\/4\.0 \(compatible; MSIE (\d)\.(\d);/', $userAgent, $matches)){
-			if (WURFL_Configuration_ConfigHolder::getWURFLConfig()->isHighPerformance()) {
-				return WURFL_Constants::GENERIC_WEB_BROWSER;
+		if (preg_match('/^Mozilla\/5\.0 \(.+?Trident.+?; rv:(\d\d)\.(\d+)\)/', $userAgent, $matches)
+				|| preg_match('/^Mozilla\/[45]\.0 \(compatible; MSIE (\d+)\.(\d+);/', $userAgent, $matches)) {
+			
+			$major = (int)$matches[1];
+			$minor = (int)$matches[2];
+				
+			// MSIE 5.5 is handled specifically
+			if ($major == 5 && $minor == 5) {
+				return 'msie_5_5';
 			}
-			switch($matches[1]){
-				// cases are intentionally out of sequence for performance
-				case 7:
-					return 'msie_7';
-					break;
-				case 8:
-					return 'msie_8';
-					break;
-				case 9:
-					return 'msie_9';
-					break;
-				case 6:
-					return 'msie_6';
-					break;
-				case 4:
-					return 'msie_4';
-					break;
-				case 5:
-					return ($matches[2]==5)? 'msie_5_5': 'msie_5';
-					break;
-				default:
-					return 'msie';
-					break;
+				
+			// Look for version in constant ID array
+			if (array_key_exists($major, self::$constantIDs)) {
+				return self::$constantIDs[$major];
 			}
 		}
-		$tolerance = WURFL_Handlers_Utils::firstSlash($userAgent);
-		return $this->getDeviceIDFromRIS($userAgent, $tolerance);
+		
+		return $this->getDeviceIDFromRIS($userAgent, WURFL_Handlers_Utils::indexOfOrLength($userAgent, 'Trident'));
+	}
+	
+	public function applyRecoveryMatch($userAgent) {
+		if (WURFL_Handlers_Utils::checkIfContainsAnyOf($userAgent, array(
+			'SLCC1',
+			'Media Center PC',
+			'.NET CLR',
+			'OfficeLiveConnector',
+		))) return WURFL_Constants::GENERIC_WEB_BROWSER;
+		
+		return WURFL_Constants::NO_MATCH;
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * Copyright (c) 2012 ScientiaMobile, Inc.
+ * Copyright (c) 2014 ScientiaMobile, Inc.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Affero General Public License as
@@ -76,7 +76,7 @@ class WURFL_Storage_File extends WURFL_Storage_Base {
 
 	private function unwrap($value, $path) {
 		if ($value->isExpired()) {
-			unlink($path);
+			@unlink($path);
 			return null;
 		}
 		return $value->value();
@@ -107,35 +107,5 @@ class WURFL_Storage_File extends WURFL_Storage_Base {
 		return $path;
 	}
 
-
-}
-
-/**
- * Object for storing data
- * @package WURFL_Storage
- */
-class StorageObject {
-	private $value;
-	private $expiringOn;
-
-	public function __construct($value, $expire) {
-		$this->value = $value;
-		$this->expiringOn = ($expire === 0) ? $expire : time() + $expire;
-	}
-
-	public function value() {
-		return $this->value;
-	}
-
-	public function isExpired() {
-		if ($this->expiringOn === 0) {
-			return false;
-		}
-		return $this->expiringOn < time();
-	}
-
-	public function expiringOn() {
-		return $this->expiringOn;
-	}
 
 }

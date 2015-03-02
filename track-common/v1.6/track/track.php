@@ -58,7 +58,8 @@
             $persistenceDir = _CACHE_COMMON_PATH.'/wurfl-persistence';
             $cacheDir = _CACHE_COMMON_PATH.'/wurfl-cache';	
             $wurflConfig = new WURFL_Configuration_InMemoryConfig();
-            $wurflConfig->wurflFile(_TRACK_STATIC_PATH.'/wurfl/wurfl.zip');
+            
+            $wurflConfig->wurflFile(realpath(_TRACK_STATIC_PATH.'/wurfl/wurfl_1.5.3.xml'));
             $wurflConfig->matchMode('accuracy');
             $wurflConfig->allowReload(true);
             $wurflConfig->persistence('file', array('dir' => $persistenceDir));
