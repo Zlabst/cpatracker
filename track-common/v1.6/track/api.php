@@ -33,7 +33,6 @@ if($track_key != _SELF_TRACK_KEY) {
 
 $maxsize = 10000; // максимальный размер отдаваемых данных
 
-
 // Получение данных
 if($act == 'data_get') {
 	$type = rq('type');
@@ -44,10 +43,12 @@ if($act == 'data_get') {
 		$files = dir_files($path, $type);
 		$size = 0;
 		foreach($files as $f) {
-			$size += filesize($path . '/' . $f);
+			$full_name =  $path . '/' . $f;
+			$size += filesize($full_name);
 			// Прерываем выполение, если отдаётся больше максимального размера данных
 			if(!empty($out['data']) and $size >= $maxsize) break;
-			$out['data'][$f] = file_get_contents($path . '/' . $f);
+			
+			$out['data'][$f] = iconv('cp1251', 'utf8', file_get_contents($full_name));
 		}
 	}
 

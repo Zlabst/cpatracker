@@ -47,7 +47,7 @@ if($act == 'data_get') {
 			$size += filesize($path . '/' . $f);
 			// Прерываем выполение, если отдаётся больше максимального размера данных
 			if(!empty($out['data']) and $size >= $maxsize) break;
-			$out['data'][$f] = file_get_contents($path . '/' . $f);
+			$out['data'][$f] = iconv('cp1251', 'utf8', file_get_contents($path . '/' . $f));
 		}
 	}
 

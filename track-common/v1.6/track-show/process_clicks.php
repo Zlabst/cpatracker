@@ -430,7 +430,7 @@
 			}
 		}
 
-		$sql="insert into tbl_clicks SET
+		$sql="insert ignore into tbl_clicks SET
 				date_add='"._str($click_date)."', 
 				date_add_day='"._str($click_day)."', 
 				date_add_hour='"._str($click_hour)."', 
