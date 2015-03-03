@@ -124,6 +124,7 @@ if($limited_to) {
 			<ul class="dropdown-menu">
 			<li><a href="?act=reports&type=targetreport&subtype=<?php echo _e($main_type);?>&group_by=country&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Страна</a></li>
 			<li><a href="?act=reports&type=targetreport&subtype=<?php echo _e($main_type);?>&group_by=city&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Город</a></li>
+                        <li><a href="?act=reports&type=targetreport&subtype=<?php echo _e($main_type);?>&group_by=ip&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">IP-адрес</a></li>
 			<li><a href="?act=reports&type=targetreport&subtype=<?php echo _e($main_type);?>&group_by=region&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Регион</a></li>			
 			<li class="divider"></li>
 			<li><a href="?act=reports&type=targetreport&subtype=<?php echo _e($main_type);?>&group_by=isp&limited_to=<?php echo _e($limited_to);?>&from=<?php echo $from?>&to=<?php echo $to?>">Провайдер</a></li>			

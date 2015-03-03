@@ -128,7 +128,7 @@ function get_clicks_rows($params, $start = 0, $limit = 0, $campaign_params, $cli
 
     // Дополнительные поля для режима популярных параметров
     if ($params['mode'] == 'popular' or 1) {
-	$select = ', out_id, source_name, ads_name, referer, user_os, user_platform, user_browser, country, state, city, isp, campaign_param1, campaign_param2, campaign_param3, campaign_param4, campaign_param5 ';
+	$select = ', out_id, source_name, ads_name, referer, user_os, user_ip, user_platform, user_browser, country, state, city, isp, campaign_param1, campaign_param2, campaign_param3, campaign_param4, campaign_param5 ';
 	for ($i = 1; $i <= 15; $i++) {
 	    $select .= ', click_param_value' . $i . ' ';
 	}
@@ -1105,6 +1105,7 @@ $group_types = array(
     'country' => array('Страна', 'Не определена', 'Страны'),
     'state' => array('Регион', 'Не определен', 'Регионы'),
     'city' => array('Город', 'Не определен', 'Города'),
+    'user_ip' => array('IP-адрес', 'Не определен', 'IP-адреса'),
     'isp' => array('Провайдер', 'Не определен', 'Провайдеры'),
     'campaign_param1' => array('Параметр ссылки #1', 'Не определен', 'Параметр ссылки #1'),
     'campaign_param2' => array('Параметр ссылки #2', 'Не определен', 'Параметр ссылки #2'),
