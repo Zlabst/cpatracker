@@ -281,6 +281,7 @@ function get_clicks_report_grouped2($params) {
 
     $rows = array(); // все клики за период
     $data = array(); // сгруппированные данные
+    $data2 = array();
     $arr_dates = array(); // даты для отчёта
 
     if ($params['part'] == 'month') {
@@ -452,7 +453,7 @@ function get_clicks_report_grouped2($params) {
         // Вынесен в отдельное условие из-за особой обработки по дням и месяцам
         if ($params['mode'] == 'popular') {
 
-            $data2 = array();
+            //$data2 = array();
 
             foreach ($rows as $r) {
                 foreach ($group_types as $k => $v) {
@@ -495,7 +496,6 @@ function get_clicks_report_grouped2($params) {
                     }
                 }
             }
-
             // Режим показа группировки офферов и лэндингов
             // Тоже вынесен в отдельное условие из-за особой обработки по дням и месяцам
         } elseif ($params['mode'] == 'lp_offers') {
@@ -685,7 +685,13 @@ function get_clicks_report_grouped2($params) {
                 $data[$k]['popular'] = current(array_keys($v));
             }
         }
-
+        /*
+        if($_SERVER['REMOTE_ADDR'] == '178.121.255.182') {
+                    	dmp($data);
+                    	dmp($data2);
+                    	//echo $k .' - '. $name . '<br />';
+                    }
+		*/
         // Убираем из популярных "не определено", отфильрованные значения и если 100%
 
         foreach ($data as $k => $r) {
@@ -1076,7 +1082,7 @@ $group_types = array(
     'country' => array('Страна', 'Не определена', 'Страны'),
     'state' => array('Регион', 'Не определен', 'Регионы'),
     'city' => array('Город', 'Не определен', 'Города'),
-    'user_ip' => array('IP-адрес', 'Не определен', 'IP-адреса'),
+    'user_ip' => array('IP адрес', 'Не определен', 'IP адреса'),
     'isp' => array('Провайдер', 'Не определен', 'Провайдеры'),
     'campaign_param1' => array('Параметр ссылки #1', 'Не определен', 'Параметр ссылки #1'),
     'campaign_param2' => array('Параметр ссылки #2', 'Не определен', 'Параметр ссылки #2'),

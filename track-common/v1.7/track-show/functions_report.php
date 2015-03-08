@@ -282,6 +282,7 @@ function get_clicks_report_grouped2($params) {
 
     $rows = array(); // все клики за период
     $data = array(); // сгруппированные данные
+    $data2 = array();
     $arr_dates = array(); // даты для отчёта
 
     if ($params['part'] == 'month') {
@@ -452,9 +453,6 @@ function get_clicks_report_grouped2($params) {
 	// Режим популярных значений
 	// Вынесен в отдельное условие из-за особой обработки по дням и месяцам
 	if ($params['mode'] == 'popular') {
-
-	    $data2 = array();
-
 	    foreach ($rows as $r) {
 		foreach ($group_types as $k => $v) {
 		    $name = param_key($r, $k);
@@ -1105,7 +1103,7 @@ $group_types = array(
     'country' => array('Страна', 'Не определена', 'Страны'),
     'state' => array('Регион', 'Не определен', 'Регионы'),
     'city' => array('Город', 'Не определен', 'Города'),
-    'user_ip' => array('IP-адрес', 'Не определен', 'IP-адреса'),
+    'user_ip' => array('IP адрес', 'Не определен', 'IP адреса'),
     'isp' => array('Провайдер', 'Не определен', 'Провайдеры'),
     'campaign_param1' => array('Параметр ссылки #1', 'Не определен', 'Параметр ссылки #1'),
     'campaign_param2' => array('Параметр ссылки #2', 'Не определен', 'Параметр ссылки #2'),

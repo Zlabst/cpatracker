@@ -2,8 +2,8 @@
 if (!$include_flag) {exit(); }
 // Календарик выбора месяцев
 
-$fromF = date('m.Y', strtotime($var['from']));
-$toF   = date('m.Y', strtotime($var['to']));
+$fromF = date('m.Y', strtotime($var['report_params']['from']));
+$toF   = date('m.Y', strtotime($var['report_params']['to']));
 
 echo '<div style="width: 240px; float: left; margin-top: 18px; margin-left: 5px;">
     <div class="input-group">                          
