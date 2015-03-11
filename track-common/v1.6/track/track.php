@@ -1,11 +1,10 @@
 <?php
 	ob_start();
-	
+
 	require _TRACK_COMMON_PATH . '/functions.php';
-	
+
 	$settings_file = _TRACK_SETTINGS_PATH . '/settings.php';
-	
- 
+
 	$str=file_get_contents($settings_file);
 	$str=str_replace('<?php exit(); ?>', '', $str);
 	$arr_settings=unserialize($str);
@@ -17,6 +16,17 @@
 	{
 		function remove_tab($str){
 			return str_replace ("\t", ' ', $str);
+		}
+	}
+	if (!function_exists('detector_cp1251')) {
+		function detector_cp1251($str) {
+			$tmp = str_replace(array('Р', 'ћ', 'Ђ', 'є', 'Ѓ', '°'), '#', $str);
+			$l1 = mb_strlen($tmp, 'UTF-8');
+			$l2 = mb_strlen(str_replace('#', '', $tmp), 'UTF-8');
+			if($l1 - $l2 > $l1 / 3) {
+				return iconv('UTF-8', 'cp1251', $str);
+			}
+			return $str;
 		}
 	}
 	
@@ -144,7 +154,7 @@
 	}
 
 	// Remove trailing slash
-	$track_request=rtrim($_REQUEST['track_request'], '/');
+	$track_request=detector_cp1251(rtrim($_REQUEST['track_request'], '/'));
 	$track_request=explode ('/', $track_request);
 
 	$str='';
@@ -261,7 +271,7 @@
 		}
           
           $flag = false;
-          foreach ($arr_rules as $key  => $value) {
+          foreach ($arr_rules as $key => $value) {
               $relevant_params = array(); $relevant_param_order = 0;
               foreach ($value as $internal_key => $internal_value) {
               if($key == 'get') {

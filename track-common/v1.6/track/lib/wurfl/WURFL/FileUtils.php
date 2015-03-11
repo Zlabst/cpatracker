@@ -88,6 +88,8 @@ class WURFL_FileUtils {
 			$mtime = ($mtime > 0)? $mtime: time();
 			@chmod($path, 0777);
 			@touch($path, $mtime);
+		} else {
+			die('WRITE ERROR IN ' . $path);
 		}
 	}
 	
