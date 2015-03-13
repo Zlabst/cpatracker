@@ -41,5 +41,13 @@
         <div id="footer">
             <?php echo tpx('footer'); ?>
         </div>
+        <?
+        	if(!empty($_GET['debug'])) {
+        		foreach($sql_log as $q)	{
+        			echo $q.'<br>';
+        		}
+        		echo 'Total: <b>' .$sql_time. '</b>';
+        	}
+        ?>
     </body>
 </html>

@@ -49,11 +49,11 @@ function get_visitors_flow_data($filter = '', $offset = 0, $limit = 20, $date = 
 		" . ($date ? "and CONVERT_TZ(tbl_clicks.date_add, '+00:00', '" . _str($timezone_shift) . "') between STR_TO_DATE('" . $date . " 00:00:00', '%Y-%m-%d %H:%i:%s') and STR_TO_DATE('" . $date . " 23:59:59', '%Y-%m-%d %H:%i:%s')" : '' ) . "
 		order by date_add desc limit $offset, $limit";
 
-    $result = mysql_query($sql) or die(mysql_error());
+    $result = db_query($sql) or die(mysql_error());
     $arr_data = array();
 
     $q = "SELECT FOUND_ROWS() as `cnt`";
-    $total = ap(mysql_fetch_assoc(mysql_query($q)), 'cnt');
+    $total = ap(mysql_fetch_assoc(db_query($q)), 'cnt');
 
     while ($row = mysql_fetch_assoc($result)) {
         $row['td'] = get_relative_mysql_time($row['td']);
@@ -169,7 +169,7 @@ function get_clicks_rows($params, $start = 0, $limit = 0, $campaign_params, $cli
     $rs = db_query($q);
 
     $q = "SELECT FOUND_ROWS() as `cnt`";
-    $total = ap(mysql_fetch_assoc(mysql_query($q)), 'cnt');
+    $total = ap(mysql_fetch_assoc(db_query($q)), 'cnt');
 
     while ($r = mysql_fetch_assoc($rs)) {
         $rows[$r['id']] = $r;

@@ -698,7 +698,7 @@ function check_settings()
 function check_user_credentials ($email, $password)
 {
 	$sql="select id, email, password, salt from tbl_users where email='".mysql_real_escape_string($email)."'";
-	$result=mysql_query ($sql);
+	$result=db_query ($sql);
 	$row=mysql_fetch_assoc($result);
 
 	if ($row['id']>0)
@@ -721,7 +721,7 @@ function is_auth()
 		$user_password=$_COOKIE['cpatracker_auth_password'];
 
 		$sql="select id, email, password, salt from tbl_users where email='".mysql_real_escape_string($user_email)."'";
-		$result=mysql_query ($sql);
+		$result=db_query ($sql);
 		$row=mysql_fetch_assoc($result);
 
 		if ($row['id']>0)
@@ -740,7 +740,7 @@ function is_auth()
 		else
 		{
 			$sql="select count(id) as cnt from tbl_users";
-			$result=mysql_query ($sql);
+			$result=db_query ($sql);
 			$row=mysql_fetch_assoc($result);
 			if ($row['cnt']==0)
 			{
@@ -757,7 +757,7 @@ function is_auth()
 	else
 	{
 		$sql="select count(id) as cnt from tbl_users";
-		$result=mysql_query ($sql);
+		$result=db_query ($sql);
 		$row=mysql_fetch_assoc($result);
 		if ($row['cnt']==0)
 		{
@@ -778,7 +778,7 @@ function register_admin ($email, $password)
 	$salt=substr(md5(rand()),0,7);
 	$salted_password=md5($salt.$password);
 	$sql="insert into tbl_users (email, password, salt) values ('".mysql_real_escape_string($email)."', '".mysql_real_escape_string($salted_password)."', '".mysql_real_escape_string($salt)."')";
-	mysql_query($sql);
+	db_query($sql);
 	return $salted_password;
 }
 
@@ -798,7 +798,7 @@ function get_rules()
 {
 	$arr_rules=array();
 	$sql="select * from tbl_rules where status=0 order by date_add desc, id asc";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	while ($row=mysql_fetch_assoc($result))
 	{
 		$arr_rules[$row['id']]=$row;
@@ -811,7 +811,7 @@ function get_sources()
 	global $source_config;
 	$arr_sources=array();
 	$sql="select distinct source_name from tbl_clicks where source_name!='' order by source_name asc";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	while ($row=mysql_fetch_assoc($result))
 	{
 		$source_name = $row['source_name'];
@@ -825,7 +825,7 @@ function get_campaigns()
 {
 	$arr_campaigns=array();
 	$sql="select distinct campaign_name from tbl_clicks where campaign_name!='' order by campaign_name asc";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	while ($row=mysql_fetch_assoc($result))
 	{
 		$arr_campaigns[]=$row;
@@ -837,7 +837,7 @@ function get_ads()
 {
 	$arr_ads=array();
 	$sql="select distinct ads_name from tbl_clicks where ads_name!='' order by ads_name asc";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	while ($row=mysql_fetch_assoc($result))
 	{
 		$arr_ads[]=$row;
@@ -856,11 +856,11 @@ function get_last_sales($filter_by='')
 	}
 	
 	$sql="select tbl_conversions.*, CONVERT_TZ(tbl_conversions.date_add, '+00:00', '"._str($timezone_shift)."') as date_add, tbl_conversions.id as conversion_id, tbl_clicks.id as click_id, tbl_clicks.country, tbl_clicks.source_name, tbl_clicks.campaign_name, tbl_clicks.ads_name, tbl_clicks.referer, tbl_offers.offer_name from tbl_conversions left join tbl_clicks on tbl_conversions.subid=tbl_clicks.subid left join tbl_offers on tbl_offers.id=tbl_clicks.out_id where 0=0 {$filter_by_str} order by tbl_conversions.date_add desc limit 50";
-	$result=mysql_query($sql) or die(mysql_error());
+	$result=db_query($sql) or die(mysql_error());
 
 	while ($row=mysql_fetch_assoc($result))
 	{
-                $add_r = mysql_query('SELECT * FROM `tbl_postback_params` WHERE `conv_id` = '.$row['id']);
+                $add_r = db_query('SELECT * FROM `tbl_postback_params` WHERE `conv_id` = '.$row['id']);
                 while ($add_f = mysql_fetch_assoc($add_r)) {
                     $row['add'][] = $add_f;
                 }
@@ -902,7 +902,7 @@ function get_current_day ($offset='')
 function get_rule_description($rule_id)
 {
 	$sql="select link_name from tbl_rules where id='".mysql_real_escape_string($rule_id)."'";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	$row=mysql_fetch_assoc($result);
 	return $row['link_name'];
 }
@@ -910,7 +910,7 @@ function get_rule_description($rule_id)
 function get_out_description($out_id)
 {
 	$sql="select offer_name, offer_tracking_url from tbl_offers where id='".mysql_real_escape_string($out_id)."'";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	$row=mysql_fetch_assoc($result);
 	$result=array($out_id, '');
 	if ($out_id>0)
@@ -929,7 +929,7 @@ function get_offers_list($skip_networks_offers=true)
 	
 	if ($skip_networks_offers){$where=' and tbl_offers.network_id=0';}else{$where='';}
 	$sql="select tbl_offers.*, tbl_links_categories_list.category_caption from tbl_offers left join tbl_links_categories on tbl_links_categories.offer_id=tbl_offers.id left join tbl_links_categories_list on tbl_links_categories_list.id=tbl_links_categories.category_id where tbl_offers.status=0 {$where} order by tbl_links_categories_list.category_caption asc, tbl_offers.date_add desc";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	while ($row=mysql_fetch_assoc($result)){
 		$arr_offers[]=$row;
 	}
@@ -1086,7 +1086,7 @@ function cache_rules_update() {
 	// Connect to DB
 	mysql_connect($_DB_HOST, $_DB_LOGIN, $_DB_PASSWORD) or die("Could not connect: " . mysql_error());
 	mysql_select_db($_DB_NAME);
-	mysql_query('SET NAMES utf8');
+	db_query('SET NAMES utf8');
 	
 	$rules = array();
 	$out   = array(
@@ -1100,7 +1100,7 @@ function cache_rules_update() {
 		left join tbl_rules_items on tbl_rules_items.rule_id=tbl_rules.id 
 		where tbl_rules.status=0 and tbl_rules_items.status=0 
 		order by tbl_rules_items.parent_id, tbl_rules_items.id";
-	if($result = mysql_query($sql) and mysql_num_rows($result) > 0) {
+	if($result = db_query($sql) and mysql_num_rows($result) > 0) {
 		while ($row=mysql_fetch_assoc($result)) {
 			//$rule_id = $row['rule_id'];
 			//$arr_items[$row['id']] = $row;
@@ -1133,13 +1133,13 @@ function cache_set_rule($rule_name) {
 	// Connect to DB
 	mysql_connect($_DB_HOST, $_DB_LOGIN, $_DB_PASSWORD) or die("Could not connect: " . mysql_error());
 	mysql_select_db($_DB_NAME);
-	mysql_query('SET NAMES utf8');
+	db_query('SET NAMES utf8');
 
 	$sql = "select tbl_rules.id as rule_id, tbl_rules_items.id, tbl_rules_items.parent_id, tbl_rules_items.type, tbl_rules_items.value from tbl_rules left join tbl_rules_items on tbl_rules_items.rule_id=tbl_rules.id 
 		where tbl_rules.link_name='" . mysql_real_escape_string($rule_name) . "' 
 			and tbl_rules.status=0 and tbl_rules_items.status=0 
 		order by tbl_rules_items.parent_id, tbl_rules_items.id";
-	$result = mysql_query($sql);
+	$result = db_query($sql);
 	
 	$arr_items=array();
 	$rule_id=0;
@@ -1178,7 +1178,7 @@ function get_links_categories_list()
 {
 	// Get links count for categories
 	$sql="select tbl_links_categories.category_id, count(tbl_offers.id) as cnt from tbl_offers left join tbl_links_categories on tbl_links_categories.offer_id=tbl_offers.id where tbl_offers.status=0 and tbl_offers.network_id=0 group by tbl_links_categories.category_id";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	$arr_categories_count=array();
 	while ($row=mysql_fetch_assoc($result))
 	{
@@ -1193,7 +1193,7 @@ function get_links_categories_list()
 	}
 
 	$sql="SELECT * FROM `tbl_links_categories_list` where status=0 order by category_type, category_caption";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	$arr_data=array();
 	while ($row=mysql_fetch_assoc($result))
 	{
@@ -1205,19 +1205,19 @@ function get_links_categories_list()
 function import_sale_info ($lead_type, $amount, $subid)
 {
 	$sql="select id from tbl_conversions where subid='"._str($subid)."' and type='"._str($lead_type)."'";
-	$result=mysql_query($sql) or die(mysql_error());
+	$result=db_query($sql) or die(mysql_error());
 	$row=mysql_fetch_assoc($result);
 
 	if ($row['id']>0)
 	{
 		$id=$row['id'];
 		$sql="update tbl_conversions set profit='"._str($amount)."', date_add=NOW() where id='"._str($id)."'";
-		mysql_query($sql) or die(mysql_error());
+		db_query($sql) or die(mysql_error());
 	}
 	else
 	{
 		$sql="insert into tbl_conversions (profit, subid, date_add, type) values ('"._str($amount)."', '"._str($subid)."', NOW(), '"._str($lead_type)."') ON DUPLICATE KEY UPDATE `date_add` = NOW()";
-		mysql_query($sql) or die(mysql_error());
+		db_query($sql) or die(mysql_error());
 	}
 
 	switch ($lead_type) 
@@ -1230,7 +1230,7 @@ function import_sale_info ($lead_type, $amount, $subid)
 			$sql="update tbl_clicks set is_lead='1' where subid='"._str($subid)."'";		
 		break;
 	}
-	mysql_query($sql) or die(mysql_error());			
+	db_query($sql) or die(mysql_error());			
 
 	return; 
 }
@@ -1238,7 +1238,7 @@ function import_sale_info ($lead_type, $amount, $subid)
 function import_hasoffers_links ($network_id)
 {
 	$sql="select network_api_url, api_key from tbl_cpa_networks where id='".mysql_real_escape_string($network_id)."'";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	$row=mysql_fetch_assoc($result);
 	if ($row['api_key']=='')
 	{
@@ -1358,7 +1358,7 @@ function add_offer ($offer_info)
 		}
 		
 		$sql="select id from tbl_offers where network_id='".mysql_real_escape_string($offer_info['network_id'])."' and offer_id='".mysql_real_escape_string($offer_info['offer_id'])."'";
-		$result=mysql_query($sql);
+		$result=db_query($sql);
 		$row=mysql_fetch_assoc($result);
 		if ($row['id']>0)
 		{
@@ -1382,29 +1382,29 @@ function add_offer ($offer_info)
 	'".mysql_real_escape_string($offer_info['offer_comment'])."',
 	NOW()
 	)";
-	mysql_query($sql);
+	db_query($sql);
 	return array(true);		
 }
 
 function delete_sale ($click_id, $conversion_id, $type)
 {
 	$sql="delete from tbl_conversions where id='"._str($conversion_id)."' and type='"._str($type)."'";
-	mysql_query($sql);
+	db_query($sql);
 	switch ($type) 
 	{
 		case 'lead':
 			$sql="update tbl_clicks set is_lead='0' where id='"._str($click_id)."'";
-			mysql_query($sql);
+			db_query($sql);
 		break;
 		
 		case 'sale':
 			$sql="update tbl_clicks set is_sale='0', conversion_price_main='0' where id='"._str($click_id)."'";
-			mysql_query($sql);
+			db_query($sql);
 		break;
 		
 		default:
 			$sql="update tbl_clicks set is_lead='0', is_sale='0', conversion_price_main='0' where id='"._str($click_id)."'";
-			mysql_query($sql);
+			db_query($sql);
 	}
 	echo $sql;
 
@@ -1415,15 +1415,15 @@ function delete_rule($rule_id)
 {
 	// Get rule name
 	$sql="select id, link_name from tbl_rules where id='"._str($rule_id)."'";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	$row=mysql_fetch_assoc($result);
 	if ($row['id']>0)
 	{
 		$sql="update tbl_rules set status='1' where id='"._str($rule_id)."'";
-		mysql_query($sql);
+		db_query($sql);
 
 		$sql="update tbl_rules_items set status='1' where rule_id='"._str($rule_id)."'";
-		mysql_query($sql);
+		db_query($sql);
 
 		// Remove rule from cache	
 		$rule_hash=md5 ($row['link_name']);
@@ -1447,10 +1447,10 @@ function delete_rule($rule_id)
 function restore_rule($rule_id)
 {
 	$sql="update tbl_rules set status='0' where id='"._str($rule_id)."'";
-	mysql_query($sql);
+	db_query($sql);
 
     $sql="update tbl_rules_items set status='0' where rule_id='"._str($rule_id)."'";
-    mysql_query($sql);
+    db_query($sql);
 }
 
 
@@ -1742,7 +1742,7 @@ function get_excel_report ($date)
 	$timezone_shift=get_current_timezone_shift();
 	$sql="select tbl_offers.offer_name, CONVERT_TZ(tbl_clicks.date_add, '+00:00', '"._str($timezone_shift)."') as date_add, tbl_clicks.user_ip, tbl_clicks.user_agent, tbl_clicks.user_os, tbl_clicks.user_platform, tbl_clicks.user_browser, tbl_clicks.country, tbl_clicks.subid, tbl_clicks.source_name, tbl_clicks.campaign_name, tbl_clicks.ads_name, tbl_clicks.referer, tbl_clicks.conversion_price_main from tbl_clicks left join tbl_offers on tbl_offers.id=tbl_clicks.out_id where CONVERT_TZ(tbl_clicks.date_add, '+00:00', '"._str($timezone_shift)."') BETWEEN '".mysql_real_escape_string($date)." 00:00:00' AND '".mysql_real_escape_string($date)." 23:59:59'";
 
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	$arr_data=array();
 	while ($row=mysql_fetch_assoc($result))
 	{
@@ -1754,7 +1754,7 @@ function get_excel_report ($date)
 function get_timezone_settings()
 {
 	$sql="select tbl_timezones.* from tbl_timezones where tbl_timezones.status=0 order by tbl_timezones.id asc";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	$arr_data=array();
 	while ($row=mysql_fetch_assoc($result))
 	{
@@ -1767,7 +1767,7 @@ function get_current_timezone_shift($simple = false)
 {
 	$timezone_shift='+00:00';
 	$sql="select tbl_timezones.timezone_offset_h from tbl_timezones where tbl_timezones.status=0 and tbl_timezones.is_active=1";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	$row=mysql_fetch_assoc($result);
 	
 	if($simple) {
@@ -1793,10 +1793,10 @@ function change_current_timezone($id)
 	if (($id+0)>0)
 	{
 		$sql="update tbl_timezones set is_active=0";
-		mysql_query($sql);
+		db_query($sql);
 
 		$sql="update tbl_timezones set is_active=1 where id='".mysql_real_escape_string($id)."'";
-		mysql_query($sql);			
+		db_query($sql);			
 	}
 	else
 	{
@@ -1808,15 +1808,15 @@ function add_timezone($name, $offset_h)
 {
 	if (strlen($name)==0 || strlen($offset_h)==0){return;}
 	$sql="insert into tbl_timezones (timezone_name, timezone_offset_h) values ('".mysql_real_escape_string($name)."', '".mysql_real_escape_string($offset_h)."')";
-	mysql_query($sql);
+	db_query($sql);
 
 	$sql="select count(id) as cnt from tbl_timezones where status=0";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	$row=mysql_fetch_assoc($result);		
 	if ($row['cnt']==1)
 	{
 		$sql="update tbl_timezones set is_active=1 where status=0";
-		mysql_query($sql);
+		db_query($sql);
 	}
 }
 
@@ -1824,30 +1824,30 @@ function update_timezone($name, $offset_h, $id)
 {
 	if (strlen($name)==0 || strlen($offset_h)==0 || strlen($id)==0 || $id<=0){return;}
 	$sql="update tbl_timezones set timezone_name='".mysql_real_escape_string($name)."', timezone_offset_h='".mysql_real_escape_string($offset_h)."' where id='".mysql_real_escape_string($id)."'";
-	mysql_query($sql);		
+	db_query($sql);		
 }
 
 function delete_timezone($id)
 {
 	if (strlen($id)==0 || $id<=0){return;}
 	$sql="select is_active from tbl_timezones where id='".mysql_real_escape_string($id)."'";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	$row=mysql_fetch_assoc($result);		
 	$was_active=($row['is_active']==1);
 
 	$sql="update tbl_timezones set status=1, is_active=0 where id='".mysql_real_escape_string($id)."'";
-	mysql_query($sql);
+	db_query($sql);
 
 	if ($was_active)
 	{
 		$sql="select id from tbl_timezones where status=0 order by id asc limit 1";
-		$result=mysql_query($sql);
+		$result=db_query($sql);
 		$row=mysql_fetch_assoc($result);		
 		$id=$row['id'];		
 		if ($id>0)
 		{
 			$sql="update tbl_timezones set is_active=1 where id='$id'";
-			mysql_query($sql);
+			db_query($sql);
 		}
 	}		
 }
@@ -1862,7 +1862,7 @@ function get_rules_offers()
 		left join tbl_links_categories_list on tbl_links_categories_list.id=tbl_links_categories.category_id 
 		where tbl_offers.status=0 
 		order by tbl_links_categories_list.category_caption asc, tbl_offers.date_add desc";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	while ($row=mysql_fetch_assoc($result))
 	{
     	$arr_offers[$row['id']]=$row;
@@ -1874,7 +1874,7 @@ function get_rules_list($arr_offers)
 {
 	$arr_rules=array();
 	$sql="SELECT tbl_rules.id AS rule_id, tbl_rules.link_name, tbl_rules_items.id AS rule_item_id, tbl_rules_items.parent_id, tbl_rules_items.type, tbl_rules_items.value FROM tbl_rules LEFT JOIN tbl_rules_items ON tbl_rules_items.rule_id = tbl_rules.id WHERE tbl_rules.status = 0 AND tbl_rules_items.status = 0 ORDER BY rule_id desc, tbl_rules_items.parent_id ASC, rule_item_id ASC";
-	$result=mysql_query($sql);
+	$result=db_query($sql);
 	$cur_rule_id=''; $i=0;
 	while ($row=mysql_fetch_assoc($result))
 	{
@@ -2321,7 +2321,7 @@ function to_log($name, $data) {
 function delete_offer($id, $delete = 1) {
 	if($id > 0) {
 		$sql="update tbl_offers set status='" . $delete . "' where id='" . mysql_real_escape_string($id) . "'";	
-		mysql_query($sql);
+		db_query($sql);
 	}
 }
 
@@ -2336,20 +2336,20 @@ function edit_offer($category_id, $link_name, $link_url) {
 		
 		// Add link
 		$sql="insert into tbl_offers (offer_name, offer_tracking_url, date_add) values('".mysql_real_escape_string($link_name)."', '".mysql_real_escape_string($link_url)."', NOW())";
-		mysql_query($sql);
+		db_query($sql);
 		$link_id = mysql_insert_id();
 
 		// Set link name instead of empty name
 		if ($link_name == '') {
  			$link_name="Ссылка #{$link_id}";
  			$sql="update tbl_offers set offer_name='" . mysql_real_escape_string($link_name) . "' where id='" . mysql_real_escape_string($link_id) . "'";
- 			mysql_query($sql);
+ 			db_query($sql);
 		}
 		
 		if ($category_id!='') {
 			// Add link to selected category
 			$sql="insert into tbl_links_categories (category_id, offer_id) values ('" . mysql_real_escape_string($category_id) . "', '" . mysql_real_escape_string($link_id) . "')";
-			mysql_query($sql);
+			db_query($sql);
  		}
 	}
 	
@@ -2365,7 +2365,7 @@ function cache_links_update($id = 0) {
 	// Connect to DB
 	mysql_connect($_DB_HOST, $_DB_LOGIN, $_DB_PASSWORD) or die("Could not connect: " .mysql_error());
 	mysql_select_db($_DB_NAME);
-	mysql_query('SET NAMES utf8');
+	db_query('SET NAMES utf8');
 
 	$sql = "select id, offer_tracking_url 
 		from tbl_offers
@@ -2374,7 +2374,7 @@ function cache_links_update($id = 0) {
 	
 	$links = array();
 	
-	if($result = mysql_query($sql) and mysql_num_rows($result) > 0) {
+	if($result = db_query($sql) and mysql_num_rows($result) > 0) {
 		while($row = mysql_fetch_assoc($result)) {
 			$links[$row['id']] = $row['offer_tracking_url'];
 		}
@@ -2598,7 +2598,7 @@ function tracklink() {
 
 function mysql_now() {
 	$q  = "SELECT NOW() as `now`";
-	$rs = mysql_query($q);
+	$rs = db_query($q);
 	$r  = mysql_fetch_assoc($rs);
 	return $r['now'];
 }
