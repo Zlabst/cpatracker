@@ -25,6 +25,19 @@
 		}
 	}
 	
+	if (!function_exists('detector_cp1251')) {
+		function detector_cp1251($str) {
+			$tmp = str_replace(array('Р', 'ћ', 'Ђ', 'є', 'Ѓ', '°'), '#', $str);
+			$l1 = mb_strlen($tmp, 'UTF-8');
+			$l2 = mb_strlen(str_replace('#', '', $tmp), 'UTF-8');
+			if($l1 - $l2 > $l1 / 3) {
+				return iconv('UTF-8', 'cp1251', $str);
+			}
+			return $str;
+		}
+	}
+
+	
 	if (!function_exists('add_parent_subid')) {
 		function add_parent_subid($domain, $subid) {
 			$unique = 0;
@@ -148,7 +161,7 @@
 	}
 
 	// Remove trailing slash
-	$track_request=rtrim($_REQUEST['track_request'], '/');
+	$track_request=detector_cp1251(rtrim($_REQUEST['track_request'], '/')); 
 	$track_request=explode ('/', $track_request);
 
 	$str='';
@@ -232,6 +245,7 @@
         if($requestingDevice && (($requestingDevice->getCapability('is_wireless_device') == 'true') || ($requestingDevice->getCapability('is_tablet') == 'true')))
         {               
 			$user_params['os'] = $requestingDevice->getCapability('device_os');
+			$user_params['device'] = $requestingDevice->getCapability('brand_name') . '; ' . $requestingDevice->getCapability('model_name');
 			$user_params['platform']= $requestingDevice->getCapability('brand_name');
 			$user_params['browser'] = $requestingDevice->getCapability('mobile_browser');                 
 		}
@@ -241,6 +255,7 @@
 			$result = $parser->parse($user_params['agent']);
 			$user_params['browser'] = $result->ua->family;
 			$user_params['os'] = $result->os->family;                
+			$user_params['device'] = '';
 			$user_params['platform'] = '';
         }
         
@@ -293,6 +308,14 @@
                	   
                } elseif($key == 'os' and substr($internal_value['value'], 0, 8) == 'DEFINED_') {
                	   if(check_platform($internal_value['value'], $user_params['os'])) {
+               	   	   $relevant_params[] = $internal_value;
+               	   	   if(!$relevant_param_order){$relevant_param_order = $internal_value['order'];}else{
+                         if($relevant_param_order>$internal_value['order']){$relevant_param_order = $internal_value['order'];}
+                       }
+					   $flag = true;
+               	   }
+               } elseif($key == 'device' and substr($internal_value['value'], 0, 8) == 'DEFINED_') {
+               	   if(check_device($internal_value['value'], $user_params['device'])) {
                	   	   $relevant_params[] = $internal_value;
                	   	   if(!$relevant_param_order){$relevant_param_order = $internal_value['order'];}else{
                          if($relevant_param_order>$internal_value['order']){$relevant_param_order = $internal_value['order'];}

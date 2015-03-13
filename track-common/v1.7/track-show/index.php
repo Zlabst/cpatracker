@@ -324,7 +324,7 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
         case 'get_rules_json':
 
             $arr_offers = get_rules_offers();
-            $condition_types = array('geo_country' => 'Страна', 'lang' => 'Язык', 'referer' => 'Реферер', 'city' => 'Город', 'region' => 'Регион', 'provider' => 'Провайдер', 'ip' => 'IP адрес', 'os' => 'ОС', 'platform' => 'Платформа', 'browser' => 'Браузер', 'agent' => 'User-agent', 'get' => 'GET');
+            $condition_types = array('geo_country' => 'Страна', 'lang' => 'Язык', 'referer' => 'Реферер', 'city' => 'Город', 'region' => 'Регион', 'provider' => 'Провайдер', 'ip' => 'IP адрес', 'os' => 'ОС', 'platform' => 'Платформа', 'browser' => 'Браузер', 'agent' => 'User-agent', 'get' => 'GET', 'device' => 'Устройство');
             $arr_rules = get_rules_list($arr_offers);
             $arr = array();
             $i = 0;

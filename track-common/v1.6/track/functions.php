@@ -70,6 +70,16 @@ function get_platform($os) {
 	return $p;
 }
 
+function check_device($mask, $device) {
+	if($mask == 'DEFINED_IPAD') {
+		return (substr($device, 0, 11) == 'Apple; iPad') ? true : false;
+	}
+	if($mask == 'DEFINED_IPHONE') {
+		return (substr($device, 0, 13) == 'Apple; iPhone') ? true : false;
+	}
+	return false;
+}
+
 function check_platform($mask, $platform) {
 	$platforms = array(
 		'DEFINED_IOS' => array(

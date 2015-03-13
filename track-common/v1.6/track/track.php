@@ -1,10 +1,16 @@
 <?php
+	
 	ob_start();
-
+	/*
+	error_reporting(E_ALL);
+	ini_set('display_errors', 1);	
+	*/
+	
 	require _TRACK_COMMON_PATH . '/functions.php';
-
+	
 	$settings_file = _TRACK_SETTINGS_PATH . '/settings.php';
-
+	
+ 
 	$str=file_get_contents($settings_file);
 	$str=str_replace('<?php exit(); ?>', '', $str);
 	$arr_settings=unserialize($str);
@@ -18,6 +24,7 @@
 			return str_replace ("\t", ' ', $str);
 		}
 	}
+	
 	if (!function_exists('detector_cp1251')) {
 		function detector_cp1251($str) {
 			$tmp = str_replace(array('Р', 'ћ', 'Ђ', 'є', 'Ѓ', '°'), '#', $str);
@@ -29,6 +36,7 @@
 			return $str;
 		}
 	}
+
 	
 	if (!function_exists('add_parent_subid')) {
 		function add_parent_subid($domain, $subid) {
@@ -68,15 +76,14 @@
             $persistenceDir = _CACHE_COMMON_PATH.'/wurfl-persistence';
             $cacheDir = _CACHE_COMMON_PATH.'/wurfl-cache';	
             $wurflConfig = new WURFL_Configuration_InMemoryConfig();
-            
-            $wurflConfig->wurflFile(realpath(_TRACK_STATIC_PATH.'/wurfl/wurfl_1.5.3.xml'));
+            $wurflConfig->wurflFile(_TRACK_STATIC_PATH.'/wurfl/wurfl_1.5.3.xml');
             $wurflConfig->matchMode('accuracy');
             $wurflConfig->allowReload(true);
             $wurflConfig->persistence('file', array('dir' => $persistenceDir));
             $wurflConfig->cache('file', array('dir' => $cacheDir, 'expiration' => 36000));
             $wurflManagerFactory = new WURFL_WURFLManagerFactory($wurflConfig);
             $wurflManager = $wurflManagerFactory->create();
-            $requestingDevice = $wurflManager->getDeviceForUserAgent($_SERVER['HTTP_USER_AGENT']); 
+            $requestingDevice = $wurflManager->getDeviceForUserAgent($_SERVER['HTTP_USER_AGENT']);
         }
 
 	if (!function_exists('get_geodata'))
@@ -154,7 +161,7 @@
 	}
 
 	// Remove trailing slash
-	$track_request=detector_cp1251(rtrim($_REQUEST['track_request'], '/'));
+	$track_request=detector_cp1251(rtrim($_REQUEST['track_request'], '/')); 
 	$track_request=explode ('/', $track_request);
 
 	$str='';
@@ -238,6 +245,7 @@
         if($requestingDevice && (($requestingDevice->getCapability('is_wireless_device') == 'true') || ($requestingDevice->getCapability('is_tablet') == 'true')))
         {               
 			$user_params['os'] = $requestingDevice->getCapability('device_os');
+			$user_params['device'] = $requestingDevice->getCapability('brand_name') . '; ' . $requestingDevice->getCapability('model_name');
 			$user_params['platform']= $requestingDevice->getCapability('brand_name');
 			$user_params['browser'] = $requestingDevice->getCapability('mobile_browser');                 
 		}
@@ -247,6 +255,7 @@
 			$result = $parser->parse($user_params['agent']);
 			$user_params['browser'] = $result->ua->family;
 			$user_params['os'] = $result->os->family;                
+			$user_params['device'] = '';
 			$user_params['platform'] = '';
         }
         
@@ -271,7 +280,7 @@
 		}
           
           $flag = false;
-          foreach ($arr_rules as $key => $value) {
+          foreach ($arr_rules as $key  => $value) {
               $relevant_params = array(); $relevant_param_order = 0;
               foreach ($value as $internal_key => $internal_value) {
               if($key == 'get') {
@@ -299,6 +308,14 @@
                	   
                } elseif($key == 'os' and substr($internal_value['value'], 0, 8) == 'DEFINED_') {
                	   if(check_platform($internal_value['value'], $user_params['os'])) {
+               	   	   $relevant_params[] = $internal_value;
+               	   	   if(!$relevant_param_order){$relevant_param_order = $internal_value['order'];}else{
+                         if($relevant_param_order>$internal_value['order']){$relevant_param_order = $internal_value['order'];}
+                       }
+					   $flag = true;
+               	   }
+               } elseif($key == 'device' and substr($internal_value['value'], 0, 8) == 'DEFINED_') {
+               	   if(check_device($internal_value['value'], $user_params['device'])) {
                	   	   $relevant_params[] = $internal_value;
                	   	   if(!$relevant_param_order){$relevant_param_order = $internal_value['order'];}else{
                          if($relevant_param_order>$internal_value['order']){$relevant_param_order = $internal_value['order'];}
