@@ -24,7 +24,7 @@ if(!isset($table_n)) {
 					$column_total_data = array();
 					foreach($var['arr_report_data'] as $r) {
 						
-						foreach($r as $k=>$v) {
+						foreach($r as $k => $v) {
 							$column_total_data[$k] += $v;
 						}
 						
@@ -32,6 +32,11 @@ if(!isset($table_n)) {
 						//$cps = currencies_span(round2($r['price'] / $r['sale']));
 						
 						$group_link = $subtype == 'out_id' ? 'source_name' : 'out_id';
+						
+						//$k = param_key($r, $params['group_by']);
+                		$name = param_val($r['id'], $var['group_by'], $var['filter'][0]['source_name']);
+						
+						/*
 						
 						if(trim($r['name']) == '' or $r['name'] == '{empty}') {
 							$name = $group_types[$var['group_by']][1];
@@ -50,7 +55,7 @@ if(!isset($table_n)) {
 								$name = $r['name'];
 							}
 						}
-						
+						*/
 						//$name = (empty($r['name'] or $r['name'] == '{empty}') ? $group_types[$group_by][1] : $r['name']);
 						
 						// Ограничиваем глубину фильтров

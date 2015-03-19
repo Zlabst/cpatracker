@@ -34,7 +34,13 @@
 	function api_get_files($url, $n = 0) {
 		foreach(array('clicks', 'postback') as $type) {
 			$url_params = $url['path'] . '/api.php?act=data_get&type=' . $type. '&key=' . $url['key'];
-			$files = json_decode(file_get_contents($url_params), true);
+			if(!empty($_GET['debug'])) {
+				$files = json_decode(utf8_decode(file_get_contents($url_params)), true);
+				dmp($files) . '<br />';
+				die();
+			} else {
+				$files = json_decode(file_get_contents($url_params), true);
+			}
 			
 			foreach($files['data'] as $f => $data) {
 				$path = _CACHE_PATH . '/' . $type . '/' . $f . '_' . $n;

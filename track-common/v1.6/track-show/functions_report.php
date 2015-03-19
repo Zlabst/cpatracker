@@ -162,15 +162,20 @@ function get_clicks_rows($params, $start = 0, $limit = 0, $campaign_params, $cli
 
     //echo $q;
     /*
-      if($_SERVER['REMOTE_ADDR'] == '37.44.76.80') {
-      echo $q . '<br />';
-      } */
-
+	  if($_SERVER['REMOTE_ADDR'] == '178.121.222.74') {
+	  	echo $q . '<br /><br />';
+	  }
+	*/
     $rs = db_query($q);
 
     $q = "SELECT FOUND_ROWS() as `cnt`";
     $total = ap(mysql_fetch_assoc(db_query($q)), 'cnt');
-
+  
+  /*  
+    if($_SERVER['REMOTE_ADDR'] == '178.121.222.74') {
+      	echo $total . '<br /><br />';
+      } 
+*/
     while ($r = mysql_fetch_assoc($rs)) {
         $rows[$r['id']] = $r;
 
@@ -187,8 +192,6 @@ function get_clicks_rows($params, $start = 0, $limit = 0, $campaign_params, $cli
             }
         }
     }
-
-
     return array($total, $rows, $campaign_params, $click_params);
 }
 
@@ -338,7 +341,7 @@ function get_clicks_report_grouped2($params) {
 
         // Получаем порцию данных
         list($total, $rows, $campaign_params, $click_params) = get_clicks_rows($params, $start, $limit, $campaign_params, $click_params);
-
+        
         // Режим обработки для Landing Page
         // группируем всю информацию с подчинённых переходов на родительские
         if ($params['mode'] == 'lp' or $params['mode'] == '') {
@@ -351,7 +354,7 @@ function get_clicks_report_grouped2($params) {
                     // не будем считать более одного исходящего с лэндинга
                     $out_calc = isset($parent_clicks[$r['parent_id']]) ? 0 : 1;
                     $parent_clicks[$r['parent_id']] = 1;
-
+                    
                     // исходящие
                     $rows[$r['parent_id']]['out'] += $out_calc;
                 }
@@ -393,8 +396,6 @@ function get_clicks_report_grouped2($params) {
                         continue;
                     }
                 }
-
-                //dmp($params['filter'][1]);
 
                 $viz_filter = 1;
 
@@ -624,6 +625,7 @@ function get_clicks_report_grouped2($params) {
 
                 $parent_clicks = array(); // массив для единичного зачёта дочерних кликов (иначе у нас LP CTR больше 100% может быть)
                 // Вся статистика, без разбиения по времени
+                
                 foreach ($rows as $r) {
                     $k = param_key($r, $params['group_by']);
                     $name = param_val($r, $params['group_by']);
@@ -635,7 +637,7 @@ function get_clicks_report_grouped2($params) {
 
                     stat_inc($data[$k], $r, $k, $name);
                 }
-
+                
                 // Статистика по дням
             } else {
                 foreach ($rows as $r) {
@@ -718,15 +720,9 @@ function get_clicks_report_grouped2($params) {
             $data = $data3;
         }
     } else {
-        /*
-          if($_SERVER['REMOTE_ADDR'] == '178.121.223.216') {
-          dmp($data);
-          }
-         */
-
         // Убираем строчки с конверсиями
         $data = conv_filter($data, $params['conv']);
-
+        
         // "Один источник" - если группировка по источнику и он у нас один, то берём его именованные параметры
         if ($params['group_by'] == 'source_name' and count($data) == 1) { //
             global $one_source;
@@ -1227,7 +1223,7 @@ function t_price($r, $wrap = true, $emp = true) {
 }
 
 function t_lpctr($r, $wrap = true, $emp = true) {
-    if (!empty($r['sub'])) {
+    if (!empty($r['cnt'])) {
         $out = round($r['out'] / $r['cnt'] * 100, 1);
         return $wrap ? $out . '%' : $out;
     } else {

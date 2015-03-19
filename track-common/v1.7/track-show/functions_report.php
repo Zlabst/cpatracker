@@ -1263,7 +1263,7 @@ function t_price($r, $wrap = true, $emp = true) {
 }
 
 function t_lpctr($r, $wrap = true, $emp = true) {
-    if (!empty($r['sub'])) {
+    if (!empty($r['cnt'])) {
 	$out = round($r['out'] / $r['cnt'] * 100, 1);
 	return $wrap ? $out . '%' : $out;
     } else {

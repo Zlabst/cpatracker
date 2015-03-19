@@ -1,4 +1,5 @@
 <?php
+header('Content-Type: text/html; charset=UTF-8'); 
 require _TRACK_COMMON_PATH . '/functions.php'; 
 
 $act       = rq('act');
@@ -48,7 +49,7 @@ if($act == 'data_get') {
 			// Прерываем выполение, если отдаётся больше максимального размера данных
 			if(!empty($out['data']) and $size >= $maxsize) break;
 			
-			$out['data'][$f] = iconv('cp1251', 'utf8', file_get_contents($full_name));
+			$out['data'][$f] = file_get_contents($full_name);
 		}
 	}
 
