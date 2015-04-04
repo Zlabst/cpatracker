@@ -129,18 +129,17 @@ function get_clicks_rows($params, $start = 0, $limit = 0, $campaign_params, $cli
     // Дополнительные поля для режима популярных параметров
     if ($params['mode'] == 'popular' or 1) {
 	$select = ', out_id, source_name, ads_name, referer, user_os, user_ip, user_platform, user_browser, country, state, city, isp, campaign_param1, campaign_param2, campaign_param3, campaign_param4, campaign_param5 ';
-	for ($i = 1; $i <= 15; $i++) {
-	    $select .= ', click_param_value' . $i . ' ';
-	}
+		for ($i = 1; $i <= 15; $i++) {
+		    $select .= ', click_param_value' . $i . ' ';
+		}
     } else {
-	$select = '';
+		$select = '';
     }
 
     // Выбираем все переходы за период
     $q = "SELECT SQL_CALC_FOUND_ROWS " . (empty($params['group_by']) ? '' : " " . mysql_real_escape_string($params['group_by']) . " as `name`, ") .
 	    (($params['group_by'] == $params['subgroup_by']) ? '' : " " . mysql_real_escape_string($params['subgroup_by']) . ", ") .
-	    "
-			1 as `cnt`,
+	    "	1 as `cnt`,
 			t1.id,
 			t1.source_name,
 			UNIX_TIMESTAMP(CONVERT_TZ(t1.`date_add`, '+00:00', '" . _str($timezone_shift) . "')) as `time_add`,
@@ -795,7 +794,7 @@ function get_clicks_report_grouped2($params) {
     // если не выбран какой-то определенный лэндинг.
     //
 		
-		global $pop_sort_by, $pop_sort_order;
+	global $pop_sort_by, $pop_sort_order;
     $max_sub = 50; // После скольки объектов начинаем сворачивать
 
     if ($params['no_other'] == 0
@@ -860,10 +859,10 @@ function get_clicks_report_grouped2($params) {
     //date_default_timezone_set($timezone_backup);
 
     return array(
-	'data' => $data,
-	'dates' => $arr_dates,
-	'click_params' => $click_params,
-	'campaign_params' => $campaign_params
+		'data' => $data,
+		'dates' => $arr_dates,
+		'click_params' => $click_params,
+		'campaign_params' => $campaign_params
     );
 }
 

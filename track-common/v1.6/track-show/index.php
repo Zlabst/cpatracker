@@ -16,11 +16,12 @@ $include_flag = true;
 
 // Debug
 ini_set('display_errors', true);
-if (isset($_GET['debug'])) {
+if (_ENABLE_DEBUG && isset($_GET['debug'])) {
     ini_set('display_startup_errors', true);
     error_reporting(E_ALL & ~E_NOTICE);
 } else {
     // Disable PHP warnings
+    $_GET['debug'] = 0;
     error_reporting(E_ERROR | E_PARSE);
 }
 
@@ -583,7 +584,8 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             $rules_item = $_REQUEST['rules_item'];
             $rule_values = $_REQUEST['rule_value'];
 
-            $pattern = '/(^[a-z0-9_]+$)/';
+            //$pattern = '/(^[a-z0-9_]+$)/';
+            $pattern = '/^[ЎўІіёa-zA-Zа-яА-Я0-9_-]*$/u';
             foreach ($rules_item as $key => $rull) {
                 if ($rull['type'] == 'get') {
                     $get_arr = explode('=', $rull['val']);

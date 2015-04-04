@@ -161,7 +161,8 @@
 	}
 
 	// Remove trailing slash
-	$track_request=detector_cp1251(rtrim($_REQUEST['track_request'], '/')); 
+	//$track_request=detector_cp1251(rtrim($_REQUEST['track_request'], '/')); 
+	$track_request=rtrim($_REQUEST['track_request'], '/'); 
 	$track_request=explode ('/', $track_request);
 
 	$str='';
@@ -287,7 +288,9 @@
                   $get_arr = explode('=', $internal_value['value']);
                   $get_name = $get_arr[0];
                   $get_val = $get_arr[1];
-                  if(isset($_GET[$get_name])&&$_GET[$get_name]==$get_val) {
+                  if((isset($_GET[$get_name]) && $_GET[$get_name]==$get_val) || empty($get_val) && empty($_GET[$get_name])) {
+
+                  //if(isset($_GET[$get_name])&&$_GET[$get_name]==$get_val) {
                       $relevant_params[] = $internal_value;
                       if(!$relevant_param_order){$relevant_param_order = $internal_value['order'];}else{
                          if($relevant_param_order>$internal_value['order']){$relevant_param_order = $internal_value['order'];}

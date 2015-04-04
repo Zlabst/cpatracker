@@ -283,6 +283,7 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                 var flag = true;
                 var rule_id = $(this).attr('id');
                 var rule_table = $('#rule' + rule_id + ' tbody');
+                /*
                 $(rule_table).find('input.in1').each(function() {                                      
                      if(!(/(^[a-z0-9_]+$)/.test($(this).val()))){
                           flag = false;  
@@ -292,7 +293,7 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                      if(!(/(^[a-z0-9_]+$)/.test($(this).val()))){
                           flag = false;  
                         }                     
-                });
+                });*/
                 if(!flag){ alert("В полях ввода для ссылки GET можно использовать только цифры и буквы латинского алфавита.");  return false;}
                 $(rule_table).find('input.select-link').each(function() {                                      
                        $(this).addClass('toSave');                      
@@ -480,7 +481,7 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
             }
         });
         $(rule_table).find('input.in2').each(function() {        
-            if (!$(this).val()) {
+            if (!$(this).hasClass('canzero') && !$(this).val()) {
                 error = 'Выберите условие';
             }
         });
@@ -719,7 +720,7 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                                 </div>
                                 <div class="form-group">
                                 <input type="text" class="form-control getpreinput in1" style="width: 134px;" placeholder="Поле" > 
-                                <input type="text" class="form-control getpreinput in2"  style="width: 134px;" placeholder="Значение" > 
+                                <input type="text" class="form-control getpreinput in2 canzero"  style="width: 134px;" placeholder="Значение" > 
                                 <input type="hidden" class="select-item" itemtype='get' >
                                 </div>
                                 <div class='pull-right' style='width:200px;'><input placeholder="Ссылка" require="" type="hidden" name='out_id[]' class='select-link' data-selected-value=''></div>
@@ -865,7 +866,7 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                         {{#textinput}}
                         {{#getinput}}
                                 <input type="text" class="form-control getpreinput in1" style="width: 134px;" placeholder="Поле" > 
-                                <input type="text" class="form-control getpreinput in2"  style="width: 134px;" placeholder="Значение" > 
+                                <input type="text" class="form-control getpreinput in2 canzero"  style="width: 134px;" placeholder="Значение" > 
                                 <input type="hidden" class="select-item" itemtype='get' value="{{value}}">                        
                         {{/getinput}}
                         {{^getinput}}

@@ -1,6 +1,11 @@
 <?php
 
     set_time_limit(0);
+    
+    if (isset($_GET['debug'])) {
+		ini_set('display_errors', 1);
+		error_reporting(E_ERROR | E_WARNING | E_PARSE);
+	}
 
     // First run of process_postback, remove marker file
     $process_clicks_marker=_CACHE_PATH.'/.crontab_postback';
@@ -72,7 +77,7 @@
         {
             $data = unserialize($conv);
             $network = isset($data['get']['n']) ? $data['get']['n'] : (isset($data['post']['n']) ? $data['post']['n'] : '');
-            if (empty($network) || $network == 'custom') {
+            if (empty($network) || $network == 'custom' || !file_exists(_TRACK_LIB_PATH.'/postback/'.$network.'.php')) {
                 $custom->process_conversion($data);
             }
             elseif ($network == 'pixel') {

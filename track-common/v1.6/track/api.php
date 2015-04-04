@@ -49,7 +49,7 @@ if($act == 'data_get') {
 			// Прерываем выполение, если отдаётся больше максимального размера данных
 			if(!empty($out['data']) and $size >= $maxsize) break;
 			
-			$out['data'][$f] = file_get_contents($full_name);
+			$out['data'][$f] = mb_convert_encoding(file_get_contents($full_name), "UTF-8", "UTF-8");
 		}
 	}
 

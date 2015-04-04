@@ -41,7 +41,7 @@
         <div id="footer">
             <?php echo tpx('footer'); ?>
         </div>
-        <?
+        <?php
         	if(!empty($_GET['debug'])) {
         		foreach($sql_log as $q)	{
         			echo $q.'<br>';

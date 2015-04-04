@@ -42,9 +42,13 @@ function get_visitors_flow_data($filter = '', $offset = 0, $limit = 20, $date = 
                 break;
         }
     }
-
+	
+	
+	$date2 = date('Y-m-d', strtotime($date) - (12 * 3600));
+	//tbl_clicks.date_add > STR_TO_DATE('" . $date2 . " 00:00:00', '%Y-%m-%d %H:%i:%s')
     $sql = "select SQL_CALC_FOUND_ROWS *, date_format(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '" . _str($timezone_shift) . "'), '%d.%m.%Y %H:%i') as dt, timediff(NOW(), tbl_clicks.date_add) as td from tbl_clicks 
-		where 1
+		where 1 
+		and tbl_clicks.date_add > STR_TO_DATE('" . $date2 . " 00:00:00', '%Y-%m-%d %H:%i:%s')
 		{$filter_str}
 		" . ($date ? "and CONVERT_TZ(tbl_clicks.date_add, '+00:00', '" . _str($timezone_shift) . "') between STR_TO_DATE('" . $date . " 00:00:00', '%Y-%m-%d %H:%i:%s') and STR_TO_DATE('" . $date . " 23:59:59', '%Y-%m-%d %H:%i:%s')" : '' ) . "
 		order by date_add desc limit $offset, $limit";

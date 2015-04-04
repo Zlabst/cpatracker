@@ -10,6 +10,7 @@
 	define('_TRACK_SHOW_PATH',     dirname (__FILE__));
 	define('_TRACK_SHOW_COMMON_PATH', dirname (__FILE__) . '/../track-common/' . _TRACK_VER . '/track-show');
 	define('_TRACK_LIB_PATH',      _TRACK_PATH . '/lib');
+	define('_ENABLE_DEBUG',        true);
 	
 	define('_HTML_LIB_PATH',       '../track-common/' . _TRACK_VER . '/track-show/lib');
 	define('_HTML_TEMPLATE_PATH',  '../track-common/' . _TRACK_VER . '/track-show/templates');

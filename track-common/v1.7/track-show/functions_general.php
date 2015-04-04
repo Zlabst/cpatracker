@@ -1776,7 +1776,7 @@ function get_rules_offers() {
 		left join tbl_links_categories on tbl_links_categories.offer_id = tbl_offers.id 
 		left join tbl_links_categories_list on tbl_links_categories_list.id = tbl_links_categories.category_id 
                     and tbl_links_categories_list.status = '0'
-		where tbl_offers.status = 0 
+		where tbl_offers.status in (0, 3) 
 		order by tbl_links_categories_list.category_caption asc, tbl_offers.date_add desc";
     $result = mysql_query($sql);
     while ($row = mysql_fetch_assoc($result)) {

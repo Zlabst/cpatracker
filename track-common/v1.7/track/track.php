@@ -1,11 +1,11 @@
-<?php
+1<?php
 	
 	ob_start();
 	/*
 	error_reporting(E_ALL);
 	ini_set('display_errors', 1);	
+	ini_set('display_startup_errors', true);
 	*/
-	
 	require _TRACK_COMMON_PATH . '/functions.php';
 	
 	$settings_file = _TRACK_SETTINGS_PATH . '/settings.php';
@@ -287,7 +287,7 @@
                   $get_arr = explode('=', $internal_value['value']);
                   $get_name = $get_arr[0];
                   $get_val = $get_arr[1];
-                  if(isset($_GET[$get_name])&&$_GET[$get_name]==$get_val) {
+                  if((isset($_GET[$get_name]) && $_GET[$get_name]==$get_val) || empty($get_val) && empty($_GET[$get_name])) {
                       $relevant_params[] = $internal_value;
                       if(!$relevant_param_order){$relevant_param_order = $internal_value['order'];}else{
                          if($relevant_param_order>$internal_value['order']){$relevant_param_order = $internal_value['order'];}
