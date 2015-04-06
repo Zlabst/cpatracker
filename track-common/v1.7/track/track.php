@@ -296,8 +296,8 @@
                   }
                } elseif($key == 'referer') {
                	   $val = strtolower($internal_value['value']);
-               	   // дописываем http:// на случай, если юзер забыл
-               	   if(substr($val, 0, 7) != 'http://') $val = 'http://' . $val;
+               	   // дописываем http:// на случай, если юзер забыл и это не Google Market
+               	   if(substr($val, 0, 7) != 'http://' and substr($val, 0, 9) != 'market://') $val = 'http://' . $val;
 					if(trim($user_params[$key]) != '' and strtolower(substr($user_params[$key], 0, strlen($val))) == $val) {
 	           	   		$relevant_params[] = $internal_value;
 						if(!$relevant_param_order){$relevant_param_order = $internal_value['order'];}else{
