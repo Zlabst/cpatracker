@@ -41,7 +41,8 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
     function show_category_edit() {
         if ($('.category_edit').css('display')=='none')	{
             $('.category_edit').show();
-            $('.category_edit input[name=category_name]').focus();
+            $('.category_edit input[name=category_name]').focus().select();
+            //$('#category_title').select();
             $('.category_title').hide();
         } else {
             $('.category_edit').hide();
@@ -209,6 +210,7 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
     }
     
     function init_add_cat() {
+    	
         // Ссылка добавления категории
         $('#add_cat_link').click(function(event) {
             $('#add_cat_link').hide();
@@ -328,7 +330,7 @@ if ($page_type == 'network') {
                             <input type="hidden" name="csrfkey" value="<?php echo CSRF_KEY; ?>">
                             <input type="hidden" name="category_id" value="<?php echo _e($_REQUEST["category_id"]); ?>">
                             <input type="hidden" name="is_delete" value="-1">
-                            <input type="text" class="form-control" name="category_name" id="category_name" placeholder="Название категории" value="<?php echo _e($category_name); ?>">
+                            <input type="text" class="form-control" name="category_name" id="category_name" placeholder="Название категории" value="<?php echo _e($page_headers[1]); ?>">
                         </form>
                     </div>
                     <div class="category_title"><?php
@@ -346,7 +348,7 @@ if ($page_type == 'network') {
             <div role="toolbar" class="btn-toolbar">
                 <div class="btn-group dropdown show-if-offer-checked">
                     <a class="btn btn-default" href="#" data-toggle="dropdown">
-                        <i class="icon icon-folder"></i>
+                        <i class="icon icon-folder" data-placement="top" data-toggle="tooltip" data-original-title="переместить в категорию"></i>
                         <i class="fa fa-angle-down"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-left" role="menu">
@@ -359,13 +361,13 @@ if ($page_type == 'network') {
                     </ul>
                 </div>
                 <div class="btn-group show-if-offer-checked">
-                    <a class="btn btn-default single-icon" href="#" onclick="arch_links(<?php echo $cat_type == 'archive' ? 0 : 1; ?>)">
+                    <a class="btn btn-default single-icon" href="#" onclick="arch_links(<?php echo $cat_type == 'archive' ? 0 : 1; ?>)" data-placement="top" data-toggle="tooltip" data-original-title="<?php echo $cat_type == 'archive' ? 'достать из архива' : 'переместить в архив'; ?>">
                         <i class="icon icon-drawer"></i>
                     </a>
-                    <a class="btn btn-default single-icon" href="fakelink">
+                    <a class="btn btn-default single-icon" href="fakelink" data-placement="top" data-toggle="tooltip" data-original-title="редактировать">
                         <i class="icon icon-pencil"></i>
                     </a>
-                    <a class="btn btn-default single-icon" href="#" onclick="return delete_links();">
+                    <a class="btn btn-default single-icon" href="#" onclick="return delete_links();" data-placement="top" data-toggle="tooltip" data-original-title="удалить">
                         <i class="icon icon-trash-gray"></i>
                     </a>
                 </div>					
@@ -375,7 +377,7 @@ if ($page_type == 'network') {
                 <!--					<div class="btn-group pull-right">
                                                                 <a class="btn btn-default" href="fakelink"><i class="fa fa-angle-double-down"></i></a>
                                                         </div>-->
-                <?php if ($cat_type == 'all') { ?>
+                <?php if ($cat_type == 'all' or $cat_type == 'favorits') { ?>
                     <div class="btn-group pull-right">
                         <a class="btn btn-default single-icon" href="#" onclick="return toggle_offer_add_form()"><i class="icon icon-plus"></i></a>
                     </div>
@@ -495,9 +497,6 @@ if (count($arr_offers['data']) > 0) {
                                     </li>
                                     <li>
                                         <a class="dropdown-link" href="#">Изменить</a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-link" href="#">Создать ссылку</a>
                                     </li>
                                     <li class="dropdown-footer text-danger">
                                         <a class="dropdown-link text-danger" href="#" onclick="return delete_link(<?php echo _e($cur['offer_id']); ?>)"><i class="icon icon-abs icon-trash"></i>Удалить</a>

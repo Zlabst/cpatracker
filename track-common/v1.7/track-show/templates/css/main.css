@@ -442,6 +442,10 @@ ul.sidebar-menu li a.btn-alt i {
   top: 18px;
   right: 22px;
 }
+#add_cat_form i.icon-plus-small {
+	cursor: pointer;
+}
+
 /*ul.sidebar-menu li.active > a:hover,
 ul.sidebar-menu li.selected > a:hover,
 ul.sidebar-menu li.selected > a:focus,
@@ -449,7 +453,7 @@ ul.sidebar-menu li.active > a:focus*/
 ul.sidebar-menu li.selected > a,
 ul.sidebar-menu li.active > a {
   background-color: #314b66;
-  font-weight: 700;
+  /* font-weight: 700; */
 }
 ul.sidebar-menu li ul.submenu {
   background: rgba(21, 29, 38, 0.7);

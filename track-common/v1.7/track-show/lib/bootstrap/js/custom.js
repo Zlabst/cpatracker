@@ -16,6 +16,7 @@ $(document).ready(function() {
 	<!-- =============================================== --> 
 	$('.sidebar-left ul.sidebar-menu li a').click(function() {
 		"use strict";
+		if($(this).attr('id') == 'add_cat_link') return false;
 		$('.sidebar-left li').removeClass('active');
 		$(this).closest('li').addClass('active');	
 		var checkElement = $(this).next();
@@ -68,7 +69,7 @@ $(document).ready(function() {
 	<!-- =============================================== --> 
 	 $('[data-toggle="tooltip"]').tooltip({
 	 	container: 'body',
-		delay: { "show": 1000, "hide": 100 }
+		delay: { "show": 1300, "hide": 100 }
 	 });
 	 
 	<!-- =============================================== -->

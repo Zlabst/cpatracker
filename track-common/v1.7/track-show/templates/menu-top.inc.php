@@ -40,16 +40,6 @@
             		<li <?php if ($_REQUEST['page']=='rules'){echo 'class="active"';}?>><a href="?page=rules">Ссылки</a></li>
             		<li <?php if (in_array($_REQUEST['page'], array('import', 'costs', 'postback'))){echo 'class="active"';}?>><a href="?page=import">Инструменты</a></li>
 				</ul>
-			
-				<!-- Nav search form -->
-				<form class="navbar-form navbar-left">
-					<div class="form-group has-feedback">
-						<input type="text" class="form-control" placeholder="Добавление по url">
-						<a class="form-control-feedback single-icon" tabindex="0" href="#fakelink" data-toggle="popover"  data-content="">
-							<i class="icon icon-plus-small "></i>
-						</a>
-					</div>
-				</form>
 
 				<!-- New offer form-->
 				<div id="popover-content" class="hide" >
@@ -125,8 +115,33 @@
 						</div><!-- /.row -->
 					</div><!--container-->
 				</div><!--popover-content-->
+				
 				<!-- Nav dropdown -->
-				<ul class="nav navbar-nav navbar-left navbar-link with-value">
+				<ul class="nav navbar-nav navbar-right navbar-link pull-right">
+					<?php if(1) { // Сделать проверку на многопользовательность ?>
+					<li class="text-info">
+						<a class="dropdown-link" href="?page=logout">Выход</a>
+					</li>
+					<?php } else { ?>
+					<li class="dropdown">
+						<a href="#fakelink"  class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+							<?php echo $auth_info[1]?>
+							<i class="fa fa-angle-down"></i>
+						</a>
+						<ul class="dropdown-menu dropdown-menu-right" role="menu">
+							<!--<li>
+								<a class="dropdown-link" href="#">lov@gmail.com</a>
+							</li>-->
+							<li class="dropdown-footer text-info">
+								<a class="dropdown-link" href="?page=logout"><i class="icon icon-abs icon-logout"></i>Выход</a>
+							</li>
+						</ul>
+					</li>
+					<?php } ?>
+				</ul>
+				
+				<!-- Nav dropdown -->
+				<ul class="nav navbar-nav navbar-left navbar-link with-value pull-right">
 					<li class="dropdown">
 						<a href="#fakelink"  class="dropdown-toggle dropdown-link" data-toggle="dropdown" role="button" aria-expanded="false">
 							<i class="icon icon-abs icon-clock"></i>
@@ -151,51 +166,7 @@
 								<a class="dropdown-link"  href="?page=settings&type=timezone"><i class="icon icon-abs icon-cog"></i>Настроить часовой пояс</a>
 							</li>
 						</ul>
-					
-					
-						<!--
-						<ul class="dropdown-menu">
-               <?php
-                    foreach ($arr_timezone_settings as $cur) {
-                        if ($cur['is_active']!=1)
-                        {
-                            echo "<li role='presentation'><a role='menuitem' tabindex='-1' href='#' onclick='return change_current_timezone({$cur['id']})'>"._e($cur['timezone_name'])."</a></li>";                        
-                        }
-                    }
-                    if (count($arr_timezone_settings)>1)
-                    {
-                        echo "<li role='presentation' class='divider'></li>";
-                    }
-                ?>  
-                <li><a href="?page=settings&type=timezone"><i class='fa fa-cog'></i>&nbsp;Настроить часовой пояс</a></li>
-              </ul>
-						-->
-					
 					</li>
-				</ul>
-				
-				<!-- Nav dropdown -->
-				<ul class="nav navbar-nav navbar-right navbar-link">
-					<?php if(1) { // Сделать проверку на многопользовательность ?>
-					<li class="text-info">
-						<a class="dropdown-link" href="?page=logout">Выход</a>
-					</li>
-					<?php } else { ?>
-					<li class="dropdown">
-						<a href="#fakelink"  class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-							<?php echo $auth_info[1]?>
-							<i class="fa fa-angle-down"></i>
-						</a>
-						<ul class="dropdown-menu dropdown-menu-right" role="menu">
-							<!--<li>
-								<a class="dropdown-link" href="#">lov@gmail.com</a>
-							</li>-->
-							<li class="dropdown-footer text-info">
-								<a class="dropdown-link" href="?page=logout"><i class="icon icon-abs icon-logout"></i>Выход</a>
-							</li>
-						</ul>
-					</li>
-					<?php } ?>
 				</ul>
 			
 			</div><!--container-fluid-->

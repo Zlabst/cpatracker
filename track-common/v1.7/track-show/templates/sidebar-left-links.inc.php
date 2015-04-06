@@ -213,18 +213,20 @@ if (!$have_favorits) {
                     echo '<li' . $highlight . '><a href="?page=links&category_id=' . _e($cur['id']) . '">' . _e($cur['category_caption']) . '<span class="span-sidebar">' . _e($arr_categories_count[$cur['id']]) . '</span></a></li>';
                 }
 
-                echo '<li id="add_cat_form">
+                echo '
+
+<form class="links_category_add_form" role="form" method="post" onsubmit="return add_new_category()" id="category_add_form">
+<li id="add_cat_form" style="display: list-item;">
 <div class="input has-feedback">
-<form class="form-inline links_category_add_form" role="form" method="post" onsubmit="return add_new_category()" id="category_add_form">
 <input type="hidden" name="ajax_act" value="add_category">
 <input type="hidden" name="csrfkey" value="' . CSRF_KEY . '">
 <input class="form-control form-control-alt" type="text" placeholder="Добавить категорию" name="category_name" id="add_cat_name">
 <span class="form-control-feedback single-icon">
 <i class="icon icon-plus-small "></i>
 </span>
-</form>
+
 </div>
-</li>';
+</li></form>';
 
                 echo '<li><a href="#addcategory" id="add_cat_link">Новая категория<span class="span-sidebar"><i class="fa fa-plus-square-o"></i></span></a></li>';
 
