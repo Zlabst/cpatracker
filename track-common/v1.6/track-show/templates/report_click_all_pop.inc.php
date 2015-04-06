@@ -25,7 +25,7 @@ if($var['report_params']['group_by'] != '')  {
 	<div class="col-md-12">
 		<table class="table table-striped table-bordered table-condensed dataTableT dataTableT<?php echo $table_n; ?> dataTable">
 			<thead>
-				<tr><th><?php if($var['report_params']['group_by'] == '') { ?>Название</th><th>Значение<?php } else { echo $group_types[$var['report_params']['group_by']][0]; } ?></th><th>Переходы</th><th>От&nbsp;общего</th><?php if($var['report_params']['conv'] != 'none') { ?><th class="col_s">Продажи</th><th class="col_l">Лиды</th><th class="col_a">Действия</th><th class="col_s">Конверсия</th><th class="col_l">Конверсия</th><th class="col_a">Конверсия</th><?php } ?><th>Затраты</th><?php if($var['report_params']['conv'] != 'none') { ?><th class="col_s col_a">Прибыль</th><th>EPC</th><th>ROI</th><th class="col_s">CPS</th><th class="col_l">CPL</th><th class="col_a">CPA</th><?php } ?></tr>
+				<tr><th><?php if($var['report_params']['group_by'] == '') { ?>Название</th><th>Значение<?php } else { echo $group_types[$var['report_params']['group_by']][0]; } ?></th><th>Переходы</th><th>От&nbsp;общего</th><?php if($var['report_params']['conv'] != 'none') { ?><th class="col_s">Продажи</th><th class="col_l">Лиды</th><th class="col_a">Действия</th><th class="col_s">Конверсия</th><th class="col_l">Конверсия</th><th class="col_a">Конверсия</th><?php } ?><th>Затраты</th><?php if($var['report_params']['conv'] != 'none') { ?><th class="col_s col_a">Прибыль</th><th>EPC</th><th class="col_s col_a">ROI</th><th class="col_s">CPS</th><th class="col_l">CPL</th><th class="col_a">CPA</th><?php } ?></tr>
 			</thead>
 			<tbody>
 				<?php
@@ -80,7 +80,7 @@ if($var['report_params']['group_by'] != '')  {
 						if($var['report_params']['conv'] != 'none') {
 							echo '<td class="col_s col_a">'.
 								t_profit($r).'</td><td>'.
-								t_epc($r).'</td><td>'.
+								t_epc($r).'</td><td class="col_s col_a">'.
 								t_roi($r).'</td><td class="col_s">'.
 								t_cps($r).'</td><td class="col_l">'.
 								t_cpl($r).'</td><td class="col_a">'.
