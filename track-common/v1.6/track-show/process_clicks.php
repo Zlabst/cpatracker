@@ -37,7 +37,7 @@
 			if(!empty($_GET['debug'])) {
 				$files = json_decode(utf8_decode(file_get_contents($url_params)), true);
 				dmp($files) . '<br />';
-				die();
+				//die();
 			} else {
 				$files = json_decode(file_get_contents($url_params), true);
 			}
@@ -289,6 +289,11 @@
 			$click_get_params = array();
 		}
 		
+		if(!empty($_GET['debug'])) {
+			dmp($arr_click_info);
+			//die();
+		}
+		
 		$sql_click_params=array();
 		
 		// Save this source params
@@ -335,7 +340,9 @@
 					// Поисковые слова Яндекса
 					if($click_link_source == 'yadirect' and $param_name == 'ad_id') {
 						$i++;
-						$sql_click_params[]="click_param_name{$i}='text', click_param_value{$i}='"._str(parse_search_refer($arr_click_info[17]))."'";
+						// 17 - для прямых ссылок, 3 - для обычных
+						$referer = empty($arr_click_info[3]) ? $arr_click_info[17] : $arr_click_info[3];
+						$sql_click_params[]="click_param_name{$i}='text', click_param_value{$i}='"._str(parse_search_refer($referer))."'";
 					}
 					
 					unset($click_get_params[$param_name]); // Параметр отработан, убираем его чтобы остались только пользовательские
@@ -475,6 +482,7 @@
 				campaign_param4='"._str($click_param4)."', 
 				campaign_param5='"._str($click_param5)."'
 				{$sql_click_params}";
-		mysql_query($sql) or die($sql . '<br >' . mysql_error());
+		echo $sql;
+		mysql_query($sql); // or die($sql . '<br >' . mysql_error());
 	}
 ?>

@@ -541,7 +541,7 @@ $source_config = array(
 			'keyword'     => array('n' => 5, 'name' => 'Ключевая фраза', 'url' => '{keyword}'),
 			'campaign_id' => array('n' => 6, 'name' => 'ID кампании'   , 'url' => '{campaign_id}'),
 			'ad_id'       => array('n' => 7, 'name' => 'ID объявления',  'url' => '{ad_id}'),
-			'text'        => array('n' => 8, 'name' => 'Текст запроса'),
+			'text'        => array('n' => 8, 'name' => 'Полная ключевая фраза'),
 		),
 	),
 	'popunder' => array(

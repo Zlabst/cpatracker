@@ -329,7 +329,9 @@
 					// Поисковые слова Яндекса
 					if($click_link_source == 'yadirect' and $param_name == 'ad_id') {
 						$i++;
-						$sql_click_params[]="click_param_name{$i}='text', click_param_value{$i}='"._str(parse_search_refer($arr_click_info[17]))."'";
+						// 17 - для прямых ссылок, 3 - для обычных
+						$referer = empty($arr_click_info[3]) ? $arr_click_info[17] : $arr_click_info[3];
+						$sql_click_params[]="click_param_name{$i}='text', click_param_value{$i}='"._str(parse_search_refer($referer))."'";
 					}
 					
 					unset($click_get_params[$param_name]); // Параметр отработан, убираем его чтобы остались только пользовательские
