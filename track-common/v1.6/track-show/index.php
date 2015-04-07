@@ -69,15 +69,19 @@ if ($_REQUEST['ajax_act'] == 'create_database') {
         	$temp_dir = ini_get('upload_tmp_dir');
 			if (!$temp_dir) $temp_dir = '/tmp';
 			$temp_dir = realpath($temp_dir); 
-			$wbase = $temp_dir . '/wurfl.xml';
 			
-			if(file_exists($wbase)) {
-				unlink($wbase);
+			$wurfl_tmp_files = array('wurfl.xml', 'wurfl_builder.lock');
+			
+			foreach($wurfl_tmp_files as $tmp_file) {
+				$wbase = $temp_dir . '/' . $tmp_file;
 				if(file_exists($wbase)) {
-					rename($wbase, $wbase . '.old');
+					unlink($wbase); // Попытка удалить
 					if(file_exists($wbase)) {
-						echo json_encode(array(false, 'wurfl_not_writable', $wbase));
-                		exit();
+						rename($wbase, $wbase . '.old'); // Попытка переименовать
+						if(file_exists($wbase)) {
+							echo json_encode(array(false, 'wurfl_not_writable', $wbase));
+	                		exit();
+						}
 					}
 				}
 			}
