@@ -181,10 +181,10 @@ switch ($_REQUEST['type']) {
 			$params['where'] = '';
 			$params['mode'] = 'lp';
 			$assign['report_params'] = $params;
-			$report = get_clicks_report_grouped2($params);
-			$assign['arr_report_data'] = $report['data'];
+			$report_lp = get_clicks_report_grouped2($params);
+			$assign['arr_report_data'] = $report_lp['data'];
 			
-			if(!empty($report['data'])) {
+			if(!empty($report_lp['data'])) {
 			
 				echo '<div class="col-sm-9"><h3>Целевые страницы</h3></div>';
 			

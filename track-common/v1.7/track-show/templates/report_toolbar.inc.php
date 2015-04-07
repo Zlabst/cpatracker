@@ -1,8 +1,8 @@
 <?php
-global $option_leads_type, $col, $params, $option_currency, $currency, $report, $group_actions, $panels, $assign, $report_cols;
+global $option_leads_type, $col, $params, $option_currency, $currency, $report, $report_lp, $group_actions, $panels, $assign, $report_cols;
 
 // Если есть данные, и их показ без ограничений
-if(!empty($report['data']) or $params['conv'] != 'all' or $params['col'] != 'act') {
+if(!empty($report['data']) or !empty($report_lp['data']) or $params['conv'] != 'all' or $params['col'] != 'act') {
 	
 	if($params['type'] != 'all_stats' and $params['part'] != 'all') {
 	//if(1) {
