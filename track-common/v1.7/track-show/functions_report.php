@@ -138,7 +138,7 @@ function get_clicks_rows($params, $start = 0, $limit = 0, $campaign_params, $cli
 
     // Выбираем все переходы за период
     $q = "SELECT SQL_CALC_FOUND_ROWS " . (empty($params['group_by']) ? '' : " " . mysql_real_escape_string($params['group_by']) . " as `name`, ") .
-	    (($params['group_by'] == $params['subgroup_by']) ? '' : " " . mysql_real_escape_string($params['subgroup_by']) . ", ") .
+	    (($params['group_by'] == $params['subgroup_by'] or empty($params['subgroup_by'])) ? '' : " " . mysql_real_escape_string($params['subgroup_by']) . ", ") .
 	    "	1 as `cnt`,
 			t1.id,
 			t1.source_name,

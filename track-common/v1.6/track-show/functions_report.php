@@ -138,15 +138,21 @@ function get_clicks_rows($params, $start = 0, $limit = 0, $campaign_params, $cli
     } else {
         $select = '';
     }
+    
+    if($timezone_shift == '+00:00') {
+        $time_add_fld = 'date_add';
+    } else {
+        $time_add_fld = "CONVERT_TZ(t1.`date_add`, '+00:00', '" . _str($timezone_shift) . "')";
+    }
 
     // Выбираем все переходы за период
     $q = "SELECT SQL_CALC_FOUND_ROWS " . (empty($params['group_by']) ? '' : " " . mysql_real_escape_string($params['group_by']) . " as `name`, ") .
-            (($params['group_by'] == $params['subgroup_by']) ? '' : " " . mysql_real_escape_string($params['subgroup_by']) . ", ") .
+            (($params['group_by'] == $params['subgroup_by'] or empty($params['subgroup_by'])) ? '' : " " . mysql_real_escape_string($params['subgroup_by']) . ", ") .
             "
 			1 as `cnt`,
 			t1.id,
 			t1.source_name,
-			UNIX_TIMESTAMP(CONVERT_TZ(t1.`date_add`, '+00:00', '" . _str($timezone_shift) . "')) as `time_add`,
+			UNIX_TIMESTAMP(".$time_add_fld.") as `time_add`,
 			t1.rule_id,
 			t1.out_id,
 			t1.parent_id,
@@ -159,23 +165,24 @@ function get_clicks_rows($params, $start = 0, $limit = 0, $campaign_params, $cli
 			t1.is_parent,
 			t1.is_connected " . $select . "
 			FROM `tbl_clicks` t1
-			WHERE CONVERT_TZ(t1.`date_add`, '+00:00', '" . _str($timezone_shift) . "') BETWEEN STR_TO_DATE('" . $params['from'] . " 00:00:00', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('" . $params['to'] . " 23:59:59', '%Y-%m-%d %H:%i:%s')" . $where . (empty($params['where']) ? '' : " and " . $params['where'] ) . "
+			WHERE ".$time_add_fld." BETWEEN STR_TO_DATE('" . $params['from'] . " 00:00:00', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('" . $params['to'] . " 23:59:59', '%Y-%m-%d %H:%i:%s')" . $where . (empty($params['where']) ? '' : " and " . $params['where'] ) . "
 			ORDER BY t1.id ASC
 			LIMIT $start, $limit";
 
     //echo $q;
     /*
-	  if($_SERVER['REMOTE_ADDR'] == '178.121.222.74') {
-	  	echo $q . '<br /><br />';
+	  if($_SERVER['REMOTE_ADDR'] == '178.121.200.233') {
+              dmp($params);
+            echo $q . '<br /><br />';
 	  }
-	*/
+          */
     $rs = db_query($q);
 
     $q = "SELECT FOUND_ROWS() as `cnt`";
     $total = ap(mysql_fetch_assoc(db_query($q)), 'cnt');
   
   /*  
-    if($_SERVER['REMOTE_ADDR'] == '178.121.222.74') {
+    if($_SERVER['REMOTE_ADDR'] == '178.121.200.233') {
       	echo $total . '<br /><br />';
       } 
 */
@@ -640,6 +647,11 @@ function get_clicks_report_grouped2($params) {
 
                     stat_inc($data[$k], $r, $k, $name);
                 }
+                /*
+                if($_SERVER['REMOTE_ADDR'] == '178.121.200.233') {
+                   // echo $total . '<br /><br />';
+                    dmp($rows);
+                } */
                 
                 // Статистика по дням
             } else {
