@@ -64,12 +64,24 @@ if ($_REQUEST['ajax_act'] == 'create_database') {
                 exit();
             }
 
-            // tmp file for WURFL
-
+            
             $temp_dir = ini_get('upload_tmp_dir');
             if (!$temp_dir)
                 $temp_dir = '/tmp';
             $temp_dir = realpath($temp_dir);
+            
+            // tmp dir is writable
+            
+            $tmp_file = 'cpa_tmp.test';
+            $tmp_rand = date('Y-m-d H:i') . mt_rand(11111, 99999);
+            
+            file_put_contents($temp_dir . '/' . $tmp_file, $tmp_rand);
+            if(!(file_get_contents($tmp_rand) == $tmp_rand and unlink($temp_dir . '/' . $tmp_file))) {
+                echo json_encode(array(false, 'cache_not_writable', $temp_dir));
+                exit();
+            }
+            
+            // tmp file for WURFL
 
             $wurfl_tmp_files = array('wurfl.xml', 'wurfl_builder.lock');
 
@@ -86,6 +98,8 @@ if ($_REQUEST['ajax_act'] == 'create_database') {
                     }
                 }
             }
+            
+            
 
             // Check datababase
 
