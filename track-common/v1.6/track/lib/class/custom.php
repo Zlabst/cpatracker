@@ -7,6 +7,7 @@ class custom {
         'profit'        => 'profit',
         'subid'         => 'subid',
         'status'        => 'status',
+        'txt_status'    => 'txt_status',
         'date_add'      => 'date_add',
         't1'    => 'txt_param1',
         't2'    => 'txt_param2',
