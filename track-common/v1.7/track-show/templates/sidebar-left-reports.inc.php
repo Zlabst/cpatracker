@@ -20,15 +20,34 @@ if ($_REQUEST['act'] != 'reports') {
 		<span>CPA </span>Tracker
 	    </a>
 	</li>
-	<li <?php if ($_REQUEST['type'] == 'basic' and $_REQUEST['mode'] != 'lp' and $_REQUEST['mode'] != 'lp_offers') {
-    echo 'class="active"';
-} ?>><a href="<?php echo $reports_lnk; ?>">Переходы</a></li>      
-	<li <?php if ($_REQUEST['type'] == 'sales') {
-	echo 'class="active"';
-    } ?>><a href="?act=reports&type=sales&subtype=daily">Продажи</a></li>
-	<li <?php if ($_REQUEST['mode'] == 'lp' or $_REQUEST['mode'] == 'lp_offers') {
-	echo 'class="active"';
-    } ?>><a href="<?php echo $reports_lnk_lp; ?>">Целевые страницы</a></li>
+	<?php
+		$active = ($_REQUEST['type'] == 'basic' and $_REQUEST['mode'] != 'lp' and $_REQUEST['mode'] != 'lp_offers');
+	?>
+	<li <?php if ($active) { echo 'class="active"'; } ?>><a href="<?php echo $reports_lnk; ?>">Переходы</a>
+            <ul id="submenu_all_offers" class="submenu" <?php if($active) { ?>style="display: block;"<?php } ?>>
+    		<?php echo type_subpanel2($params, 'basic', ''); ?>
+            </ul>
+        </li>
+	
+        <?php
+            $active = ($_REQUEST['type'] == 'sales');
+            $subtype = rq('subtype');
+        ?>
+        <li <?php if ($active) { echo 'class="active"'; } ?>><a href="?act=reports&type=sales&subtype=daily">Продажи</a>
+           <ul class="submenu" <?php if($active) { ?>style="display: block;"<?php } ?>>
+               <li <? if($subtype == 'daily') { echo 'class="active"';} ?>><a href="?act=reports&type=sales&subtype=daily">По дням</a></li>
+               <li <? if($subtype == 'monthly') { echo 'class="active"';} ?>><a href="?act=reports&type=sales&subtype=monthly">По месяцам</a></li>
+           </ul>
+        </li>
+        
+        <?php
+            $active = ($_REQUEST['mode'] == 'lp' or $_REQUEST['mode'] == 'lp_offers');
+        ?>
+        <li <?php if ($active) { echo 'class="active"'; } ?>><a href="<?php echo $reports_lnk_lp; ?>">Целевые страницы</a>
+            <ul class="submenu" <?php if($active) { ?>style="display: block;"<?php } ?>>
+    		<?php echo type_subpanel2($params, 'basic', 'lp'); ?>
+            </ul>
+        </li>
     </ul>
 <?php
 echo load_plugin('demo', 'demo_well');

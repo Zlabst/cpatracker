@@ -2,12 +2,12 @@ var timer_cols = false;
 
 // Вставляем параметры во все ссылки контейнера
 function modify_links(name, val) {
-	var node = document.getElementsByClassName("container")[1];
-	var els = node.getElementsByTagName("a");
+	//var node = document.getElementsByClassName("body");
+	var els = document.getElementsByTagName("a");
 
 	for(var i=0, j=els.length; i<j; i++) {
 		// Не трогаем контейнер с соответствующим селектором
-		//console.log($(els[i]).parent());
+		console.log($(els[i]).parent().parent().parent().parent().parent());
 		if(name == 'col' && $(els[i]).parent().attr('id') == 'rt_sale_section') continue;
 		
 		href = els[i].href;

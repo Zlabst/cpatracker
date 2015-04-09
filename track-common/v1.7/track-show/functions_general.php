@@ -2189,6 +2189,7 @@ function microtime_float() {
  */
 function db_query($q, $die_on_error = false) {
     global $sql_log, $sql_time;
+    //echo $q . '<br>';
     $start = microtime_float();
     $rs = mysql_query($q);
     if (!$rs) {
@@ -2234,7 +2235,7 @@ function delete_offer($ids, $del = 1) {
     }
 }
 
-function edit_offer($category_id, $link_name, $link_url) {
+function edit_offer($category_id, $link_name, $link_url, $link_id = 0) {
     $link_name = trim(str_replace(array("\r\n", "\r", "\n", "\t"), '', $link_name));
     $link_url = trim(str_replace(array("\r\n", "\r", "\n", "\t"), '', $link_url));
 
@@ -2242,24 +2243,42 @@ function edit_offer($category_id, $link_name, $link_url) {
         if (!(strpos($link_url, 'http://') === 0 || strpos($link_url, 'https://') === 0)) {
             $link_url = "http://{$link_url}";
         }
+        
+        if ($link_name == '') {
+            $link_name = "Оффер #{$link_id}";
+        }
+        
+        $ins = array(
+            'offer_name' => $link_name,
+            'offer_tracking_url' => $link_url,
+            'date_add' => date('Y-m-d H:i:s'),
+        );
 
         // Add link
-        $sql = "insert into tbl_offers (offer_name, offer_tracking_url, date_add) values('" . mysql_real_escape_string($link_name) . "', '" . mysql_real_escape_string($link_url) . "', NOW())";
-        mysql_query($sql);
-        $link_id = mysql_insert_id();
-
-        // Set link name instead of empty name
-        if ($link_name == '') {
-            $link_name = "Ссылка #{$link_id}";
-            $sql = "update tbl_offers set offer_name='" . mysql_real_escape_string($link_name) . "' where id='" . mysql_real_escape_string($link_id) . "'";
-            mysql_query($sql);
+        if(empty($link_id)) {
+            $q = insertsql($ins, 'tbl_offers');
+            db_query($q);
+            $link_id = mysql_insert_id();
+            
+        } else {
+            $ins['id'] = $link_id;
+            $q = updatesql($ins, 'tbl_offers', 'id');
+            db_query($q);
+            
+            $q="delete from `tbl_links_categories` where `offer_id` = '".$link_id."'";
+            db_query($q);
         }
-
+        
         if (!empty($category_id)) {
             // Add link to selected category
-            $sql = "insert into tbl_links_categories (category_id, offer_id) values ('" . mysql_real_escape_string($category_id) . "', '" . mysql_real_escape_string($link_id) . "')";
-            mysql_query($sql);
+            $ins = array(
+                'category_id' => $category_id,
+                'offer_id' => $link_id
+            );
+            $q = insertsql($ins, 'tbl_links_categories');
+            db_query($q);
         }
+
     }
 
     cache_links_update();
@@ -2688,7 +2707,7 @@ function get_offers_list($cat_type = 'all', $category_id = 0, $start = 0, $limit
                     $total = $r['cnt'];
                 } else {
                     // Get list of offers in category
-                    $q = "select SQL_CALC_FOUND_ROWS tbl_offers.* 
+                    $q = "select SQL_CALC_FOUND_ROWS tbl_offers.*, tbl_links_categories.category_id 
                         from tbl_offers 
                         left join tbl_links_categories on tbl_offers.id=tbl_links_categories.offer_id
                         where tbl_links_categories.category_id='" . intval($category_id) . "' 
@@ -2700,6 +2719,7 @@ function get_offers_list($cat_type = 'all', $category_id = 0, $start = 0, $limit
                     $total = total_rows();
                     while ($r = mysql_fetch_assoc($rs)) {
                         $r['offer_id'] = $r['id'];
+                        $r['category_id'] = intval($r['category_id']);
                         $offers_id[] = "'" . mysql_real_escape_string($r['id']) . "'";
                         $arr_offers[] = $r;
                     }
@@ -2744,7 +2764,7 @@ function get_offers_list($cat_type = 'all', $category_id = 0, $start = 0, $limit
             $total = $r['cnt'];
         } else {
             // Get list of offers without category
-            $q = "select SQL_CALC_FOUND_ROWS tbl_offers.* 
+            $q = "select SQL_CALC_FOUND_ROWS tbl_offers.*, tbl_links_categories.category_id  
                 from tbl_offers 
                 left join tbl_links_categories on tbl_offers.id=tbl_links_categories.offer_id
                 left join tbl_links_categories_list on tbl_links_categories.category_id = tbl_links_categories_list.id 
@@ -2757,6 +2777,7 @@ function get_offers_list($cat_type = 'all', $category_id = 0, $start = 0, $limit
             $total = total_rows();
             while ($r = mysql_fetch_assoc($rs)) {
                 $r['offer_id'] = $r['id'];
+                $r['category_id'] = intval($r['category_id']);
                 $offers_id[] = "'" . mysql_real_escape_string($r['id']) . "'";
                 $arr_offers[] = $r;
             }
@@ -2810,5 +2831,4 @@ function redirect($url) {
     header("Location: " . $url);
     exit;
 }
-
 ?>

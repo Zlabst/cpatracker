@@ -17,27 +17,38 @@ if (empty($_COOKIE['cpa_menu_main'])) {
 <!DOCTYPE html>
 <html lang="en">
     <head>
-	<?php include (_TRACK_SHOW_COMMON_PATH . '/templates/head.inc.php'); ?>
+        <?php include (_TRACK_SHOW_COMMON_PATH . '/templates/head.inc.php'); ?>
     </head>
     <body>
-	<?php
-	if ($_REQUEST['page'] != 'login') {
-	    include _TRACK_SHOW_COMMON_PATH . "/templates/menu-top.inc.php";
-	    $sidebar = _TRACK_SHOW_COMMON_PATH . '/templates/' . (in_array($page_sidebar, $page_sidebar_allowed) ? $page_sidebar : 'sidebar-left.inc.php');
-	    include ($sidebar);
-	}
-	?>
-	<div class="page-content<?php echo $menu_toggle_class; ?>">
-	    <?php
-	    if ($_REQUEST['page'] != 'login') {
-		echo load_plugin('payreminder');
-		echo load_plugin('expiry');
-	    }
-	    if (in_array($page_content, $page_content_allowed)) {
-		include (_TRACK_SHOW_COMMON_PATH . '/pages/' . $page_content);
-	    }
-	    ?>
-	</div>
-	<?php echo tpx('footer'); ?>
+        <?php
+        // Переносим расчётную часть выше, чтобы на момент показа меню у нас были все данные
+        if (in_array($page_content, $page_content_allowed)) {
+            ob_start();
+            include (_TRACK_SHOW_COMMON_PATH . '/pages/' . $page_content);
+            $main_content = ob_get_contents();
+            ob_end_clean();
+        } else {
+            $main_content = '';
+        }
+
+        if ($_REQUEST['page'] != 'login') {
+            // Меню сверху
+            include _TRACK_SHOW_COMMON_PATH . "/templates/menu-top.inc.php";
+            
+            // Меню слева
+            $sidebar = _TRACK_SHOW_COMMON_PATH . '/templates/' . (in_array($page_sidebar, $page_sidebar_allowed) ? $page_sidebar : 'sidebar-left.inc.php');
+            include $sidebar;
+        }
+        ?>
+        <div class="page-content<?php echo $menu_toggle_class; ?>">
+            <?php
+            if ($_REQUEST['page'] != 'login') {
+                echo load_plugin('payreminder');
+                echo load_plugin('expiry');
+            }
+            echo $main_content;
+            ?>
+        </div>
+        <?php echo tpx('footer'); ?>
     </body>
 </html>

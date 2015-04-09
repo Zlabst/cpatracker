@@ -66,93 +66,6 @@ if (!$include_flag) {
     });
 </script>
 <?
-/* ?>
-  <div class="col-md-3" id="categories_left_menu">
-  <div class="bs-sidebar hidden-print affix-top">
-  <ul class="nav bs-sidenav" id='categories_left_menu_list'>
-  <?php
-  $result=get_links_categories_list();
-  $arr_categories=$result['categories'];
-  $arr_categories_count=$result['categories_count'];
-
-  if ($_REQUEST['category_id']=='' || $_REQUEST['category_id']==0){$class=" class='active'";}else{$class='';}
-  echo "<li {$class}>";
-  echo "<a href='?page=links'>Без категории";
-  if ($arr_categories_count[0]>0)
-  {
-  echo "<span class='category_count'>"._e($arr_categories_count[0])."</span>";
-  }
-  echo "</a>";
-  echo "</li>";
-
-  $cur_category_group='{empty}';
-
-  foreach ($arr_categories as $cur)
-  {
-  if ($cur_category_group!=$cur['category_type'])
-  {
-  $cur_category_group=$cur['category_type'];
-  switch ($cur_category_group)
-  {
-  case 'network':
-  echo "<li class='nav-header'>CPA сети</li>";
-  break;
-
-  default:
-
-  break;
-  }
-  }
-  if ($_REQUEST['category_id']==$cur['id']){$class="class='active'";}else{$class="";}
-  echo "<li {$class}>";
-  echo "<a href='?page=links&category_id="._e($cur['id'])."'>";
-  echo _e($cur['category_caption']);
-  if ($arr_categories_count[$cur['id']]>0)
-  {
-  echo "<span class='category_count'>"._e($arr_categories_count[$cur['id']])."</span>";
-  }
-  echo "</a>";
-
-  echo "</li>";
-  }
-  ?>
-  </ul>
-  <div class='links_category_add'>
-  <hr />
-  <span class='btn-link' onclick="toggle_add_category_form()">+ новая категория</span>
-  </div>
-
-
-  <form class="form-inline links_category_add_form" role="form" method="post" onsubmit='return add_new_category()' id='category_add_form'>
-  <input type='hidden' name='ajax_act' value='add_category'>
-
-  <input type="hidden" name="csrfkey" value="<?php echo CSRF_KEY;?>">
-  <div class="form-group">
-  <input type="text" class="form-control" name="category_name" placeholder="Название категории">
-  </div>
-  <button type="submit" class="btn btn-default">+</button>
-  </form>
-
-  </div>
-  <?php
-  echo load_plugin('demo', 'demo_well');
-  ?>
-  </div>
-
-  <? */
-
-$cat_types = array(
-    'favorits' => 'Избранное',
-    'all' => 'Все офферы',
-    'archive' => 'Архив'
-);
-$cat_type = rq('type');
-
-// Существует ли тип, который нам прислали?
-if (empty($cat_type) or !array_key_exists($cat_type, $cat_types)) {
-    $cat_type = 'all';
-}
-
 // Проверка на наличие избранного
 $have_favorits = offers_have_status(3);
 
@@ -196,17 +109,6 @@ if (!$have_favorits) {
             }
 ?>>
                 <?php
-                $result = get_links_categories_list();
-                $arr_categories = array_merge(array(
-                    array(
-                        'id' => 0,
-                        'category_caption' => 'Без категории'
-                    )
-                        ), $result['categories']
-                );
-
-                $arr_categories_count = $result['categories_count'];
-
                 echo '<a href="#" id="lnk_all_offers">Все офферы</a><ul id="submenu_all_offers" class="submenu" ' . ((($cat_group == 'all' and $_COOKIE['cpa_menu_offers_all'] !== '0') or $_COOKIE['cpa_menu_offers_all'] == '1') ? 'style="display: block;"' : '') . '>';
                 foreach ($arr_categories as $cur) {
                     $highlight = ($_REQUEST['category_id'] == $cur['id'] and $cat_type == 'all') ? ' class="active"' : '';

@@ -30,7 +30,7 @@
 </script>
 	<div class="top-navbar<?php echo $menu_toggle_class;?>">
 		<div class="top-nav-content">
-			<div class="container-fluid" >
+			<div class="container-fluid">
 			
 				<!-- Nav main menu  -->
 				<ul class="nav navbar-nav navbar-left main-menu">
@@ -148,7 +148,7 @@
 							<?php echo $arr_timezone_selected_name; ?>
 							<i class="fa fa-angle-down"></i>
 						</a>
-						<ul class="dropdown-menu" role="menu">
+						<ul class="dropdown-menu pull-right" role="menu" style="min-width: 250px;">
 							<?php
 								foreach ($arr_timezone_settings as $cur) {
 			                        if ($cur['is_active'] != 1) {

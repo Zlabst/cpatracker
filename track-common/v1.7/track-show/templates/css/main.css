@@ -329,7 +329,9 @@ label {
   pointer-events: auto;
 }
 .offer-form .btn-toolbar {
-  margin-top: 15px;
+  /* margin-top: 15px; */
+    margin-top:-15px; 
+  margin-bottom:20px; 
 }
 .offer-form .form-group:last-child {
   margin-bottom: 0;

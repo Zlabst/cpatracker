@@ -10,7 +10,7 @@ $arr_dates  = getDatesBetween($date1, $date2);
 $conv       = rq('conv');
 $type       = rq('type', 0, 'daily_stats');
 $subtype    = rq('subtype'); // XSS ОПАСНО!!!
-//$mode       = rq('mode');
+
 $limited_to = rq('limited_to');
 $group_by   = rq('group_by', 0, $subtype);
 $part       = rq('part', 0, 'all');
@@ -227,7 +227,7 @@ switch ($_REQUEST['type']) {
                     <input type="hidden" name="from" id="sStart" value="">
                     <input type="hidden" name="to" id="sEnd" value="">
                 </div>
-                <div class="pull-right" style="margin-top:18px;">' . type_subpanel() . '</div>
+                <div class="pull-right" style="margin-top:18px;"><div class="btn-group">' . join('', type_subpanel()) . '</div></div>
               </form>';
     	
     	include _TRACK_SHOW_COMMON_PATH."/pages/report_all.inc.php";

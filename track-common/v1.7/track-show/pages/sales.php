@@ -47,14 +47,14 @@
 $sales = get_sales($from, $to, $days, $month);
 krsort($sales);
 ?>
-    <div class="row">
+    <!--<div class="row">
         <div class="col-md-4">
             <div class="btn-group">
                 <a href="?act=reports&type=sales&subtype=daily" type="button" class="btn btn-default <?php echo $days_active?>">По дням</a>
                 <a href="?act=reports&type=sales&subtype=monthly" type="button" class="btn btn-default <?php echo $month_active?>">По месяцам</a>
             </div>
         </div>
-    </div>
+    </div>-->
     <div class='row'>
         <div class="col-md-4"><h3>Продажи по дням:</h3></div>
         <div id="per_day_range" class="pull-right">

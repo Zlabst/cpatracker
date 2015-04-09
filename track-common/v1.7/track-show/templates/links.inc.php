@@ -6,7 +6,7 @@ if (!$include_flag) {
 global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $cat_type,
         $delete_cat, $delete_category_info;
 ?><script>
-    var last_removed = 0;     // id последнего удалённого оффера
+    var last_removed = 0;     // id последнего удалённого офера
     var offer_sale_timer = 0; // таймер проверки на [SUBID] в поле ссылки нового офера
     var cat_id = <?php echo intval($category_id); ?>;
     var cat_type = '<?php echo _e($cat_type) ?>';
@@ -23,6 +23,7 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
             $('#networks_import_status_text').html(msg);
             $('#networks_import_status').show();
         });
+        return false;
     }
     
     // Правильно ли заполнена форма оффера?
@@ -67,6 +68,7 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
     function delete_category() {
         $('#form_category_edit input[name=is_delete]').val('1');
         $('#form_category_edit').submit();
+        return false;
     }
     
     // Отмеченные галочками оферы (вернёт массив)
@@ -83,6 +85,7 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
         action_arr = checked_offers();
         if(action_arr.length > 0) {
             delete_link(action_arr);
+            $('.show-if-offer-checked').hide(); // теперь ничего не отмечено, скрываем кнопки
         }
         return false;
     }
@@ -99,8 +102,14 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
                 for(i in id) {
                     $('#linkrow-' + id[i]).hide();
                 }
+                if(id.length > 1) {
+                	$('#remove_alert .alert-text').html(id.length + ' оффер' + numform(id.length, ['', 'а', 'ов']) +  ' были удален' + numform(id.length, ['', 'ы', 'ы']) + ', вы можете их');
+                } else {
+                	$('#remove_alert .alert-text').html('Оффер &laquo;' + offer_name(id[0]) + '&raquo; был удален, вы можете его');
+                }
             } else {
                 $('#linkrow-' + id).hide();
+                $('#remove_alert .alert-text').html('Оффер &laquo;' + offer_name(id) + '&raquo; был удален, вы можете его');
             }
             response = eval('(' + msg + ')');
             $('#offers_footer_total').html(response.total_html);
@@ -192,15 +201,49 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
     
     // Запуск таймера проверки на [SUBID] в форме добавления офера
     function start_offer_sale_timer() {
-        $('#offer_sale').css('display', $('#add-offer-url').val().indexOf('[SUBID]') >= 0 ? 'inline' : 'none');
+    	
+    	if($('#add-offer-url').val().toUpperCase().indexOf('[SUBID]') >= 0) {
+    		if($('#add-offer-url').val().indexOf('[SUBID]') < 0) {
+    			$('#add-offer-url').val($('#add-offer-url').val().replace(/\[subid\]/i, '[SUBID]'));
+    		}
+    		$('#offer_sale').css('display', 'inline');
+    	} else {
+    		$('#offer_sale').css('display', 'none');
+    	}
+    	
+    	
+        //$('#offer_sale').css('display', $('#add-offer-url').val().indexOf('[SUBID]') >= 0 ? 'inline' : 'none');
         offer_sale_timer = setTimeout('start_offer_sale_timer()', 500);
-        console.log('st');
+    }
+    
+    function offer_name(offer_id) {
+    	return $($('#linkrow-' + offer_id).find('td')[2]).text();
+    }
+    
+    // Показ/сокрытие формы редактирования офера
+    function toggle_offer_edit_form(offer_id) {
+       
+        $('#add-offer-name').val($($('#linkrow-' + offer_id).find('td')[2]).text());
+        $('#add-offer-url').val($($('#linkrow-' + offer_id).find('td')[4]).text());
+        $('#add-offer-id').val(offer_id);
+        $('#add-offer-form-submit').html('<i class="icon icon-pencil"></i> Редактировать оффер');
+       
+       if($('#add_offer_form').css('display') != 'block') {
+           $('#add_offer_form').show();
+            start_offer_sale_timer();
+        }
+        return false;
     }
     
     // Показ/сокрытие формы добавления офера
     function toggle_offer_add_form() {
         $('#add_offer_form').toggle();
         if($('#add_offer_form').css('display') == 'block') {
+            $('#add-offer-name').val('');
+            $('#add-offer-url').val('');
+            $('#add-offer-id').val('0');
+            $('#add-offer-name').focus();
+            $('#add-offer-form-submit').html('<i class="icon icon-plus"></i> Добавить новый оффер');
             start_offer_sale_timer();
         } else {
             $('#add_offer_form').find('form')[0].reset();
@@ -232,13 +275,77 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
         $('#add_cat_form').hide();
     }
     
+    function numform(n, expr) {
+	    i = n % 100;
+	    if (i >= 5 && i <= 20) {
+			return expr[2];
+	    } else {
+			i %= 10;
+			if (i == 1) {
+			    res = expr[0];
+			} else { 
+				if (i >= 2 && i <= 4) {
+			    	res = expr[1];
+				} else {
+			    	res = expr[2];
+			    }
+		    }
+	    }
+	    return res;
+	}
+	    
+    function objk2arr(obj) {
+        arr = []
+        for(i in obj) {
+            arr.push(i);
+        }
+        return arr;
+    }
+    
+    // Проверяем, нужно ли показывать "Всего офферов""
+    function chk_tbl_footer() {
+        $('#offers_footer').toggle($('#offers_table tbody').children().length > 1);
+    }
+    
     $(function() {
+        
+        $('#form_add_offer').bind("keydown", function(event){
+            if(event.which == 27) {
+                toggle_offer_add_form();
+            }
+            if(event.which == 13) {
+                $('#form_add_offer').submit();
+            }
+        });
+        
         // Убираем отметки (фикс глюка при обновлении страницы)
         $('.offer_checkbox').iCheck('uncheck');
     	
-        // Показать кнопки действий, если отмечена хотя бы один оффер
+    	// Редактирование офера из верхнего меню
+        $('.sel-link-edit').click(function(event) {
+        	toggle_offer_edit_form(checked_offers()[0]);
+        	return false;
+        });
+    	
+        // Показать кнопки действий, если отмечен хотя бы один оффер
         $('.offer_checkbox').on('ifChanged', function(e) {
-            $('.show-if-offer-checked').toggle($('.offer_checkbox:checked').length > 0)
+            $('.show-if-offer-checked').toggle($('.offer_checkbox:checked').length > 0);
+            
+            // Редактирование оффера
+            $('.sel-link-edit').toggle($('.offer_checkbox:checked').length == 1);
+            
+            // Выбираем уникальные категории
+            var sel_categories = {};
+            $('.offer_checkbox:checked').each(function(){
+                id = $(this).attr('id').replace('chk', '');
+                cat = $('#linkrow-' + id).attr('category');
+                sel_categories[cat] = 1; 
+            });
+            sel_categories = objk2arr(sel_categories);
+            $('.move2cat').show();
+            if(sel_categories.length == 1) {
+                $('.move2cat_' + sel_categories[0]).hide();
+            }
         });
     	
         // Действие для галки "Отметить все"
@@ -281,15 +388,15 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
             $('#form_add_offer').submit();
         });
         
-        init_add_cat();
+        init_add_cat(); 
+        chk_tbl_footer(); // Проверка, нужно ли показывать футер и "Всего офферов" иже с ним
     });
 </script>
 <div class="alert alert-warning fade in alert-dismissible" role="alert" id="remove_alert">
     <button class="close" aria-label="Close" data-dismiss="alert" type="button">
         <span aria-hidden="true">×</span>
     </button>
-    <strong>Внимание!</strong> 
-    Один или несколько объектов были удалены, Вы можете их 
+    <span class="alert-text">Один или несколько объектов были удалены, Вы можете их</span> 
     <a class="alert-link" href="#" onClick="return restore_link();"><strong><u>восстановить</u></strong></a>
 </div>
 <?php
@@ -301,7 +408,7 @@ if(!empty($delete_category_info['id'])) {
         <span aria-hidden="true">×</span>
     </button>
     <strong>Внимание!</strong> 
-    Категория <strong><?php echo $delete_category_info['category_caption']?></strong> была удалена, Вы можете её 
+    Категория  &laquo;<strong><?php echo $delete_category_info['category_caption']?></strong>&raquo; была удалена, Вы можете её 
     <a class="alert-link" href="?page=links&ajax_act=category_edit&is_delete=0&category_id=<?php echo $delete_category_info['id'];?>&csrfkey=<?php echo CSRF_KEY; ?>"><strong><u>восстановить</u></strong></a>
 </div>
 <?php    
@@ -354,23 +461,25 @@ if ($page_type == 'network') {
                     <ul class="dropdown-menu dropdown-menu-left" role="menu">
                         <?php
                         foreach ($arr_categories as $cur) {
-                            if ($category_id != $cur['id'])
-                                echo '<li><a class="dropdown-link" href="#" onclick="return move_links_to_category(' . $cur['id'] . ');">' . _e($cur['category_caption']) . '</a></li>';
+                            // Отвечать за сок
+                            //if ($category_id != $cur['id'] or ($cur['id'] == 0 and $cat_type == 'favorits'))
+                            
+                            echo '<li class="move2cat move2cat_'.$cur['id'].'"><a class="dropdown-link" href="#" onclick="return move_links_to_category(' . $cur['id'] . ');">' . _e($cur['category_caption']) . '</a></li>';
                         }
                         ?>
                     </ul>
                 </div>
                 <div class="btn-group show-if-offer-checked">
-                    <a class="btn btn-default single-icon" href="#" onclick="arch_links(<?php echo $cat_type == 'archive' ? 0 : 1; ?>)" data-placement="top" data-toggle="tooltip" data-original-title="<?php echo $cat_type == 'archive' ? 'достать из архива' : 'переместить в архив'; ?>">
+                    <a class="btn btn-default single-icon" href="#" onclick="return arch_links(<?php echo $cat_type == 'archive' ? 0 : 1; ?>)" data-placement="top" data-toggle="tooltip" data-original-title="<?php echo $cat_type == 'archive' ? 'достать из архива' : 'переместить в архив'; ?>">
                         <i class="icon icon-drawer"></i>
                     </a>
-                    <a class="btn btn-default single-icon" href="fakelink" data-placement="top" data-toggle="tooltip" data-original-title="редактировать">
+                    <a class="btn btn-default single-icon sel-link-edit" href="fakelink" data-placement="top" data-toggle="tooltip" data-original-title="редактировать">
                         <i class="icon icon-pencil"></i>
                     </a>
                     <a class="btn btn-default single-icon" href="#" onclick="return delete_links();" data-placement="top" data-toggle="tooltip" data-original-title="удалить">
                         <i class="icon icon-trash-gray"></i>
                     </a>
-                </div>					
+                </div>
 
 
                 <!--Right buttons-->
@@ -392,6 +501,7 @@ if ($page_type == 'network') {
             <div class="row">
                 <form class="form-horizontal offer-form" novalidate="novalidate" role="form" onSubmit="return check_add_offer();" id="form_add_offer">
                     <input type="hidden" name="ajax_act" value="add_offer">
+                    <input type="hidden" name="link_id" id="add-offer-id" value="0">
                     <input type="hidden" name="csrfkey" value="<?php echo CSRF_KEY; ?>">
                     <input type="hidden" name="category_id" value="<?php echo _e($category_id); ?>">
 
@@ -448,11 +558,13 @@ if (count($arr_offers['data']) > 0) {
             <tbody>
                 <?php
                 foreach ($arr_offers['data'] as $cur) {
+                    //dmp($cur);
+                    
                     $tracking_url = str_replace(array('http://', 'https://'), '', $cur['offer_tracking_url']);
                     $total_visits = intval($offers_stats_array[$cur['offer_id']]);
                     ?>
                     <!--row-->
-                    <tr id="linkrow-<?php echo $cur['offer_id']; ?>">
+                    <tr id="linkrow-<?php echo $cur['offer_id']; ?>" category="<?php echo $cur['category_id']?>">
                         <td>
                             <form role="form">
                                 <div class="checkbox">
@@ -496,7 +608,7 @@ if (count($arr_offers['data']) > 0) {
                                         <?php } ?>
                                     </li>
                                     <li>
-                                        <a class="dropdown-link" href="#">Изменить</a>
+                                        <a class="dropdown-link" href="#" onclick="return toggle_offer_edit_form(<?php echo $cur['offer_id']; ?>)">Изменить</a>
                                     </li>
                                     <li class="dropdown-footer text-danger">
                                         <a class="dropdown-link text-danger" href="#" onclick="return delete_link(<?php echo _e($cur['offer_id']); ?>)"><i class="icon icon-abs icon-trash"></i>Удалить</a>

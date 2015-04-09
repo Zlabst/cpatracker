@@ -710,11 +710,12 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             break;
 
         case 'add_offer':
-            $category_id = $_REQUEST['category_id'];
+            $category_id = rq('category_id', 2);
             $link_name = $_REQUEST['link_name'];
             $link_url = $_REQUEST['link_url'];
+            $link_id = rq('link_id', 2);
 
-            edit_offer($category_id, $link_name, $link_url);
+            edit_offer($category_id, $link_name, $link_url, $link_id);
 
             // Redirect to links page with category_id
             if (!empty($category_id)) {
@@ -1023,13 +1024,13 @@ switch ($_REQUEST['page']) {
     default:
         $page_top_menu = "top_menu.php";
         $sidebar_inc = "left-sidebar.php";
+        
         switch ($_REQUEST['act']) {
             case 'reports':
                 switch ($_REQUEST['type']) {
                     case 'sales':
                         $page_content = 'sales.php';
                         break;
-
                     case 'salesreport':
                         $page_content = 'salesreport.php';
                         break;
