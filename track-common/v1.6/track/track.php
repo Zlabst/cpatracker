@@ -3,8 +3,10 @@
 	ob_start();
 	/*
 	error_reporting(E_ALL);
-	ini_set('display_errors', 1);	
+	ini_set('display_errors', 1);
 	*/
+	
+	ini_set('log_errors', 1);
 	
 	require _TRACK_COMMON_PATH . '/functions.php';
 	
@@ -401,7 +403,7 @@
 	}
         
     // Cleaning not used []-params
-    $redirect_link = preg_replace('/(\[[a-z\_0-9]+\])/i', '', $redirect_link);
+    $redirect_link = preg_replace('/\=(\[[a-z\_0-9]+\])/i', '=', $redirect_link);
 	
 	// Write cookie with parent SubID
 	$url = parse_url($redirect_link);

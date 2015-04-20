@@ -398,7 +398,7 @@
 	}
         
     // Cleaning not used []-params
-    $redirect_link = preg_replace('/(\[[a-z\_0-9]+\])/i', '', $redirect_link);
+    $redirect_link = preg_replace('/\=(\[[a-z\_0-9]+\])/i', '=', $redirect_link);
 	
 	// Write cookie with parent SubID
 	$url = parse_url($redirect_link);

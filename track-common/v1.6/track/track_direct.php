@@ -234,7 +234,7 @@
 	$is_unique = add_parent_subid($url['host'], $subid);
         
     // Cleaning not used []-params
-    $redirect_link = preg_replace('/(\[[a-z\_0-9]+\])/i', '', $redirect_link);
+    $redirect_link = preg_replace('/\=(\[[a-z\_0-9]+\])/i', '=', $redirect_link);
 	
 	// Add unique user
 	$str .= $is_unique."\t";
