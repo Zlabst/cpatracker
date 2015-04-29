@@ -246,11 +246,20 @@ if ($_REQUEST['ajax_act'] == 'a_load_flow') {
         }
     }
 
-    list($total, $arr_data) = get_visitors_flow_data($filter, rq('offset', 2), 100, $_REQUEST['date']);
-
+    list($more, $arr_data, $start, $start_s) = get_visitors_flow_data($filter, rq('start', 2), rq('start_s', 2), 100, $_REQUEST['date']);
+	
+	$out = array(
+		'data' => tpx('stats-flow-rows', array('data' => $arr_data)),
+		'more' => $more,
+		'start' => $start,
+		'start_s' => $start_s,
+	);
+	echo json_encode($out);
+	/*
     foreach ($arr_data as $row) {
         include _TRACK_SHOW_COMMON_PATH . '/pages/stats-flow-row.php';
     }
+    */
     exit();
 }
 
@@ -1079,9 +1088,9 @@ switch ($_REQUEST['page']) {
                     }
                 }
 
-                list($total, $arr_data) = get_visitors_flow_data($filter, 0, 20, $_REQUEST['date']);
+                list($more, $arr_data) = get_visitors_flow_data($filter, 0, 0, 20, $_REQUEST['date']);
 
-                $page_sidebar = 'sidebar-left-reports.inc.php';
+                $page_sidebar = "sidebar-left-reports.inc.php";
                 $page_content = "stats-flow.php";
 
                 include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";

@@ -491,8 +491,7 @@ $source_config = array(
             'adv_id' => array('name' => 'ID объявления', 'url' => '{creative}'),
             'keyword' => array('name' => 'Ключевая фраза', 'url' => '{keyword}'),
             'place_id' => array('name' => 'Площадка Adwords', 'url' => '{placement}'),
-            'adposition' => array('name' => 'Позиция', 'url' => '{adposition}
-'),
+            'adposition' => array('name' => 'Позиция', 'url' => '{adposition}'),
             'position_type' => array(
                 'n' => 5,
                 'name' => 'Размещение',
@@ -2132,11 +2131,11 @@ function is_subid($v) {
 /**
  * 	Формирование запроса на insert
  */
-function insertsql($values, $table, $duplicate_update = false) {
+function insertsql($values, $table, $duplicate_update = false, $ignore = false) {
     foreach ($values as $key => $val) {
         $values[$key] = "'" . _str($val) . "'";
     }
-    $sql = "insert into `$table` (`" . join("`,`", array_keys($values)) . "`) values (" . join(",", array_values($values)) . ")";
+    $sql = "insert " . ($ignore ? 'ignore' : '') . " into `$table` (`" . join("`,`", array_keys($values)) . "`) values (" . join(",", array_values($values)) . ")";
 
     if ($duplicate_update) {
         $sql .= " ON DUPLICATE KEY UPDATE " . setdefs($values);
@@ -2830,5 +2829,167 @@ function offers_total($cat_type, $cat_id = 0) {
 function redirect($url) {
     header("Location: " . $url);
     exit;
+}
+
+/**
+ * Выясняем какие споты входят во временой промежуток
+ * @param string $from начало
+ * @param string $to конец
+ * @param type $timezone_shift смещение временного пояса
+ * @return array 
+ * 
+ * Примеры использования
+ * clicks_spot_get() - текущий спот
+ * clicks_spot_get('all') - все споты
+ * clicks_spot_get('2014-04-12') - все споты, в которых есть записи на весь этот день
+ * clicks_spot_get('2014-04-12 10:00:00', '2014-04-13 10:00:00') - споты, в которых есть записи за это время
+ */
+function clicks_spot_get($from = '', $to = '', $timezone_shift = '+00:00') {
+    $out = array();
+    
+    if(empty($from) and empty($to)) {
+        $where = "`current` = 1";
+    } elseif($from == 'all') {
+        $where = " 1";
+    } else {
+        if(!empty($from) and empty($to)) {
+            $to = $from;            
+        }
+        
+        if(strlen($from) == 10) {
+            $from .= ' 00:00:00';
+        }
+
+        if(strlen($to) == 10) {
+            $to .= ' 23:59:59';
+        }
+        
+        if($timezone_shift == '+00:00') {
+            $where = "(`time_begin` < STR_TO_DATE('" . $to . "', '%Y-%m-%d %H:%i:%s') AND `time_end` > STR_TO_DATE('" . $from . "', '%Y-%m-%d %H:%i:%s'))";
+        } else {
+            $where = "(CONVERT_TZ(`time_begin`, '+00:00', '" . _str($timezone_shift) . "') < STR_TO_DATE('" . $to . "', '%Y-%m-%d %H:%i:%s') AND CONVERT_TZ(`time_end`, '+00:00', '" . _str($timezone_shift) . "') > STR_TO_DATE('" . $from . "', '%Y-%m-%d %H:%i:%s'))";
+        }
+    }
+    $q = "select `id` from `tbl_clicks_map` where " . $where . " order by `id`";
+    if($rs = db_query($q) and mysql_num_rows($rs) > 0) {
+        while($r = mysql_fetch_assoc($rs)) {
+            $out[] = $r['id'];
+        }
+    }
+    return $out;
+}
+
+/**
+ * Создание нового спота для кликов
+ */
+
+function clicks_spot_add() {
+    
+    $current_spot_id = clicks_spot_get();
+    $q = "select max(`date_add`) as `max_time` from `tbl_clicks_s" . $current_spot_id . "`";
+    $rs = db_query($q);
+    $r = mysql_fetch_assoc($rs);
+    $max_spot_time = $r['max_time'];
+    
+    // Завершаем текущий спот
+    $q = "update tbl_clicks_map set `time_end` = '".$max_spot_time."', `current` = '0' where `id` = '" . $current_spot_id . "'";
+    
+    // Создание нового спота
+    $ins = array(
+        'time_begin' => '2000-01-01 00:00:00',
+        'time_end' => '2020-01-01 00:00:00',
+        'current' => '1'
+    );
+    $q = insertsql($ins, 'tbl_clicks_map');
+    db_query($q);
+  
+    $new_spot_id = mysql_insert_id();
+    
+    $q="CREATE TABLE IF NOT EXISTS `tbl_clicks_s" . $new_spot_id . "` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `date_add` datetime NOT NULL,
+  `user_ip` varchar(255) NOT NULL,
+  `user_agent` text CHARACTER SET utf8 NOT NULL,
+  `user_os` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `user_os_version` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `user_platform` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `user_platform_info` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `user_platform_info_extra` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `user_browser` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `user_browser_version` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `is_mobile_device` tinyint(1) NOT NULL,
+  `is_phone` tinyint(1) NOT NULL,
+  `is_tablet` tinyint(1) NOT NULL,
+  `country` varchar(255) NOT NULL,
+  `state` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `city` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `region` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `isp` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `rule_id` int(11) NOT NULL,
+  `out_id` int(11) NOT NULL,
+  `subid` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `subaccount` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `source_name` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `campaign_name` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `ads_name` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `referer` text CHARACTER SET utf8 NOT NULL,
+  `search_string` text CHARACTER SET utf8 NOT NULL,
+  `click_price` decimal(10,4) NOT NULL,
+  `conversion_price_main` decimal(10,4) NOT NULL,
+  `is_lead` tinyint(1) NOT NULL,
+  `is_sale` tinyint(1) NOT NULL,
+  `is_parent` tinyint(1) NOT NULL,
+  `is_connected` tinyint(1) NOT NULL,
+  `parent_id` int(11) NOT NULL,
+  `is_unique` tinyint(1) NOT NULL DEFAULT '0',
+  `campaign_param1` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `campaign_param2` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `campaign_param3` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `campaign_param4` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `campaign_param5` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_name1` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value1` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name2` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value2` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name3` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value3` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name4` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value4` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name5` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value5` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name6` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value6` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name7` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value7` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name8` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value8` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name9` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value9` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name10` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value10` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name11` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value11` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name12` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value12` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name13` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value13` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name14` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value14` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name15` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value15` text CHARACTER SET utf8 NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `subid` (`subid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1;";
+    db_query($q);
+}
+
+/**
+ * По SubID, оказывается, можно вычислить дату!
+ * 
+ */
+function subidtotime($subid) {
+    $tmp = current(explode('x', $subid));
+    $tmp = substr($tmp, 0, 4) . '-' . substr($tmp, 4, 2) . '-' . substr($tmp, 6, 2) . ' ' . substr($tmp, 8, 2) . ':' . substr($tmp, 10, 2) . ':' . substr($tmp, 12, 2);
+    return $tmp;
 }
 ?>

@@ -17,7 +17,7 @@
 		'sale'  => array('cnt_sale', 'conversion',   'roi', 'epc', 'profit'),
 		'lead'  => array('cnt_lead', 'conversion_l', 'cpl')
 	);
-
+	
 	$main_type   = rq('report_type', 0, 'source_name');
 	$limited_to  = '';
 	
@@ -32,6 +32,7 @@
 		'col'      => 'sale_lead',
 		'from'     => $date,
 		'to'       => $date,
+		'cache'    => _CLICKS_SPOT_SIZE > 0 ? 1 : 0,
 	);
 		
 	$arr_report_data = get_clicks_report_grouped2($params); 
@@ -224,19 +225,23 @@ if(!empty($arr_data)) {
 			<tr><th></th><th></th><th>Ссылка</th><th>Источник</th><th>Кампания</th><th colspan=\"6\">Реферер</th><th></th></tr>
 		</thead>";
 	echo "<tbody>";
-	foreach ($arr_data as $row) {
-		require _TRACK_SHOW_COMMON_PATH . '/pages/stats-flow-row.php';
-	}
+	
+	echo tpx('stats-flow-rows', array('data' => $arr_data));
+	
 	echo "</tbody></table>";
-	if($total > 20) {
-		echo '<a href="#" onclick="return load_flow(this)" class="center-block text-center">Показать больше</a>';
+	if($more) {
+		echo '<a href="#" onclick="return load_flow(this)" class="center-block text-center">Показать больше</a>
+		<input type="hidden" id="start" value="20">
+		<input type="hidden" id="start_s" value="0">
+		';
 		
 		?>
 <script type="text/javascript">
 	function load_flow(obj) {
 		$.post(
             'index.php?ajax_act=a_load_flow', {
-                offset: $('#stats-flow tbody').children().length / 2 ,
+                start: $('#start').val() ,
+                start_s: $('#start_s').val() ,
                 date: '<?php echo _str($date) ?>',
                 hour: '<?php echo _str($hour) ?>',
                 filter_by: '<?php echo _str($_REQUEST['filter_by']) ?>',
@@ -245,11 +250,13 @@ if(!empty($arr_data)) {
             }
         ).done(
         	function(data) {
-        		if(data == '') {
-        			$(obj).hide();
-        		} else {
-            		$('#stats-flow tbody').children().last().after(data);
-            	}
+    			response = eval('(' + data + ')');
+    			$('#start').val(response.start);
+    			$('#start_s').val(response.start_s);
+    			
+    			console.log(response);
+    			if(!response.more) $(obj).hide();
+        		$('#stats-flow tbody').children().last().after(response.data);
             }
         ); 
 		return false;

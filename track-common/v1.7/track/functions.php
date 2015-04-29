@@ -71,10 +71,10 @@ function get_platform($os) {
 }
 
 function check_device($mask, $device) {
-	id($mask == 'DEFINED_IPAD') {
+	if($mask == 'DEFINED_IPAD') {
 		return (substr($device, 0, 11) == 'Apple; iPad') ? true : false;
 	}
-	id($mask == 'DEFINED_IPHONE') {
+	if($mask == 'DEFINED_IPHONE') {
 		return (substr($device, 0, 13) == 'Apple; iPhone') ? true : false;
 	}
 	return false;

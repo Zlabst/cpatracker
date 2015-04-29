@@ -50,5 +50,16 @@ if (empty($_COOKIE['cpa_menu_main'])) {
             ?>
         </div>
         <?php echo tpx('footer'); ?>
+        <?php
+        	if(!empty($_GET['debug'])) {
+        		echo '<pre style="margin-left: 270px;">';
+        		foreach($sql_log as $q)	{
+        			echo $q.'<br>';
+        		}
+        		echo 'Total: <b>' .$sql_time. '</b>';
+        		echo '</pre>';
+        	}
+        ?> 
     </body>
+    	
 </html>

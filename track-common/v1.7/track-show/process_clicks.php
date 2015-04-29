@@ -1,6 +1,9 @@
 <?php
 	set_time_limit(0);
 	
+	error_reporting(E_ALL);
+	//ini_set('display_errors', 1);
+	
 	$process_clicks_marker=_CACHE_PATH.'/.crontab_clicks';
 	if(file_exists($process_clicks_marker)) {
 		unlink ($process_clicks_marker);
@@ -27,7 +30,11 @@
 	mysql_select_db($_DB_NAME);
 	mysql_query('SET NAMES utf8');
 	
-	include _TRACK_SHOW_COMMON_PATH . "/functions_general.php";
+	require _TRACK_SHOW_COMMON_PATH . "/functions_general.php";
+	
+	if(_CLICKS_SPOT_SIZE > 0) {
+		$current_spot_id = current(clicks_spot_get());
+	}
 	
 	// Collector
 	
@@ -74,6 +81,7 @@
 	$arr_files=array();
 	$process_at_once=60;
 	$iCnt=0;
+	
 	if ($handle = opendir(_CACHE_PATH . '/clicks/')) {
 	    while (false !== ($entry = readdir($handle))) {
 	        if ($entry != "." && $entry != ".." && $entry != ".empty") {
@@ -88,14 +96,14 @@
 		        {
 		        	// Also check that there were at least 2 minutes from creation date
 		        	if ($entry!='.clicks_'.date('Y-m-d-H-i', strtotime('-1 minutes')) &&
-		        	$entry!='.clicks_'.date('Y-m-d-H-i')
-		        	)
-		        	{
+		        		$entry!='.clicks_'.date('Y-m-d-H-i')
+		        		) {
 			        	$arr_files[]=$entry;
+			        	/*
 		        		if (($iCnt++) > $process_at_once)
 		        		{
 		        			break;
-		        		}			        	
+		        		}*/			        	
 		        	}
 		        }
 	        }
@@ -104,6 +112,13 @@
 	}
 	
 	if (count ($arr_files)==0){exit();}
+	
+	asort($arr_files);
+	
+	$arr_files = array_slice($arr_files, 0, $process_at_once);
+	//dmp($arr_files);
+	
+	//die();
 
     if (extension_loaded('xmlreader')) 
     {
@@ -142,14 +157,14 @@
 	        save_click_info ($arr_click, $slave_timeshift);
 	    }
 	    fclose($handle);
-		rename ($file_name, _CACHE_PATH."/clicks/{$cur_file}*");
+		rename ($file_name, _CACHE_PATH."/clicks_processed/{$cur_file}");
 	}
 
 	exit();
 
 	function get_hour_by_date($str)
 	{
-		$a=end(explode (' ', $str));
+		$a = end(explode (' ', $str));
 		return current(explode (':', $a));	
 	}
 
@@ -184,6 +199,7 @@
 	
 	function save_click_info ($arr_click_info, $timeshift = 0)
 	{
+		global $current_spot_id;
 		// User-agent parser
 		require_once (_TRACK_LIB_PATH."/ua-parser/uaparser.php");
 		$parser = new UAParser;
@@ -283,7 +299,7 @@
 			$click_get_params = array();
 		}
 		
-		$sql_click_params=array();
+		$sql_click_params_arr = array();
 		
 		// Save this source params
 		
@@ -308,7 +324,9 @@
 					$param_value = $click_get_params[$param_name];
 					if($param_info['url'] == $param_value) $param_value = ''; // Пришло site_id={site_id}, то есть значение пустое
 						
-					$sql_click_params[]="click_param_name{$i}='"._str($param_name)."', click_param_value{$i}='"._str($param_value)."'";
+					$sql_click_params_arr["click_param_name" . $i] = $param_name;
+					$sql_click_params_arr["click_param_value" . $i] = $param_value;
+					
 					
 					// Adwords передает в одном параметре и то что это спецразмещение и то, что это реклама в сайдбаре и сразу же позицию объявления. Поэтому мы разбиваем это значение на два параметра, Размещение (если t - Спецразмещение, если s - Реклама справа, если o или что-то другое - Не определено) и Позиция (где выводим значения как есть, то есть 1t1, 1s2 и т.д.) 
 					// Пример "виртуального параметра"
@@ -323,7 +341,9 @@
 						if(strstr($param_value, 't') !== false) {
 							$position_type = 't';
 						}
-						$sql_click_params[]="click_param_name{$i}='position_type', click_param_value{$i}='"._str($position_type)."'";
+
+						$sql_click_params_arr["click_param_name" . $i] = 'position_type';
+						$sql_click_params_arr["click_param_value" . $i] = $position_type;
 					}
 					
 					// Поисковые слова Яндекса
@@ -331,7 +351,9 @@
 						$i++;
 						// 17 - для прямых ссылок, 3 - для обычных
 						$referer = empty($arr_click_info[3]) ? $arr_click_info[17] : $arr_click_info[3];
-						$sql_click_params[]="click_param_name{$i}='text', click_param_value{$i}='"._str(parse_search_refer($referer))."'";
+						
+						$sql_click_params_arr["click_param_name" . $i] = 'text';
+						$sql_click_params_arr["click_param_value" . $i] = parse_search_refer($referer);
 					}
 					
 					unset($click_get_params[$param_name]); // Параметр отработан, убираем его чтобы остались только пользовательские
@@ -401,76 +423,224 @@
 				continue;
 			}
 
-			$sql_click_params[]="click_param_name{$i}='"._str($param_name)."', click_param_value{$i}='"._str($param_value)."'";
+			$sql_click_params_arr["click_param_name" . $i] = $param_name;
+			$sql_click_params_arr["click_param_value" . $i] = $param_value;
+			
 			$i++;
 
 			// Maximum 15 get parameters allowed
 			if ($i > 15){break;}
 		}
 
-		$sql_click_params=implode (', ', $sql_click_params);
-		
-		if (strlen($sql_click_params)>0)
-		{
-			$sql_click_params=", {$sql_click_params}";
-		}
-
 		// Click from landing page
-		if ($is_connected)
-		{
-			// Get parent click id
-			$sql="select id from tbl_clicks where subid='"._str($connected_subid)."' limit 1";
-			$result=mysql_query($sql);
-			$row=mysql_fetch_assoc($result);
-			if ($row['id']>0)
-			{
-				$parent_id=$row['id'];
-				$sql="update tbl_clicks set is_parent=1 where id='"._str($parent_id)."'";
-				mysql_query($sql);
+		
+		if ($is_connected) {
+			if(_CLICKS_SPOT_SIZE > 0) {
+				$parent_id = 0;
+				
+				// Скорее всего, связанный клик у нас будет в текущем споте
+				$q = "select id from tbl_clicks_s" . $current_spot_id . " where subid='"._str($connected_subid)."' limit 1";
+				if($rs = mysql_query($q) and mysql_num_rows($rs) > 0) {
+					$r = mysql_fetch_assoc($rs);
+					$parent_id = $r['id'];
+					
+				// Не нашли в текущем. Может где-то ещё?
+				} else {
+					$tmp = subidtotime($connected_subid);
+					$tmp = clicks_spot_get($tmp, $tmp);
+					if(!empty($tmp)) {
+						$q = "select id from tbl_clicks_s" . $tmp[0] . " where subid='"._str($connected_subid)."' limit 1";
+						if($rs = mysql_query($q) and mysql_num_rows($rs) > 0) {
+							$r = mysql_fetch_assoc($rs);
+							$parent_id = $r['id'];
+						}
+					}
+				}
+				
 			} else {
-				$parent_id=0;
+				// Get parent click id
+				$sql="select id from tbl_clicks where subid='"._str($connected_subid)."' limit 1";
+				$result=mysql_query($sql);
+				$row=mysql_fetch_assoc($result);
+				if ($row['id']>0) {
+					$parent_id=$row['id'];
+					$sql="update tbl_clicks set is_parent=1 where id='"._str($parent_id)."'";
+					mysql_query($sql);
+				} else {
+					$parent_id=0;
+				}
 			}
 		}
-
-		$sql="insert ignore into tbl_clicks SET
-				date_add='"._str($click_date)."', 
-				date_add_day='"._str($click_day)."', 
-				date_add_hour='"._str($click_hour)."', 
-				user_ip='"._str($click_ip)."', 
-				user_agent='"._str($click_user_agent)."', 
-				user_os='"._str($device_os)."', 
-				user_os_version='"._str($device_os_version)."', 				
-				user_platform='"._str($brand_name)."', 
-				user_platform_info='"._str($model_name)."', 		
-				user_platform_info_extra='"._str($model_extra_info)."',			
-				user_browser='"._str($device_browser)."', 
-				user_browser_version='"._str($device_browser_version)."',					
-				is_mobile_device='"._str($is_mobile_device)."', 
-				is_phone='"._str($is_phone)."', 		
-				is_tablet='"._str($is_tablet)."', 					
-				country='"._str($click_country)."', 
-				state='"._str($click_state)."', 
-				city='"._str($click_city)."', 
-				region='"._str($click_region)."', 
-				isp='"._str($click_isp)."', 
-				rule_id='"._str($click_rule_id)."', 
-				out_id='"._str($click_out_id)."', 
-				subid='"._str($click_subid)."', 
-				is_connected='"._str($is_connected)."', 
-				is_unique='"._str($click_is_unique)."', 
-				parent_id='"._str($parent_id)."', 
-				subaccount='"._str($click_subaccount)."', 
-				source_name='"._str($click_link_source)."', 
-				campaign_name='"._str($click_link_campaign)."', 
-				ads_name='"._str($click_link_ads)."', 
-				referer='"._str($click_referer)."', 
-				search_string='', 
-				campaign_param1='"._str($click_param1)."', 
-				campaign_param2='"._str($click_param2)."', 
-				campaign_param3='"._str($click_param3)."', 
-				campaign_param4='"._str($click_param4)."', 
-				campaign_param5='"._str($click_param5)."'
-				{$sql_click_params}";
-		mysql_query($sql) or die($sql . '<br >' . mysql_error());
+		
+		$ins = array(
+			'date_add'   => $click_date,
+			'user_ip'    => $click_ip,
+			'user_agent' => $click_user_agent,
+			'user_os'    => $device_os,
+			'user_os_version' => $device_os_version,
+			'user_platform' => $brand_name,
+			'user_platform_info' => $model_name,
+			'user_platform_info_extra' => $model_extra_info,
+			'user_browser' => $device_browser,
+			'user_browser_version' => $device_browser_version,
+			'is_mobile_device' => $is_mobile_device,
+			'is_phone'     => $is_phone,
+			'is_tablet'    => $is_tablet,
+			'country'      => $click_country,
+			'state'        => $click_state,
+			'city'         => $click_city,
+			'region'       => $click_region,
+			'isp'          => $click_isp,
+			'rule_id'      => $click_rule_id,
+			'out_id'       => $click_out_id,
+			'subid'        => $click_subid,
+			'is_connected' => $is_connected,
+			'is_unique'    => $click_is_unique,
+			'parent_id'    => $parent_id,
+			'subaccount'   => $click_subaccount,
+			'source_name'  => $click_link_source,
+			'campaign_name' => $click_link_campaign,
+			'ads_name'      => $click_link_ads,
+			'referer'       => $click_referer,
+			'search_string' => '', 
+			'campaign_param1' => $click_param1,
+			'campaign_param2' => $click_param2,
+			'campaign_param3' => $click_param3,
+			'campaign_param4' => $click_param4,
+		);
+		
+		if(!empty($sql_click_params_arr)) {
+			$ins = array_merge($ins, $sql_click_params_arr);
+		}
+		
+		// Turbo
+		if(_CLICKS_SPOT_SIZE > 0) {
+			$q = insertsql($ins, 'tbl_clicks_s' . $current_spot_id, false, true);
+			//echo $q . '<br />';
+			echo '. ';
+    		db_query($q);
+    		
+    		$ins_id = mysql_insert_id();
+    		
+    		// Если это первая запись - помечаем дату начала спота в карте
+    		if($ins_id == (($current_spot_id - 1) * _CLICKS_SPOT_SIZE) + 1) {
+    			$upd = array(
+    				'id' => $current_spot_id,
+    				'time_begin' => $ins['date_add'],
+    			);
+    			$q = updatesql($upd, 'tbl_clicks_map', 'id');
+    			db_query($q);
+    		
+    		// Если спот подходит к концу
+    		} elseif($ins_id >= ($current_spot_id * _CLICKS_SPOT_SIZE)) {
+    			
+    			$q = "select max(`date_add`) as `max_time` from `tbl_clicks_s" . $current_spot_id . "`";
+    			$rs = db_query($q);
+    			$r = mysql_fetch_assoc($rs);
+    			$max_spot_time = $r['max_time'];
+    			
+    			// Закрываем текущий спот
+    			$upd = array(
+    				'id' => $current_spot_id,
+    				'time_end' => $max_spot_time,
+    				'current' => '0'
+    			);
+    			$q = updatesql($upd, 'tbl_clicks_map', 'id');
+    			db_query($q);
+    			
+    			// Создание нового спота
+			    $ins = array(
+			        'time_begin' => '2000-01-01 00:00:00',
+			        'time_end' => '2020-01-01 00:00:00',
+			        'current' => '1'
+			    );
+			    $q = insertsql($ins, 'tbl_clicks_map');
+			    db_query($q);
+			    
+			    $current_spot_id = mysql_insert_id();
+    			
+    			$q="CREATE TABLE IF NOT EXISTS `tbl_clicks_s" . $current_spot_id . "` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `date_add` datetime NOT NULL,
+  `user_ip` varchar(255) NOT NULL,
+  `user_agent` text CHARACTER SET utf8 NOT NULL,
+  `user_os` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `user_os_version` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `user_platform` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `user_platform_info` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `user_platform_info_extra` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `user_browser` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `user_browser_version` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `is_mobile_device` tinyint(1) NOT NULL,
+  `is_phone` tinyint(1) NOT NULL,
+  `is_tablet` tinyint(1) NOT NULL,
+  `country` varchar(255) NOT NULL,
+  `state` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `city` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `region` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `isp` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `rule_id` int(11) NOT NULL,
+  `out_id` int(11) NOT NULL,
+  `subid` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `subaccount` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `source_name` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `campaign_name` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `ads_name` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `referer` text CHARACTER SET utf8 NOT NULL,
+  `search_string` text CHARACTER SET utf8 NOT NULL,
+  `click_price` decimal(10,4) NOT NULL,
+  `conversion_price_main` decimal(10,4) NOT NULL,
+  `is_lead` tinyint(1) NOT NULL,
+  `is_sale` tinyint(1) NOT NULL,
+  `is_parent` tinyint(1) NOT NULL,
+  `is_connected` tinyint(1) NOT NULL,
+  `parent_id` int(11) NOT NULL,
+  `is_unique` tinyint(1) NOT NULL DEFAULT '0',
+  `campaign_param1` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `campaign_param2` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `campaign_param3` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `campaign_param4` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `campaign_param5` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_name1` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value1` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name2` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value2` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name3` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value3` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name4` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value4` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name5` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value5` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name6` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value6` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name7` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value7` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name8` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value8` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name9` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value9` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name10` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value10` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name11` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value11` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name12` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value12` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name13` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value13` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name14` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value14` text CHARACTER SET utf8 NOT NULL,
+  `click_param_name15` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `click_param_value15` text CHARACTER SET utf8 NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `subid` (`subid`)
+) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=".(($current_spot_id - 1) * _CLICKS_SPOT_SIZE + 1).";";
+    			db_query($q);
+    		}
+    	
+    	// Standart
+		} else {
+			$q = insertsql($ins, 'tbl_clicks', false, true);
+    		db_query($q);
+		}
 	}
 ?>

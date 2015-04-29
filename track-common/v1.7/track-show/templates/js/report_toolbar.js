@@ -7,7 +7,7 @@ function modify_links(name, val) {
 
 	for(var i=0, j=els.length; i<j; i++) {
 		// Не трогаем контейнер с соответствующим селектором
-		console.log($(els[i]).parent().parent().parent().parent().parent());
+		// console.log($(els[i]).parent().parent().parent().parent().parent());
 		if(name == 'col' && $(els[i]).parent().attr('id') == 'rt_sale_section') continue;
 		
 		href = els[i].href;

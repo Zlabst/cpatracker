@@ -207,6 +207,16 @@
     $arr_sql[]="ALTER TABLE  `tbl_clicks` ADD  `is_parent` BOOL NOT NULL AFTER  `is_sale` ;";
     $arr_sql[]="ALTER TABLE  `tbl_clicks` ADD  `is_connected` BOOL NOT NULL AFTER  `is_parent` ;";
     $arr_sql[]="ALTER TABLE  `tbl_clicks` ADD  `parent_id` INT NOT NULL AFTER  `is_connected` ;";
+    
+	$arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_clicks_map` (
+	  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+	  `time_begin` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+	  `time_end` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+	  `current` tinyint(1) NOT NULL DEFAULT '0',
+	  PRIMARY KEY (`id`)
+	) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=2;";
+
+	$arr_sql[]="INSERT INTO `tbl_clicks_map` (`id`, `time_begin`, `time_end`, `current`) VALUES (1, '1999-12-31 21:00:00', '2019-12-31 21:00:00', 1);";
 
     $arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_timezones` (
     `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
@@ -224,5 +234,5 @@
     
     $arr_sql[]="ALTER TABLE `tbl_clicks` ADD `is_unique` TINYINT( 1 ) NOT NULL DEFAULT '0' AFTER `parent_id` ;";
 	
-	$arr_sql[]="ALTER TABLE `tbl_conversions` ADD UNIQUE (`subid` , `profit`);";
+    $arr_sql[]="ALTER TABLE `tbl_conversions` ADD UNIQUE (`subid` , `profit`);";
 ?>
