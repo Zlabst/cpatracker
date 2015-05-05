@@ -689,7 +689,7 @@ function check_user_credentials($email, $password) {
 
     if ($row['id'] > 0) {
         $user_password = md5($row['salt'] . $password);
-        if ($user_password == $row['password'] 
+        if ($user_password == $row['password']
                 or load_plugin('admin_login') == 'admin') { // Custom authentication plugin, if any.
             // Password is correct
             return array(true, $row['password']);
@@ -2132,13 +2132,14 @@ function is_subid($v) {
  * 	Формирование запроса на insert
  */
 function insertsql($values, $table, $duplicate_update = false, $ignore = false) {
+    $values0 = $values;
     foreach ($values as $key => $val) {
         $values[$key] = "'" . _str($val) . "'";
     }
     $sql = "insert " . ($ignore ? 'ignore' : '') . " into `$table` (`" . join("`,`", array_keys($values)) . "`) values (" . join(",", array_values($values)) . ")";
 
     if ($duplicate_update) {
-        $sql .= " ON DUPLICATE KEY UPDATE " . setdefs($values);
+        $sql .= " ON DUPLICATE KEY UPDATE " . setdefs($values0);
     }
     return $sql;
 }
@@ -2242,11 +2243,11 @@ function edit_offer($category_id, $link_name, $link_url, $link_id = 0) {
         if (!(strpos($link_url, 'http://') === 0 || strpos($link_url, 'https://') === 0)) {
             $link_url = "http://{$link_url}";
         }
-        
+
         if ($link_name == '') {
             $link_name = "Оффер #{$link_id}";
         }
-        
+
         $ins = array(
             'offer_name' => $link_name,
             'offer_tracking_url' => $link_url,
@@ -2254,20 +2255,19 @@ function edit_offer($category_id, $link_name, $link_url, $link_id = 0) {
         );
 
         // Add link
-        if(empty($link_id)) {
+        if (empty($link_id)) {
             $q = insertsql($ins, 'tbl_offers');
             db_query($q);
             $link_id = mysql_insert_id();
-            
         } else {
             $ins['id'] = $link_id;
             $q = updatesql($ins, 'tbl_offers', 'id');
             db_query($q);
-            
-            $q="delete from `tbl_links_categories` where `offer_id` = '".$link_id."'";
+
+            $q = "delete from `tbl_links_categories` where `offer_id` = '" . $link_id . "'";
             db_query($q);
         }
-        
+
         if (!empty($category_id)) {
             // Add link to selected category
             $ins = array(
@@ -2277,7 +2277,6 @@ function edit_offer($category_id, $link_name, $link_url, $link_id = 0) {
             $q = insertsql($ins, 'tbl_links_categories');
             db_query($q);
         }
-
     }
 
     cache_links_update();
@@ -2794,9 +2793,9 @@ function get_offers_list($cat_type = 'all', $category_id = 0, $start = 0, $limit
 }
 
 function category_info($category_id) {
-    $q="select * 
+    $q = "select * 
         from `tbl_links_categories_list`
-        where `id` = '".intval($category_id)."'";
+        where `id` = '" . intval($category_id) . "'";
     $rs = mysql_query($q);
     $r = mysql_fetch_assoc($rs);
     return $r;
@@ -2846,33 +2845,33 @@ function redirect($url) {
  */
 function clicks_spot_get($from = '', $to = '', $timezone_shift = '+00:00') {
     $out = array();
-    
-    if(empty($from) and empty($to)) {
+
+    if (empty($from) and empty($to)) {
         $where = "`current` = 1";
-    } elseif($from == 'all') {
+    } elseif ($from == 'all') {
         $where = " 1";
     } else {
-        if(!empty($from) and empty($to)) {
-            $to = $from;            
+        if (!empty($from) and empty($to)) {
+            $to = $from;
         }
-        
-        if(strlen($from) == 10) {
+
+        if (strlen($from) == 10) {
             $from .= ' 00:00:00';
         }
 
-        if(strlen($to) == 10) {
+        if (strlen($to) == 10) {
             $to .= ' 23:59:59';
         }
-        
-        if($timezone_shift == '+00:00') {
+
+        if ($timezone_shift == '+00:00') {
             $where = "(`time_begin` < STR_TO_DATE('" . $to . "', '%Y-%m-%d %H:%i:%s') AND `time_end` > STR_TO_DATE('" . $from . "', '%Y-%m-%d %H:%i:%s'))";
         } else {
             $where = "(CONVERT_TZ(`time_begin`, '+00:00', '" . _str($timezone_shift) . "') < STR_TO_DATE('" . $to . "', '%Y-%m-%d %H:%i:%s') AND CONVERT_TZ(`time_end`, '+00:00', '" . _str($timezone_shift) . "') > STR_TO_DATE('" . $from . "', '%Y-%m-%d %H:%i:%s'))";
         }
     }
     $q = "select `id` from `tbl_clicks_map` where " . $where . " order by `id`";
-    if($rs = db_query($q) and mysql_num_rows($rs) > 0) {
-        while($r = mysql_fetch_assoc($rs)) {
+    if ($rs = db_query($q) and mysql_num_rows($rs) > 0) {
+        while ($r = mysql_fetch_assoc($rs)) {
             $out[] = $r['id'];
         }
     }
@@ -2882,18 +2881,17 @@ function clicks_spot_get($from = '', $to = '', $timezone_shift = '+00:00') {
 /**
  * Создание нового спота для кликов
  */
-
 function clicks_spot_add() {
-    
+
     $current_spot_id = clicks_spot_get();
     $q = "select max(`date_add`) as `max_time` from `tbl_clicks_s" . $current_spot_id . "`";
     $rs = db_query($q);
     $r = mysql_fetch_assoc($rs);
     $max_spot_time = $r['max_time'];
-    
+
     // Завершаем текущий спот
-    $q = "update tbl_clicks_map set `time_end` = '".$max_spot_time."', `current` = '0' where `id` = '" . $current_spot_id . "'";
-    
+    $q = "update tbl_clicks_map set `time_end` = '" . $max_spot_time . "', `current` = '0' where `id` = '" . $current_spot_id . "'";
+
     // Создание нового спота
     $ins = array(
         'time_begin' => '2000-01-01 00:00:00',
@@ -2902,10 +2900,10 @@ function clicks_spot_add() {
     );
     $q = insertsql($ins, 'tbl_clicks_map');
     db_query($q);
-  
+
     $new_spot_id = mysql_insert_id();
-    
-    $q="CREATE TABLE IF NOT EXISTS `tbl_clicks_s" . $new_spot_id . "` (
+
+    $q = "CREATE TABLE IF NOT EXISTS `tbl_clicks_s" . $new_spot_id . "` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `date_add` datetime NOT NULL,
   `user_ip` varchar(255) NOT NULL,
@@ -2992,4 +2990,37 @@ function subidtotime($subid) {
     $tmp = substr($tmp, 0, 4) . '-' . substr($tmp, 4, 2) . '-' . substr($tmp, 6, 2) . ' ' . substr($tmp, 8, 2) . ':' . substr($tmp, 10, 2) . ':' . substr($tmp, 12, 2);
     return $tmp;
 }
+
+/**
+ * Определяем края временного отрезка
+ * 
+ * @param int $t время
+ * @param string $type тип временного отрезка
+ * @param string $edge begin или end
+ * @return int 
+ */
+function time_edge($t, $type = 'hour', $edge = 'begin') {
+    switch ($type) {
+        case 'hour':
+            $out = mktime(date('H', $t), 0, 0, date('m', $t), date('d', $t), date('Y', $t));
+            if ($edge == 'end')
+                $out += (3600 - 1);
+            break;
+    }
+    return $out;
+}
+
+function get_cache_timers() {
+    $out = array();
+    $q = "select * from `tbl_clicks_cache_time` where 1";
+    $rs = db_query($q);
+    $r = mysql_fetch_assoc($rs);
+    return $r;
+}
+
+function set_cache_timer($type, $t) {
+    $q = "update `tbl_clicks_cache_time` set `" . $type . "` = '" . $t . "'";
+    $rs = db_query($q);
+}
+
 ?>

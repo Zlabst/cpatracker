@@ -2,31 +2,81 @@
 
 function load_from_cache($params) {
     $out = array();
-    
+
+    $date_formats = array(
+        'hour' => 'H', // Y-m-d
+        'day' => 'Y-m-d',
+        'month' => 'm.Y'
+    );
+
     $timezone_shift = get_current_timezone_shift();
-    
-    if(strlen($params['from']) == 10) {
+
+    if (strlen($params['from']) == 10) {
         $params['from'] .= ' 00:00:00';
     }
-    
-    if(strlen($params['to']) == 10) {
+
+    if (strlen($params['to']) == 10) {
         $params['to'] .= ' 23:59:59';
     }
     
-    if($params['part'] == 'hour') {
-        $q="select * from `tbl_clicks_cache_hour` 
-            where `type` = '".$params['group_by']."' and
-            CONVERT_TZ(`time`, '+00:00', '" . _str($timezone_shift) . "') BETWEEN STR_TO_DATE('" . $params['from'] . "', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('" . $params['to'] . "', '%Y-%m-%d %H:%i:%s')" . $where . (empty($params['where']) ? '' : " and " . $params['where'] ) . " ";
+    $click_params = array();
+    $campaign_params = array();
+    
+    $cl_params = 0;
+
+    $q = "select `type`, `id`, CONVERT_TZ(`time`, '+00:00', '" . _str($timezone_shift) . "') as `time`, `price`, `unique`, `income`, `direct`, `sale`, `lead`, `act`, `out`, `cnt`, `sale_lead`, `params`
+        from `tbl_clicks_cache_hour` 
+        where `type` = '" . $params['group_by'] . "' and
+        CONVERT_TZ(`time`, '+00:00', '" . _str($timezone_shift) . "') BETWEEN STR_TO_DATE('" . $params['from'] . "', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('" . $params['to'] . "', '%Y-%m-%d %H:%i:%s')" . $where . (empty($params['where']) ? '' : " and " . $params['where'] ) . " ";
+    
+    if ($rs = db_query($q) and mysql_num_rows($rs) > 0) {
+        while ($r = mysql_fetch_assoc($rs)) {
+            $r['name'] = param_val($r['id'], $params['group_by']);
+            $tmp = $r;
+            
+            $cl_params = $cl_params | $r['params'];
+            
+            unset($tmp['time'], $tmp['type']);
+
+            if ($params['part'] == 'all') {
+                foreach ($tmp as $k => $v) {
+                    if ($k == 'id' or $k == 'name') {
+                        $out[$r['id']][$k] = $v;
+                    } else {
+                        $out[$r['id']][$k] += $v;
+                    }
+                }
+            } else {
+                $d = date($date_formats[$params['part']], strtotime($r['time']));
+                foreach ($tmp as $k => $v) {
+                    if ($k == 'id' or $k == 'name') {
+                        $out[$r['id']][$k] = $v;
+                        $out[$r['id']][$d][$k] = $v;
+                    } else {
+                        $out[$r['id']][$k] += $v;
+                        $out[$r['id']][$d][$k] += $v;
+                    }
+                }
+            }
+        }
+        
+        // переводим параметры в 000011101011
+        $cl_params = decbin($cl_params); 
+        
+        if(strlen($cl_params) < 20) {
+            $cl_params = str_repeat('0', 20 - strlen($cl_params)) . $cl_params;
+        }
+        
+        for($i = 1; $i <= 20; $i++) {
+            if($i <= 15) {
+                $click_params[$i] = $cl_params[$i-1];
+            } else {
+                $campaign_params[$i-15] = $cl_params[$i-1];
+            }
+        }         
     }
     
-    if($rs = db_query($q) and mysql_num_rows($rs) > 0) {
-        while($r = mysql_fetch_assoc($rs)) {
-            $tmp = $r;
-            unset($tmp['time'], $tmp['type']);
-            $out[$r['id']][date('H', strtotime($r['time']))] = $tmp;
-        }
-    }
-    return $out;
+    return array($out, $click_params, $campaign_params);
 }
 
 function get_visitors_flow_data($filter = '', $start = 0, $start_s = 0, $limit = 20, $date = 0) {
@@ -36,13 +86,13 @@ function get_visitors_flow_data($filter = '', $start = 0, $start_s = 0, $limit =
     }
 
     $timezone_shift = get_current_timezone_shift();
-    
+
     $more = 0; // Записей больше нет, этот запрос крайний
     $subid = 0; // Поиск по subid
 
     $filter_str = '';
     if ($filter != '') {
-        
+
         switch ($filter['filter_by']) {
             case 'hour':
                 if (empty($filter['source_name'])) {
@@ -76,45 +126,43 @@ function get_visitors_flow_data($filter = '', $start = 0, $start_s = 0, $limit =
                 break;
         }
     }
-    
-    if(_CLICKS_SPOT_SIZE > 0) {
+
+    if (_CLICKS_SPOT_SIZE > 0) {
         // Определяемся с наборами спотов
-        
         // Если указана дата
-        if($date) {
+        if ($date) {
             $spot_ids = clicks_spot_get($date, $date);
-        
-        // Если поиск по SubID
-        } elseif(!empty($subid)) {
+
+            // Если поиск по SubID
+        } elseif (!empty($subid)) {
             $tmp = subidtotime($subid);
             $spot_ids = clicks_spot_get($tmp, $tmp);
-         
-        // Поиск по всем спотам. Жуть полная, а что делать?
+
+            // Поиск по всем спотам. Жуть полная, а что делать?
         } else {
             $spot_ids = clicks_spot_get('all');
         }
-        
+
         //dmp($spot_ids);
 
-        if(empty($spot_ids)) {
+        if (empty($spot_ids)) {
             return array(0, array());
         }
-        
+
         $clicks_table = "tbl_clicks_s" . $spot_ids[$start_s];
-        
     } else {
         $clicks_table = 'tbl_clicks';
     }
 
-    $q="select *, date_format(CONVERT_TZ(t1.date_add, '+00:00', '" . _str($timezone_shift) . "'), '%d.%m.%Y %H:%i') as dt, timediff(NOW(), t1.date_add) as td 
+    $q = "select *, date_format(CONVERT_TZ(t1.date_add, '+00:00', '" . _str($timezone_shift) . "'), '%d.%m.%Y %H:%i') as dt, timediff(NOW(), t1.date_add) as td 
         from `" . $clicks_table . "` t1
         where 1
         {$filter_str}
         " . ($date ? "and CONVERT_TZ(t1.date_add, '+00:00', '" . _str($timezone_shift) . "') between STR_TO_DATE('" . $date . " 00:00:00', '%Y-%m-%d %H:%i:%s') and STR_TO_DATE('" . $date . " 23:59:59', '%Y-%m-%d %H:%i:%s')" : '' ) . "
         order by date_add desc limit $start, $limit";
-    
+
     //echo $q . '<br >';
-        
+
     $rs = db_query($q);
     $arr_data = array();
 
@@ -122,13 +170,13 @@ function get_visitors_flow_data($filter = '', $start = 0, $start_s = 0, $limit =
         $row['td'] = get_relative_mysql_time($row['td']);
         $arr_data[] = $row;
     }
-    
+
     // Мы получили максимальное число строчек
-    if(count($arr_data) == $limit) {
+    if (count($arr_data) == $limit) {
         $start += $limit;
         $more = 1;
-    
-    // Мы забрали все строчки, но споты ещё есть
+
+        // Мы забрали все строчки, но споты ещё есть
     } elseif (($start_s + 1) < count($spot_ids)) {
         $start = 0;
         $start_s++;
@@ -167,21 +215,20 @@ function sdate($d, $today = true) {
 function get_clicks_rows($params, $start = 0, $start_s = 0, $limit = 0, $campaign_params, $click_params) {
 
     $more = 0; // Записей больше нет, этот запрос крайний
-    
-    $spot_ids = array(); // Споты, в которых будем искать данные
 
-    // Вставка для Turbo режма
-    if(_CLICKS_SPOT_SIZE > 0) {
+    $spot_ids = array(); // Споты, в которых будем искать данные
+    // Вставка для Turbo режима
+    if (_CLICKS_SPOT_SIZE > 0) {
 
         $spot_ids = clicks_spot_get($params['from'], $params['to']);
 
-        if(empty($spot_ids)) {
+        if (empty($spot_ids)) {
             return array(0, array(), array(), array());
         }
-        
+
         $clicks_table = "tbl_clicks_s" . $spot_ids[$start_s];
     } else {
-        $clicks_table = "tbl_clicks";        
+        $clicks_table = "tbl_clicks";
     }
 
     // Применяем фильтры
@@ -225,29 +272,31 @@ function get_clicks_rows($params, $start = 0, $start_s = 0, $limit = 0, $campaig
     } else {
         $select = '';
     }
-    
-    if(strlen($params['from']) == 10) {
+
+    if (strlen($params['from']) == 10) {
         $params['from'] .= ' 00:00:00';
     }
-    
-    if(strlen($params['to']) == 10) {
+
+    if (strlen($params['to']) == 10) {
         $params['to'] .= ' 23:59:59';
     }
-    
-    if(empty($params['cache'])) { // Кэш мы считаем без смещения по часовому поясу
+
+    if (empty($params['cache'])) { // Кэш мы считаем без смещения по часовому поясу
         $timezone_shift = get_current_timezone_shift(); // Смещение часового пояса
-        $where .= " and CONVERT_TZ(t1.`date_add`, '+00:00', '" . _str($timezone_shift) . "') BETWEEN STR_TO_DATE('" . $params['from'] . "', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('" . $params['to'] . "', '%Y-%m-%d %H:%i:%s')"; 
+        $where .= " and CONVERT_TZ(t1.`date_add`, '+00:00', '" . _str($timezone_shift) . "') BETWEEN STR_TO_DATE('" . $params['from'] . "', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('" . $params['to'] . "', '%Y-%m-%d %H:%i:%s')";
+        $time_add = "UNIX_TIMESTAMP(CONVERT_TZ(t1.`date_add`, '+00:00', '" . _str($timezone_shift) . "')) as `time_add`,";
     } else {
-        $where .= " and t1.`date_add` BETWEEN STR_TO_DATE('" . $params['from'] . "', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('" . $params['to'] . "', '%Y-%m-%d %H:%i:%s')"; 
+        $where .= " and t1.`date_add` BETWEEN STR_TO_DATE('" . $params['from'] . "', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('" . $params['to'] . "', '%Y-%m-%d %H:%i:%s')";
+        $time_add = "UNIX_TIMESTAMP(t1.`date_add`) as `time_add`,";
     }
-    
+
     // Выбираем все переходы за период
     $q = "SELECT " . (empty($params['group_by']) ? '' : " " . mysql_real_escape_string($params['group_by']) . " as `name`, ") .
             (($params['group_by'] == $params['subgroup_by'] or empty($params['subgroup_by'])) ? '' : " " . mysql_real_escape_string($params['subgroup_by']) . ", ") .
             "	1 as `cnt`,
             t1.id,
             t1.source_name,
-            UNIX_TIMESTAMP(CONVERT_TZ(t1.`date_add`, '+00:00', '" . _str($timezone_shift) . "')) as `time_add`,
+            " . $time_add . "
             t1.rule_id,
             t1.out_id,
             t1.parent_id,
@@ -264,6 +313,9 @@ function get_clicks_rows($params, $start = 0, $start_s = 0, $limit = 0, $campaig
             ORDER BY t1.id ASC
             LIMIT $start, $limit";
 
+    if ($_GET['debug']) {
+        echo $q . '<br />';
+    }
     //echo $q . '<br />';
     /*
       if($_SERVER['REMOTE_ADDR'] == '37.44.76.80') {
@@ -306,7 +358,7 @@ function get_clicks_rows($params, $start = 0, $start_s = 0, $limit = 0, $campaig
             $more = 1;
         }
     }
-
+    
     return array($more, $start, $start_s, $rows, $campaign_params, $click_params);
 }
 
@@ -358,7 +410,7 @@ function php_date_default_timezone_set($GMT) {
  * from, to - временные рамки, за которые нужна статистика, обязательно в формате Y-m-d H:i:s
  * where - дополнительные условия выборки кликов
  * mode - режим выборки и группировки: offers, landings, lp_offers
- * cache - разрешить использовать кэш
+ * cache - разрешить использовать кэш, 1 - из кэша, 2 - для кэша (без часового пояса)
  */
 function get_clicks_report_grouped2($params) {
     global $group_types;
@@ -451,30 +503,47 @@ function get_clicks_report_grouped2($params) {
 
     $limit = 5000;
 
-    $start   = 0;
+    $start = 0;
     $start_s = 0;
-    $more    = 1;
+    $more = 1;
 
     // Используем кэш
-    if($params['cache']) {
+    if ($params['cache'] == 1) {
         $load_live_data = 0; // будем ли мы подгружать живые данные
-
-        if($params['part'] == 'hour') {
-            if($params['from'] == date('Y-m-d')) {
+        
+        /*
+        if ($params['part'] == 'hour') {
+            if ($params['from'] == date('Y-m-d')) {
                 
             }
-            $load_live_data = 0;
+            //$load_live_data = 0;
             //dmp($params);
-            
+
             $data = load_from_cache($params);
             //dmp($data);
             //die();
+        } elseif ($params['part'] == 'day') {
+            //die('123');
+            //$load_live_data = 0;
+            $data = load_from_cache($params);
+
+            if ($_GET['debug']) {
+                dmp($data);
+            }
         }
+         * 
+         */
+        list($data, $click_params, $campaign_params) = load_from_cache($params);
+        if ($_GET['debug']) {
+            dmp($data);
+        }
+        
+        $load_live_data = 0;
     } else {
         $load_live_data = 1;
     }
-    
-    if($load_live_data) {
+
+    if ($load_live_data) {
         while ($more) {
             $rows = array();
 
@@ -555,14 +624,14 @@ function get_clicks_report_grouped2($params) {
                                 or ($v[$name] == $cur_val and (empty($parent_val) or $v[$params['group_by']] == $parent_val))
                         ) {
                             /*
-                            $lp_offers_valid[$cur_val] = 1;
+                              $lp_offers_valid[$cur_val] = 1;
 
-                            // Сбрасываем parent_id, чтобы оффер у нас был как бы "самостоятельный", без лэндинга. Иначе придётся дорабатывать шаблон отчёта
-                            if($parent_val > 0) {
-                            $v['parent_id'] = 0;
-                            }
-                            $rows_new[$k] = $v;
-                            */
+                              // Сбрасываем parent_id, чтобы оффер у нас был как бы "самостоятельный", без лэндинга. Иначе придётся дорабатывать шаблон отчёта
+                              if($parent_val > 0) {
+                              $v['parent_id'] = 0;
+                              }
+                              $rows_new[$k] = $v;
+                             */
                             //dmp($v);
                         } else {
                             $viz_filter = 0;
@@ -621,11 +690,11 @@ function get_clicks_report_grouped2($params) {
                             $k2 = date($date_formats[$params['part']], $r['time_add']);
                             //$k3 = $groups[$r['is_sale'].$r['is_lead']];
                             /*
-                            $data2[$k][$name][$k2][$k3]['cnt'] += 1;
-                            $data2[$k][$name][$k2][$k3]['cost'] += $r['clicks_price'];
-                            $data2[$k][$name][$k2][$k3]['earnings'] += $r['conversions_sum'];
-                            $data2[$k][$name][$k2][$k3]['is_parent_cnt'] += $r['is_parent'];
-                            */
+                              $data2[$k][$name][$k2][$k3]['cnt'] += 1;
+                              $data2[$k][$name][$k2][$k3]['cost'] += $r['clicks_price'];
+                              $data2[$k][$name][$k2][$k3]['earnings'] += $r['conversions_sum'];
+                              $data2[$k][$name][$k2][$k3]['is_parent_cnt'] += $r['is_parent'];
+                             */
                             $data2[$k][$name][$k2]['cnt'] += 1;
                             $data2[$k][$name][$k2]['cost'] += $r['clicks_price'];
                             $data2[$k][$name][$k2]['earnings'] += $r['conversions_sum'];
@@ -750,7 +819,7 @@ function get_clicks_report_grouped2($params) {
                 }
 
                 //dmp($data);
-                /*             * ********** */
+                /*                 * ********** */
             } else {
                 // Данные выбраны, начинаем группировку
                 // Статистика за весь период
@@ -776,46 +845,23 @@ function get_clicks_report_grouped2($params) {
                     //echo mysql_now() . ' ' . time() . ' ' . date('Y-m-d H:i:s'). '<br>' ;
 
                     foreach ($rows as $r) {
-                        //$k1 = (trim($r['name']) == '' ? '{empty}' : $r['name']);
                         $k1 = param_key($r, $params['group_by']);
 
                         $timekey = date($date_formats[$params['part']], $r['time_add']);
 
-                        //echo $r['time_add'] . ' ' .$timekey. ' ' . $timezone_shift_sec .'<br >';
-                        //$k3      = $groups[$r['is_sale'].$r['is_lead']];
-                        // Обрезаем реферер до домена
-                        /*
-                        if($params['group_by'] == 'referer') {
-                        $url = parse_url($k1);
-                        $k1 = $r['name'] = $url['host'];
-                        }
-                        */
-
-                        /*
-                        $data[$k1]['sale'] += $r['is_sale'];
-                        $data[$k1]['lead'] += $r['is_lead'];
-                        $data[$k1]['sale_lead'] += $r['is_sale'];
-                        $data[$k1]['sale_lead'] += $r['is_lead'];
-                        */
                         stat_inc($data[$k1], $r, $k1, $r['name']);
-
-                        /*
-                        $data[$k1][$timekey][$k3]['cnt'] += 1;
-                        $data[$k1][$timekey][$k3]['cost'] += $r['clicks_price'];
-                        $data[$k1][$timekey][$k3]['earnings'] += $r['conversions_sum'];
-                        $data[$k1][$timekey][$k3]['is_parent_cnt'] += $r['is_parent'];
-                        */
-
                         stat_inc($data[$k1][$timekey], $r, $k1, $r['name']);
                     }
                 }
             } // Стандартный режим
         } // Цикличный сбор данных из БД
-        
-        dmp($data);
+
+        if ($_GET['debug']) {
+            dmp($data);
+        }
         
     }
-    
+
     // ----------------------------------------
     // Постобработка, когда ВСЕ данные получены
     // ----------------------------------------
@@ -879,11 +925,6 @@ function get_clicks_report_grouped2($params) {
             $data = $data3;
         }
     } else {
-        /*
-          if($_SERVER['REMOTE_ADDR'] == '178.121.223.216') {
-          dmp($data);
-          }
-         */
 
         // Убираем строчки с конверсиями
         $data = conv_filter($data, $params['conv']);
@@ -924,7 +965,8 @@ function get_clicks_report_grouped2($params) {
     }
 
     // Удаляем страницы, у которых нет исходящих (Это не Лэндинги)
-    if (($params['mode'] == 'lp' and $params['part'] == 'all') and empty($parent_val)) {
+    //and $params['part'] == 'all'
+    if (($params['mode'] == 'lp') and empty($parent_val)) {
         foreach ($data as $k => $v) {
             if (empty($v['out']) and empty($v['direct'])) {
                 unset($data[$k]);
@@ -936,7 +978,7 @@ function get_clicks_report_grouped2($params) {
     // если не выбран какой-то определенный лэндинг.
     //
 		
-	global $pop_sort_by, $pop_sort_order;
+    global $pop_sort_by, $pop_sort_order;
     $max_sub = 50; // После скольки объектов начинаем сворачивать
 
     if ($params['no_other'] == 0
@@ -997,8 +1039,9 @@ function get_clicks_report_grouped2($params) {
             $data[-1] = $other;
         }
     }
-
-    //date_default_timezone_set($timezone_backup);
+    
+    //dmp($click_params);
+    //dmp($campaign_params);
 
     return array(
         'data' => $data,
@@ -1391,7 +1434,8 @@ function report_options() {
         'col' => $col,
         'from' => rq('from', 4, $from),
         'to' => rq('to', 4, $to),
-        'no_other' => rq('no_other', 2)
+        'no_other' => rq('no_other', 2),
+        'cache' => ((_CLICKS_SPOT_SIZE > 0 and empty($_GET['nocache'])) ? 1 : 0)
     );
     return $v;
 }
@@ -1416,7 +1460,7 @@ function t_income($r, $wrap = true, $emp = true) {
 }
 
 function t_epc($r, $wrap = true, $emp = true) {
-    return currencies_span(round2($r['income'] / $r['cnt']), $wrap);
+    return empty($r['cnt']) ? 0 : currencies_span(round2($r['income'] / $r['cnt']), $wrap);
 }
 
 function t_profit($r, $wrap = true, $emp = true) {
@@ -1455,12 +1499,12 @@ function t_follow($r, $wrap = true, $emp = true) {
 }
 
 function t_cps($r, $wrap = true, $emp = true) {
-    return currencies_span(round2($r['price'] / $r['sale']), $wrap);
+    return currencies_span(empty($r['sale']) ? 0 : round2($r['price'] / $r['sale']), $wrap);
 }
 
 function t_cpa($r, $wrap = true, $emp = true) {
     //return currencies_span($r['price'] / $r['act'], $wrap);
-    return currencies_span(round2($r['price'] / $r['act']), $wrap);
+    return currencies_span(empty($r['act']) ? 0 : round2($r['price'] / $r['act']), $wrap);
 }
 
 function t_cpl($r, $wrap = true, $emp = true) {
@@ -1474,7 +1518,7 @@ function t_repeated($r, $wrap = true, $emp = true) {
     if ($repeated < 0)
         $repeated = 0;
 
-    $repeated = round($repeated / $r['cnt'] * 100, 1);
+    $repeated = empty($r['cnt']) ? 0 : round($repeated / $r['cnt'] * 100, 1);
     return $wrap ? (($emp && $repeated <= 0) ? '' : $repeated . '%') : $repeated;
 }
 
@@ -1659,6 +1703,7 @@ function stat_inc(&$arr, $r, $id, $name) {
 // Складываем дневную статистику для подведения итогов по строкам и колонкам
 function stat_inc_total($cur_date, $row) {
     global $row_total_data, $column_total_data, $table_total_data;
+    if(empty($row)) return false;
     foreach ($row as $k => $v) {
         if (is_array($v))
             continue;
@@ -1865,18 +1910,18 @@ function parent_row($id, $name = '') {
         return 0;
 
     if (!isset($rows[$id])) {
-        
+
         // Turbo
-        if(_CLICKS_SPOT_SIZE > 0) {
+        if (_CLICKS_SPOT_SIZE > 0) {
             // Определяем, в каком споте у нас будет этот клик
             $spot_id = ceil($id / _CLICKS_SPOT_SIZE);
             $clicks_table = 'tbl_clicks_s' . $spot_id;
         } else {
             $clicks_table = 'tbl_clicks';
         }
-        
+
         $q = "select * from `" . $clicks_table . "` where `id` = '" . intval($id) . "' limit 1";
-        
+
         //echo $q. '<br >';
         if ($rs = db_query($q) and mysql_num_rows($rs) > 0) {
             $row = mysql_fetch_assoc($rs);

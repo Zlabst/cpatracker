@@ -28,31 +28,71 @@
 	
 	$t1 = microtime_float();
 	
-	function time_edge($t, $type = 'hour', $edge = 'begin') {
-		switch($type) {
-			case 'hour':
-				$out = mktime(date('H', $t), 0, 0, date('m', $t), date('d', $t), date('Y', $t));
-				if($edge == 'end') $out += (3600 - 1);
-				break;
-		}
-		return $out;
-	}
-	
-	function get_cache_timers() {
-		$out = array();
-		$q = "select * from `tbl_clicks_cache_time` where 1";
-		$rs = db_query($q);
-		$r = mysql_fetch_assoc($rs);
-		return $r;
-	}
-	
-	function set_cache_timer($type, $t) {
-		$q = "update `tbl_clicks_cache_time` set `" . $type . "` = '" . $t ."'";
-		$rs = db_query($q);
-	}
-	
-	
 	$cache_timers = get_cache_timers();
+	
+	function make_cache($type, $from, $to, $cache_time, $rewrite = false) {
+		
+		$hour_key = date('H', $from);
+		
+		// Кэш дневной ленты переходов
+		$params = array(
+			'type'     => 'basic',
+			'part'     => 'hour',
+			'filter'   => array(),
+			'group_by' => $type,
+			'subgroup_by' => $type,
+			'conv'     => 'all',
+			'mode'     => '',
+			'col'      => 'sale_lead',
+			'from'     => date('Y-m-d H:i:s', $from),
+			'to'       => date('Y-m-d H:i:s', $to),
+			'cache'    => 2
+		);
+		
+		$arr_report_data = get_clicks_report_grouped2($params);
+		
+		/*
+		dmp($params);
+		dmp($arr_report_data);
+		die();*/
+		
+		$str = join('',$arr_report_data['click_params']) . join('',$arr_report_data['campaign_params']);
+		echo $str . '<br />';
+		
+		if(empty($arr_report_data['data'])) return false;
+		
+		foreach($arr_report_data['data'] as $k => $v) {
+			$r = $v[$hour_key];
+			$ins = array(
+				'type'    => $type,
+				'id'      => $r['id'],
+				'time'    => $cache_time,
+				'name'    => $r['name'],
+				'price'   => $r['price'],
+				'unique'  => $r['unique'],
+				'income'  => $r['income'],
+				'direct'  => $r['direct'],
+				'sale'    => $r['sale'],
+				'lead'    => $r['lead'],
+				'act'     => $r['act'],
+				'out'     => $r['out'],
+				'cnt'     => $r['cnt'],
+				'sale_lead' => $r['sale_lead'],
+				'rebuild' => 0,
+				'params'  => bindec($str),
+			);
+			
+			$q = insertsql($ins, 'tbl_clicks_cache_hour', true);
+			echo $q . '<br />';
+			db_query($q);
+		}
+		
+		if($rewrite) {
+			$q = "update `tbl_clicks_cache_hour` set `rebuild` = '0' where `time` = '" . $cache_time . "'";
+			db_query($q);
+		}
+		return true;
+	}
 	
 	/*
 	* За какой период нужно собрать данные для кэша?
@@ -61,22 +101,12 @@
 		global $cache_timers;
 		$sec = array(
 			'hour' => 3600 - 1,
+			'day'  => 86400 - 1,
 		);
-		
-		//dmp($cache_timers);
 		
 		if($cache_timers[$type] != '0000-00-00 00:00:00') {
 			$time_from = $cache_timers[$type];
 		}
-		
-		/*
-		$q="select max(`time`) as `last_time`
-			from `tbl_clicks_cache_" . $type . "`
-			where 1";
-		if($rs = db_query($q) and mysql_num_rows($rs) > 0){
-			$r = mysql_fetch_assoc($rs);
-			$time_from = $r['last_time'];
-		}*/
 		
 		// Кэша нет вообще никакого, а данные хоть есть?
 		if(empty($time_from)) {
@@ -99,9 +129,6 @@
 					return false;
 				}
 			} else {
-				
-				
-				
 				return false;
 			}
 		} else {
@@ -114,61 +141,64 @@
 		return array($time_from, $time_to);
 	}
 	
+	//----------------------------------
 	
-	
-	list($time_from, $time_to) = get_last_cache_time();
-	$hour_key = date('H', $time_from);
-	$cache_time = date('Y-m-d H:i:s', time_edge($time_from, 'hour', 'begin'));
-	
-	$main_types = array('out_id', 'source_name');
-	
-	foreach($main_types as $main_type) {
-		// Кэш дневной ленты переходов
-		$params = array(
-			'type'     => 'basic',
-			'part'     => 'hour',
-			'filter'   => array(),
-			'group_by' => $main_type,
-			'subgroup_by' => $main_type,
-			'conv'     => 'all',
-			'mode'     => '',
-			'col'      => 'sale_lead',
-			'from'     => date('Y-m-d H:i:s', $time_from),
-			'to'       => date('Y-m-d H:i:s', $time_to),
-			'cache'    => 0
-		);
-		
-		//dmp($params);
-		
-		$arr_report_data = get_clicks_report_grouped2($params);
-		
-		foreach($arr_report_data['data'] as $k => $v) {
-			$r = $v[$hour_key];
-			$ins = array(
-				'type'   => $main_type,
-				'id'     => $r['id'],
-				'time'   => $cache_time,
-				'name'   => $r['name'],
-				'price'  => $r['price'],
-				'unique' => $r['unique'],
-				'income' => $r['income'],
-				'direct' => $r['direct'],
-				'sale'   => $r['sale'],
-				'lead'   => $r['lead'],
-				'act'    => $r['act'],
-				'out'    => $r['out'],
-				'cnt'    => $r['cnt'],
-				'sale_lead' => $r['sale_lead'],
-			);
-			
-			$q=insertsql($ins, 'tbl_clicks_cache_hour');
-			//echo $q . '<br />';
-			db_query($q);
-		}
+	$main_types = array('out_id', 'source_name', 'campaign_name', 'ads_name', 'referer', 'country', 'state', 'city', 'user_ip', 'isp', 'user_os', 'user_platform', 'user_browser');
+	for($i = 1; $i <= 5; $i++) {
+		$main_types[] = 'campaign_param' . $i;
 	}
-	set_cache_timer('hour', $cache_time);
+	for($i = 1; $i <= 15; $i++) {
+		$main_types[] = 'click_param_value' . $i;
+	}
+	
+	// Не надо ли нам обновить какую-то часть кэша?
+	$q = "select `time`
+		from `tbl_clicks_cache_hour`
+		where `rebuild` = '1'
+		group by `time`
+		order by `time` asc
+		limit 1";
+	if($rs = db_query($q) and mysql_num_rows($rs) > 0){
+		$r = mysql_fetch_assoc($rs);
+		
+		$time_from = strtotime($r['time']);
+		$time_to = $time_from + 3600 - 1;
+		
+		$cache_time = date('Y-m-d H:i:s', $time_from);
+		
+		echo 'Выполняем пересчёт кэша за ' . $r['time'] . '<br />';
+		
+		// УДАЛИТЬ СТАРЫЙ КЭШ
+		
+		foreach($main_types as $main_type) {
+			echo 'Тип <b>' . $main_type . '</b>, кеширование<br />';
+			make_cache($main_type, $time_from, $time_to, $cache_time, true);
+		}
+		exit;
+	} else {
+		list($time_from, $time_to) = get_last_cache_time();
+		$cache_time = date('Y-m-d H:i:s', time_edge($time_from, 'hour', 'begin'));
+		
+		foreach($main_types as $main_type) {
+			echo 'Тип <b>' . $main_type . '</b>, кеширование<br />';
+			$result = make_cache($main_type, $time_from, $time_to, $cache_time);
+			if(!$result) break;
+		}
+		set_cache_timer('hour', $cache_time);
+	}
+	
+	
+	
 	
 	$t2 = microtime_float();
 	
 	echo 'Кэш ленты: ' . $cache_time . ' (' . round($t2 - $t1, 2) .' c.)<br />';
+	
+	if($_GET['reload']) {
+		if($time_to < time()) {
+			echo '<script>window.location.reload();</script>';
+		} else {
+			echo 'Кэш в актуальном состоянии';
+		}
+	}
 ?>

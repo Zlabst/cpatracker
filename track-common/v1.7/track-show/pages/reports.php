@@ -178,22 +178,22 @@ switch ($_REQUEST['type']) {
 		// Если в Отчете по переходам выбран разрез Источник, то выводим таблицу Целевые страницы, добавляем к ней столбец Целевая страница и делаем источники кликабельными. 
 		//if(in_array($params['group_by'], array('source_name', 'ads_name', 'campaign_name', 'referer'))) {
 		
-			$params['where'] = '';
-			$params['mode'] = 'lp';
-			$assign['report_params'] = $params;
-			$report_lp = get_clicks_report_grouped2($params);
-			$assign['arr_report_data'] = $report_lp['data'];
-			
-			if(!empty($report_lp['data'])) {
-			
-				echo '<div class="col-sm-9"><h3>Целевые страницы</h3></div>';
-			
-				// Таблица отчета
-				echo tpx('report_table', $assign);
-			}
-			
-			// Возвращаем режим на место, иначе кнопки внизу будут вести на этот тип отчёта
-			$params['mode'] = $assign['report_params']['mode'] = '';
+		$params['where'] = '';
+		$params['mode'] = 'lp';
+		$assign['report_params'] = $params;
+		$report_lp = get_clicks_report_grouped2($params);
+		$assign['arr_report_data'] = $report_lp['data'];
+		
+		if(!empty($report_lp['data'])) {
+		
+			echo '<div class="col-sm-9"><h3>Целевые страницы</h3></div>';
+		
+			// Таблица отчета
+			echo tpx('report_table', $assign);
+		}
+		
+		// Возвращаем режим на место, иначе кнопки внизу будут вести на этот тип отчёта
+		$params['mode'] = $assign['report_params']['mode'] = '';
 			
 		//}
 	}

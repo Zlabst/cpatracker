@@ -59,7 +59,7 @@ function glink($v, $li = false, $name = '') {
 				glink('country', true) .
 				glink('state', true) .
 				glink('city', true) .
-                                glink('user_ip', true);
+                glink('user_ip', true);
 			echo '<li class="divider"></li>';
 			echo glink('isp', true); ?>
 			</ul>

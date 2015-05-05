@@ -33,6 +33,8 @@ if(!isset($table_n)) {
 						
 						$group_link = $subtype == 'out_id' ? 'source_name' : 'out_id';
 						
+						$name = $r['name'];
+						/*
 						if(trim($r['name']) == '' or $r['name'] == '{empty}') {
 							$name = $group_types[$var['group_by']][1];
 						} else {
@@ -50,7 +52,7 @@ if(!isset($table_n)) {
 								$name = $r['name'];
 							}
 						}
-						
+						*/
 						//$name = (empty($r['name'] or $r['name'] == '{empty}') ? $group_types[$group_by][1] : $r['name']);
 						
 						// Ограничиваем глубину фильтров
@@ -85,24 +87,24 @@ if(!isset($table_n)) {
 			<tfoot>
 				<tr><th><strong>Итого</strong></th><?php 
 					$r = $column_total_data;
-					echo '<td>'.
-							$r['cnt'].'</td><td>'.
-							t_repeated($r).'</td><td>'.
-							t_lpctr($r).'</td><td>'.
-							$r['out'].'</td><td class="col_s">'.
-							$r['sale'].'</td><td class="col_l">'.
-							$r['lead'].'</td><td class="col_a">'.
-							$r['act'].'</td><td class="col_s">'.
-							t_conversion($r).'</td><td class="col_l">'.
-							t_conversion_l($r).'</td><td class="col_a">'.
-							t_conversion_a($r).'</td><td>'.
-							t_price($r).'</td><td class="col_s col_a">'.
-							t_profit($r).'</td><td class="col_s">'.
-							t_epc($r).'</td><td class="col_s">'.
-							t_roi($r).'</td><td class="col_s">'.
-							t_cps($r).'</td><td class="col_l">'.
-							t_cpl($r).'</td><td class="col_a">'.
-							t_cpa($r).'</td>';
+					echo '<th>'.
+							$r['cnt'].'</th><th>'.
+							t_repeated($r).'</th><th>'.
+							t_lpctr($r).'</th><th>'.
+							$r['out'].'</th><th class="col_s">'.
+							$r['sale'].'</th><th class="col_l">'.
+							$r['lead'].'</th><th class="col_a">'.
+							$r['act'].'</th><th class="col_s">'.
+							t_conversion($r).'</th><th class="col_l">'.
+							t_conversion_l($r).'</th><th class="col_a">'.
+							t_conversion_a($r).'</th><th>'.
+							t_price($r).'</th><th class="col_s col_a">'.
+							t_profit($r).'</th><th class="col_s">'.
+							t_epc($r).'</th><th class="col_s">'.
+							t_roi($r).'</th><th class="col_s">'.
+							t_cps($r).'</th><th class="col_l">'.
+							t_cpl($r).'</th><th class="col_a">'.
+							t_cpa($r).'</th>';
 					
 					?></tr>
 			</tfoot>

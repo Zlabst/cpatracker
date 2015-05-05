@@ -218,6 +218,34 @@
 
 	$arr_sql[]="INSERT INTO `tbl_clicks_map` (`id`, `time_begin`, `time_end`, `current`) VALUES (1, '1999-12-31 21:00:00', '2019-12-31 21:00:00', 1);";
 
+	$arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_clicks_cache_hour` (
+	  `type` enum('source_name','out_id') CHARACTER SET utf8 NOT NULL,
+	  `id` varchar(50) CHARACTER SET utf8 NOT NULL,
+	  `time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'начало часа',
+	  `name` varchar(50) CHARACTER SET utf8 NOT NULL,
+	  `price` int(11) NOT NULL,
+	  `unique` int(11) NOT NULL,
+	  `income` int(11) NOT NULL,
+	  `direct` int(11) NOT NULL,
+	  `sale` int(11) NOT NULL,
+	  `lead` int(11) NOT NULL,
+	  `act` int(11) NOT NULL,
+	  `out` int(11) NOT NULL,
+	  `cnt` int(11) NOT NULL,
+	  `sale_lead` int(11) NOT NULL,
+	  PRIMARY KEY (`type`,`id`,`time`)
+	) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
+	
+	$arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_clicks_cache_time` (
+		  `hour` datetime NOT NULL,
+		  `day` datetime NOT NULL,
+		  `month` datetime NOT NULL
+		) ENGINE=InnoDB DEFAULT CHARSET=latin1;";
+
+	$arr_sql[]="INSERT INTO `tbl_clicks_cache_time` (`hour`, `day`, `month`) VALUES
+		('0000-00-00 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00');";
+	
+
     $arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_timezones` (
     `id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
     `timezone_name` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,

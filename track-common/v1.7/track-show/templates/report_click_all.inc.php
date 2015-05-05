@@ -100,7 +100,7 @@ if(!isset($table_n)) {
 							$r['act'].'</th><th class="col_s">'.
 							t_conversion($r).'</th><th class="col_l">'.
 							t_conversion_l($r).'</th><th class="col_a">'.
-							t_conversion_a($r).'</th><td>'.
+							t_conversion_a($r).'</th><th>'.
 							t_price($r).'</th><th class="col_s col_a">'.
 							t_profit($r).'</th><th class="col_s">'.
 							t_epc($r).'</th><th class="col_s col_a">'.

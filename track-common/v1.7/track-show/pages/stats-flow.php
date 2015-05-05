@@ -32,7 +32,7 @@
 		'col'      => 'sale_lead',
 		'from'     => $date,
 		'to'       => $date,
-		'cache'    => _CLICKS_SPOT_SIZE > 0 ? 1 : 0,
+		'cache'    => ((_CLICKS_SPOT_SIZE > 0 and empty($_GET['nocache'])) ? 1 : 0)
 	);
 		
 	$arr_report_data = get_clicks_report_grouped2($params); 
