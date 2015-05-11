@@ -420,41 +420,36 @@ if (strlen($request_string) > 0) {
     $str.="\t" . $request_string;
 }
 
-$str.="\n";
+$write_to_file = true; // пишем данные о переходе в файл 
+$time_key = date('Y-m-d-H-i');
 
-if (1) {
-    /*
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
-    ini_set('display_startup_errors', true);
-    */
-
+if (_SELF_STORAGE_ENGINE == 'redis') {
     require _TRACK_LIB_PATH . '/redis/rds.php';
 
-    $rds_server = array('127.0.0.1', 6379);
+    $rds_server = array(_REDIS_HOST, _REDIS_PORT);
     $rds = new rds($rds_server);
     
     $t = explode('/', _TRACK_PATH);
     $uid = end($t);
-    $time_key = date('Y-m-d-H-i');
-
+    
     // Ключ хранилища переходов (list)
     $k = 'cpa_tr_clicks_' . $uid . '_' . $time_key;
 
     $n = $rds->rpush($k, $str);
 
-    // Временные отрезки (list)
-    $tk = 'cpa_tr_clicks_time_' . $uid;
-    if ($n == 1) {
-        $rds->rpush($tk, $time_key);
-    }    
-} else {
+    // Вставка удалась
+    if(!empty($n)) {
+        $write_to_file = false; // в файл писать ничего не надо
+    }
+} 
+
+if($write_to_file) {
     // Save click information in file
     if (!is_dir(_CACHE_PATH . '/clicks')) {
         mkdir(_CACHE_PATH . '/clicks');
         chmod(_CACHE_PATH . '/clicks', 0777);
     }
-    file_put_contents(_CACHE_PATH . '/clicks/' . '.clicks_' . date('Y-m-d-H-i'), $str, FILE_APPEND | LOCK_EX);
+    file_put_contents(_CACHE_PATH . '/clicks/' . '.clicks_' . $time_key, $str . "\n", FILE_APPEND | LOCK_EX);
 }
 
 // Redirect
