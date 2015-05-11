@@ -24,7 +24,6 @@ if(!isset($table_n)) {
 } else {
 	$table_n++;
 }
-
 ?>
 <style>
 .sortdata {

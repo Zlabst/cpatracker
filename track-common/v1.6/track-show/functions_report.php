@@ -392,7 +392,6 @@ function get_clicks_report_grouped2($params) {
             }
         }
 
-
         // Фильтры показа
         if (!empty($params['filter'][1])) {
             $parent_clicks2 = array(); // $parent_clicks у нас для исходящих, а тут костыль (
@@ -545,7 +544,7 @@ function get_clicks_report_grouped2($params) {
 
 
                     
-// Подчиненные связи будут формироваться не по parent_id перехода,
+				// Подчиненные связи будут формироваться не по parent_id перехода,
                 // а через другие параметры этого перехода (например через источники, с которых пришли)
                 // Лэндинг 1
                 // ├ Источник 1
@@ -570,6 +569,18 @@ function get_clicks_report_grouped2($params) {
                             stat_inc($data[$k]['sub'][$k1][$timekey], $r, $k1, $r['name']);
                         }
                     } else {
+                    	// Будем считать исходящий только если у этого родителя его ещё нет
+                    	$r['cnt'] = isset($parent_clicks[$r['parent_id']]) ? 0 : 1;
+                    	$parent_clicks[$r['parent_id']] = 1;
+                    	
+                    	// Отмечаем исходящий для лэндинга
+	                    if ($r['cnt']) {
+	                    	$parent_row = parent_row($r['parent_id']);
+                    		$k0 = param_key($parent_row, $params['group_by']);
+	                    	
+	                        $data[$k0]['out'] += 1;
+	                    }
+
                         continue;
                     }
                 }
