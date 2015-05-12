@@ -424,22 +424,20 @@ $write_to_file = true; // пишем данные о переходе в фай�
 $time_key = date('Y-m-d-H-i');
 
 if (_SELF_STORAGE_ENGINE == 'redis') {
-    require _TRACK_LIB_PATH . '/redis/rds.php';
+    $rds = new Redis();
+    if($rds->connect(_REDIS_HOST, _REDIS_PORT)) {
+        $t = explode('/', _TRACK_PATH);
+        $uid = end($t);
 
-    $rds_server = array(_REDIS_HOST, _REDIS_PORT);
-    $rds = new rds($rds_server);
-    
-    $t = explode('/', _TRACK_PATH);
-    $uid = end($t);
-    
-    // Ключ хранилища переходов (list)
-    $k = 'cpa_tr_clicks_' . $uid . '_' . $time_key;
+        // Ключ хранилища переходов (list)
+        $k = 'cpa_tr_clicks_' . $uid . '_' . $time_key;
 
-    $n = $rds->rpush($k, $str);
+        $n = $rds->rpush($k, $str);
 
-    // Вставка удалась
-    if(!empty($n)) {
-        $write_to_file = false; // в файл писать ничего не надо
+        // Вставка удалась
+        if(!empty($n)) {
+            $write_to_file = false; // в файл писать ничего не надо
+        }
     }
 } 
 
