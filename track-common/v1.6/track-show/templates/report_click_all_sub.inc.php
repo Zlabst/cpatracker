@@ -11,8 +11,6 @@ if(isset($var['filter'][1]['out_id'])) {
 	}
 }
 
-//$
-
 //dmp($var['arr_report_data'] );;
 
 global $group_types;

@@ -112,21 +112,82 @@
       KEY `is_sale` (`is_sale`)
     ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
 
-
     $arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_conversions` (
-      `id` int(11) NOT NULL auto_increment,
-      `type` varchar(255) character set utf8 NOT NULL,
-      `network` varchar(255) character set utf8 NOT NULL,
-      `subid` varchar(255) character set utf8 NOT NULL,
-      `profit` decimal(10,4) NOT NULL,
-      `date_add` datetime NOT NULL,
-      `status` tinyint(4) NOT NULL,
-      PRIMARY KEY  (`id`),
-      KEY `type` (`type`),
-      KEY `network` (`network`),
-      KEY `subid` (`subid`),
-      KEY `status` (`status`)
-    ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
+		  `id` int(11) NOT NULL AUTO_INCREMENT,
+		  `type` varchar(255) CHARACTER SET utf8 NOT NULL,
+		  `network` varchar(255) CHARACTER SET utf8 NOT NULL,
+		  `subid` varchar(255) CHARACTER SET utf8 NOT NULL,
+		  `profit` decimal(10,4) NOT NULL,
+		  `date_add` datetime NOT NULL,
+		  `status` tinyint(4) NOT NULL,
+		  `txt_status` varchar(255) CHARACTER SET utf8 DEFAULT NULL,
+		  `t1` text CHARACTER SET utf8,
+		  `t2` text CHARACTER SET utf8,
+		  `t3` text CHARACTER SET utf8,
+		  `t4` text CHARACTER SET utf8,
+		  `t5` text CHARACTER SET utf8,
+		  `t6` text CHARACTER SET utf8,
+		  `t7` text CHARACTER SET utf8,
+		  `t8` text CHARACTER SET utf8,
+		  `t9` text CHARACTER SET utf8,
+		  `t10` text CHARACTER SET utf8,
+		  `t11` text CHARACTER SET utf8,
+		  `t12` text CHARACTER SET utf8,
+		  `t13` text CHARACTER SET utf8,
+		  `t14` text CHARACTER SET utf8,
+		  `t15` text CHARACTER SET utf8,
+		  `t16` text CHARACTER SET utf8,
+		  `t17` text CHARACTER SET utf8,
+		  `t18` text CHARACTER SET utf8,
+		  `t19` text CHARACTER SET utf8,
+		  `t20` text CHARACTER SET utf8,
+		  `t21` text CHARACTER SET utf8,
+		  `t22` text CHARACTER SET utf8,
+		  `t23` text CHARACTER SET utf8,
+		  `t24` text CHARACTER SET utf8,
+		  `t25` text CHARACTER SET utf8,
+		  `t26` text CHARACTER SET utf8,
+		  `t27` text CHARACTER SET utf8,
+		  `t28` text CHARACTER SET utf8,
+		  `t29` text CHARACTER SET utf8,
+		  `t30` text CHARACTER SET utf8,
+		  `f1` float(10,4) DEFAULT NULL,
+		  `f2` float(10,4) DEFAULT NULL,
+		  `f3` float(10,4) DEFAULT NULL,
+		  `f4` float(10,4) DEFAULT NULL,
+		  `f5` float(10,4) DEFAULT NULL,
+		  `i1` int(11) DEFAULT NULL,
+		  `i2` int(11) DEFAULT NULL,
+		  `i3` int(11) DEFAULT NULL,
+		  `i4` int(11) DEFAULT NULL,
+		  `i5` int(11) DEFAULT NULL,
+		  `i6` int(11) DEFAULT NULL,
+		  `i7` int(11) DEFAULT NULL,
+		  `i8` int(11) DEFAULT NULL,
+		  `i9` int(11) DEFAULT NULL,
+		  `i10` int(11) DEFAULT NULL,
+		  `i11` int(11) DEFAULT NULL,
+		  `i12` int(11) DEFAULT NULL,
+		  `i13` int(11) DEFAULT NULL,
+		  `i14` int(11) DEFAULT NULL,
+		  `i15` int(11) DEFAULT NULL,
+		  `i16` int(11) DEFAULT NULL,
+		  `i17` int(11) DEFAULT NULL,
+		  `i18` int(11) DEFAULT NULL,
+		  `i19` int(11) DEFAULT NULL,
+		  `i20` int(11) DEFAULT NULL,
+		  `d1` int(11) DEFAULT NULL,
+		  `d2` datetime DEFAULT NULL,
+		  `d3` datetime DEFAULT NULL,
+		  `d4` datetime DEFAULT NULL,
+		  `d5` datetime DEFAULT NULL,
+		  PRIMARY KEY (`id`),
+		  UNIQUE KEY `subid_2` (`subid`,`profit`),
+		  KEY `type` (`type`),
+		  KEY `network` (`network`),
+		  KEY `subid` (`subid`),
+		  KEY `status` (`status`)
+		) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
 
     $arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_cpa_networks` (
       `id` int(11) NOT NULL auto_increment,
@@ -237,10 +298,10 @@
 	) ENGINE=MyISAM DEFAULT CHARSET=latin1;";
 	
 	$arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_clicks_cache_time` (
-		  `hour` datetime NOT NULL,
-		  `day` datetime NOT NULL,
-		  `month` datetime NOT NULL
-		) ENGINE=InnoDB DEFAULT CHARSET=latin1;";
+  `hour` datetime NOT NULL,
+  `day` datetime NOT NULL,
+  `month` datetime NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;";
 
 	$arr_sql[]="INSERT INTO `tbl_clicks_cache_time` (`hour`, `day`, `month`) VALUES
 		('0000-00-00 00:00:00', '0000-00-00 00:00:00', '0000-00-00 00:00:00');";
@@ -256,11 +317,11 @@
     
     $arr_sql[]="UPDATE `tbl_offers` SET `offer_tracking_url` = REPLACE(`offer_tracking_url`, '%SUBID%', '[SUBID]')";
     
-    $arr_sql[]="ALTER TABLE `tbl_conversions` ADD `txt_status` VARCHAR(255), ADD `t1` TEXT,  ADD `t2` TEXT,  ADD `t3` TEXT ,  ADD `t4` TEXT ,  ADD `t5` TEXT ,  ADD `t6` TEXT ,  ADD `t7` TEXT ,  ADD `t8` TEXT ,  ADD `t9` TEXT ,  ADD `t10` TEXT ,  ADD `t11` TEXT ,  ADD `t12` TEXT ,  ADD `t13` TEXT ,  ADD `t14` TEXT ,  ADD `t15` TEXT ,  ADD `t16` TEXT ,  ADD `t17` TEXT ,  ADD `t18` TEXT ,  ADD `t19` TEXT ,  ADD `t20` TEXT ,  ADD `t21` TEXT ,  ADD `t22` TEXT ,  ADD `t23` TEXT ,  ADD `t24` TEXT ,  ADD `t25` TEXT ,   ADD `t26` TEXT ,   ADD `t27` TEXT ,   ADD `t28` TEXT ,   ADD `t29` TEXT ,   ADD `t30` TEXT ,  ADD `f1` FLOAT(10,4) ,  ADD `f2` FLOAT(10,4) ,  ADD `f3` FLOAT(10,4) ,  ADD `f4` FLOAT(10,4) ,  ADD `f5` FLOAT(10,4) ,  ADD `i1` INT(11) ,  ADD `i2` INT(11) ,  ADD `i3` INT(11) ,  ADD `i4` INT(11) ,  ADD `i5` INT(11) ,  ADD `i6` INT(11) ,  ADD `i7` INT(11) ,  ADD `i8` INT(11) ,  ADD `i9` INT(11) ,  ADD `i10` INT(11) ,  ADD `i11` INT(11) ,  ADD `i12` INT(11) ,  ADD `i13` INT(11) ,  ADD `i14` INT(11) ,  ADD `i15` INT(11) ,  ADD `i16` INT(11) ,  ADD `i17` INT(11) ,  ADD `i18` INT(11) ,  ADD `i19` INT(11) ,  ADD `i20` INT(11) ,  ADD `d1` INT ,  ADD `d2` DATETIME ,  ADD `d3` DATETIME ,  ADD `d4` DATETIME ,  ADD `d5` DATETIME ";
+    //$arr_sql[]="ALTER TABLE `tbl_conversions` ADD `txt_status` VARCHAR(255), ADD `t1` TEXT,  ADD `t2` TEXT,  ADD `t3` TEXT ,  ADD `t4` TEXT ,  ADD `t5` TEXT ,  ADD `t6` TEXT ,  ADD `t7` TEXT ,  ADD `t8` TEXT ,  ADD `t9` TEXT ,  ADD `t10` TEXT ,  ADD `t11` TEXT ,  ADD `t12` TEXT ,  ADD `t13` TEXT ,  ADD `t14` TEXT ,  ADD `t15` TEXT ,  ADD `t16` TEXT ,  ADD `t17` TEXT ,  ADD `t18` TEXT ,  ADD `t19` TEXT ,  ADD `t20` TEXT ,  ADD `t21` TEXT ,  ADD `t22` TEXT ,  ADD `t23` TEXT ,  ADD `t24` TEXT ,  ADD `t25` TEXT ,   ADD `t26` TEXT ,   ADD `t27` TEXT ,   ADD `t28` TEXT ,   ADD `t29` TEXT ,   ADD `t30` TEXT ,  ADD `f1` FLOAT(10,4) ,  ADD `f2` FLOAT(10,4) ,  ADD `f3` FLOAT(10,4) ,  ADD `f4` FLOAT(10,4) ,  ADD `f5` FLOAT(10,4) ,  ADD `i1` INT(11) ,  ADD `i2` INT(11) ,  ADD `i3` INT(11) ,  ADD `i4` INT(11) ,  ADD `i5` INT(11) ,  ADD `i6` INT(11) ,  ADD `i7` INT(11) ,  ADD `i8` INT(11) ,  ADD `i9` INT(11) ,  ADD `i10` INT(11) ,  ADD `i11` INT(11) ,  ADD `i12` INT(11) ,  ADD `i13` INT(11) ,  ADD `i14` INT(11) ,  ADD `i15` INT(11) ,  ADD `i16` INT(11) ,  ADD `i17` INT(11) ,  ADD `i18` INT(11) ,  ADD `i19` INT(11) ,  ADD `i20` INT(11) ,  ADD `d1` INT ,  ADD `d2` DATETIME ,  ADD `d3` DATETIME ,  ADD `d4` DATETIME ,  ADD `d5` DATETIME ";
 
     $arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_postback_params` ( `id` INT( 11 ) NOT NULL AUTO_INCREMENT PRIMARY KEY , `conv_id` INT( 11 ) NOT NULL , `name` VARCHAR( 255 ) NOT NULL , `value` TEXT NOT NULL) ENGINE = MYISAM ;";
     
     $arr_sql[]="ALTER TABLE `tbl_clicks` ADD `is_unique` TINYINT( 1 ) NOT NULL DEFAULT '0' AFTER `parent_id` ;";
 	
-    $arr_sql[]="ALTER TABLE `tbl_conversions` ADD UNIQUE (`subid` , `profit`);";
+    //$arr_sql[]="ALTER TABLE `tbl_conversions` ADD UNIQUE (`subid` , `profit`);";
 ?>
