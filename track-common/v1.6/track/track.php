@@ -335,9 +335,8 @@
                        }
 					   $flag = true;
                	   }
-               	   
                } else {
-                   if(strripos(' '.$internal_value['value'], $user_params[$key])){
+                   if(strripos($internal_value['value'], $user_params[$key]) !== false){
                      $relevant_params[] = $internal_value;
                       if(!$relevant_param_order){$relevant_param_order = $internal_value['order'];}else{
                          if($relevant_param_order>$internal_value['order']){$relevant_param_order = $internal_value['order'];}
