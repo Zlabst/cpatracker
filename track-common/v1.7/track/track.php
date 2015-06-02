@@ -1,162 +1,37 @@
 <?php
 
-//ob_start();
-
+ob_start();
+/*
   error_reporting(E_ALL);
   ini_set('display_errors', 1);
   ini_set('display_startup_errors', true);
-
+ */
 
 require _TRACK_COMMON_PATH . '/functions.php';
 
-$settings_file = _TRACK_SETTINGS_PATH . '/settings.php';
-
-
-$str = file_get_contents($settings_file);
-$str = str_replace('<?php exit(); ?>', '', $str);
-$arr_settings = unserialize($str);
-
-$_SERVER_TYPE = $arr_settings['server_type'];
-if ($_SERVER_TYPE == '') {
-    exit();
+if (_SELF_STORAGE_ENGINE == 'redis') {
+    $rds = new Redis();
+    if(!$rds->connect(_REDIS_HOST, _REDIS_PORT)) {
+        $rds = false;
+    }    
+} else {
+    $rds = false;
 }
 
-if (!function_exists('remove_tab')) {
+// константа _SERVER_TYPE может быть определена в settings_path.php
+if (defined(_SERVER_TYPE)) {
+    $_SERVER_TYPE = _SERVER_TYPE;
+} else {
+    $settings_file = _TRACK_SETTINGS_PATH . '/settings.php';
 
-    function remove_tab($str) {
-        return str_replace("\t", ' ', $str);
+    $str = file_get_contents($settings_file);
+    $str = str_replace('<?php exit(); ?>', '', $str);
+    $arr_settings = unserialize($str);
+
+    $_SERVER_TYPE = $arr_settings['server_type'];
+    if ($_SERVER_TYPE == '') {
+        exit();
     }
-
-}
-
-if (!function_exists('detector_cp1251')) {
-
-    function detector_cp1251($str) {
-        $tmp = str_replace(array('Р', 'ћ', 'Ђ', 'є', 'Ѓ', '°'), '#', $str);
-        $l1 = mb_strlen($tmp, 'UTF-8');
-        $l2 = mb_strlen(str_replace('#', '', $tmp), 'UTF-8');
-        if ($l1 - $l2 > $l1 / 3) {
-            return iconv('UTF-8', 'cp1251', $str);
-        }
-        return $str;
-    }
-
-}
-
-
-if (!function_exists('add_parent_subid')) {
-
-    function add_parent_subid($domain, $subid) {
-        $unique = 0;
-        if (array_key_exists('cpa_parents', $_COOKIE)) {
-            $parents = json_decode($_COOKIE['cpa_parents'], true);
-        } else {
-            $parents = array();
-        }
-        $parents[$domain] = $subid;
-
-        // Parent click
-        $cookie_time = $_SERVER['REQUEST_TIME'] + 60;
-
-        // Unique user
-        $cookie_name = 'cpa_was_here_' . str_replace('.', '_', $domain);
-        if (empty($_COOKIE[$cookie_name])) {
-            $cookie_time = $_SERVER['REQUEST_TIME'] + (60 * 60 * 24 * 31);
-            setcookie($cookie_name, 1, $cookie_time, "/", $_SERVER['HTTP_HOST']);
-            $unique = 1;
-        }
-
-        setcookie("cpa_parents", json_encode($parents), $cookie_time, "/", $_SERVER['HTTP_HOST']);
-        return $unique;
-    }
-
-}
-
-$requestingDevice = null;
-
-require_once (_TRACK_LIB_PATH . "/ua-parser/uaparser.php");
-if (extension_loaded('xmlreader')) {
-    // Init WURFL library for mobile device detection
-    $wurflDir = _TRACK_LIB_PATH . '/wurfl/WURFL';
-    $resourcesDir = _TRACK_LIB_PATH . '/wurfl/resources';
-    require_once $wurflDir . '/Application.php';
-    $persistenceDir = _CACHE_COMMON_PATH . '/wurfl-persistence';
-    $cacheDir = _CACHE_COMMON_PATH . '/wurfl-cache';
-    $wurflConfig = new WURFL_Configuration_InMemoryConfig();
-    $wurflConfig->wurflFile(_TRACK_STATIC_PATH . '/wurfl/wurfl_1.5.3.xml');
-    $wurflConfig->matchMode('accuracy');
-    $wurflConfig->allowReload(true);
-    $wurflConfig->persistence('file', array('dir' => $persistenceDir));
-    $wurflConfig->cache('file', array('dir' => $cacheDir, 'expiration' => 36000));
-    $wurflManagerFactory = new WURFL_WURFLManagerFactory($wurflConfig);
-    $wurflManager = $wurflManagerFactory->create();
-    $requestingDevice = $wurflManager->getDeviceForUserAgent($_SERVER['HTTP_USER_AGENT']);
-}
-
-if (!function_exists('get_geodata')) {
-
-    function get_geodata($ip) {
-        require_once (_TRACK_LIB_PATH . "/maxmind/geoip.inc.php");
-        require_once (_TRACK_LIB_PATH . "/maxmind/geoipcity.inc.php");
-        require_once (_TRACK_LIB_PATH . "/maxmind/geoipregionvars.php");
-        $gi = geoip_open(_TRACK_STATIC_PATH . "/maxmind/MaxmindCity.dat", GEOIP_STANDARD);
-        $record = geoip_record_by_addr($gi, $ip);
-        $isp = geoip_org_by_addr($gi, $ip);
-        geoip_close($gi);
-
-        $cur_country = $record->country_code;
-
-        // Resolve GeoIP extension conflict
-        if (function_exists('geoip_country_code_by_name') && ($cur_country == '')) {
-            $cur_country = geoip_country_code_by_name($ip);
-        }
-
-        return array('country' => $cur_country, 'state' => $GEOIP_REGION_NAME[$record->country_code][$record->region], 'city' => $record->city, 'region' => $record->region, 'isp' => $isp);
-    }
-
-}
-
-if (!function_exists('get_rules')) {
-
-    function get_rules($rule_name) {
-        $rule_hash = md5($rule_name);
-
-        $rules_path = _CACHE_PATH . "/rules";
-        $rule_path = "{$rules_path}/.{$rule_hash}";
-
-        if (is_file($rule_path)) {
-            $str_rules = file_get_contents($rule_path);
-            $arr_rules = unserialize($str_rules);
-            return $arr_rules;
-        } else {
-            track_error('Rule ' . $rule_name . ' not found');
-        }
-    }
-
-}
-
-if (!function_exists('get_out_link')) {
-
-    function get_out_link($id) {
-
-        $link = '';
-        $id = intval($id);
-        if ($id <= 0) {
-            return '';
-        }
-
-        $outs_path = _CACHE_PATH . "/outs";
-        $out_path = "{$outs_path}/.{$id}";
-
-        if (is_file($out_path)) {
-            $link = file_get_contents($out_path);
-        } else {
-            track_error('Out link ' . $id . ' not found');
-        }
-
-        return $link;
-    }
-
 }
 
 // Remove trailing slash
@@ -166,7 +41,7 @@ $track_request = explode('/', $track_request);
 $str = '';
 
 // Date
-$str.=date("Y-m-d H:i:s") . "\t";
+$str .= date("Y-m-d H:i:s") . "\t";
 
 switch ($_SERVER_TYPE) {
     case 'apache':
@@ -189,13 +64,6 @@ if (strpos($ip, ',') !== false) {
 }
 
 $str.=remove_tab($ip) . "\t";
-
-// Country and city
-$geo_data = get_geodata($ip);
-$cur_country = $geo_data['country'];
-$cur_state = $geo_data['state'];
-$cur_city = $geo_data['city'];
-$isp = $geo_data['isp'];
 
 // User language
 $user_lang = substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2);
@@ -229,31 +97,65 @@ $str.=$subid . "\t";
 $arr_rules = get_rules($link_name);
 
 if (count($arr_rules) == 0) {
-    exit('Rule not found');
+    exit('Link not found');
 } else {
     $user_params = array();
     $user_params['agent'] = $_SERVER['HTTP_USER_AGENT'];
-    if ($requestingDevice && (($requestingDevice->getCapability('is_wireless_device') == 'true') || ($requestingDevice->getCapability('is_tablet') == 'true'))) {
-        $user_params['os'] = $requestingDevice->getCapability('device_os');
-        $user_params['device'] = $requestingDevice->getCapability('brand_name') . '; ' . $requestingDevice->getCapability('model_name');
-        $user_params['platform'] = $requestingDevice->getCapability('brand_name');
-        $user_params['browser'] = $requestingDevice->getCapability('mobile_browser');
-    } else {
-        $parser = new UAParser;
-        $result = $parser->parse($user_params['agent']);
-        $user_params['browser'] = $result->ua->family;
-        $user_params['os'] = $result->os->family;
-        $user_params['device'] = '';
-        $user_params['platform'] = '';
+
+    // Задействованы ли в правилах параметры устройства (поля os, browser, platform, device)
+    if (isset($arr_rules['os']) or isset($arr_rules['browser']) or isset($arr_rules['platform']) or isset($arr_rules['device'])) {
+        require _TRACK_LIB_PATH . "/ua-parser/uaparser.php";
+
+        $requestingDevice = null;
+
+        if ((defined(_XMLREADER_INSTALLED) and _XMLREADER_INSTALLED) or extension_loaded('xmlreader')) {
+            // Init WURFL library for mobile device detection
+            $wurflDir = _TRACK_LIB_PATH . '/wurfl/WURFL';
+            $resourcesDir = _TRACK_LIB_PATH . '/wurfl/resources';
+            require $wurflDir . '/Application.php';
+            $persistenceDir = _CACHE_COMMON_PATH . '/wurfl-persistence';
+            $cacheDir = _CACHE_COMMON_PATH . '/wurfl-cache';
+            $wurflConfig = new WURFL_Configuration_InMemoryConfig();
+            $wurflConfig->wurflFile(_TRACK_STATIC_PATH . '/wurfl/wurfl_1.5.3.xml');
+            $wurflConfig->matchMode('accuracy');
+            $wurflConfig->allowReload(true);
+            $wurflConfig->persistence('file', array('dir' => $persistenceDir));
+            $wurflConfig->cache('file', array('dir' => $cacheDir, 'expiration' => 36000));
+            $wurflManagerFactory = new WURFL_WURFLManagerFactory($wurflConfig);
+            $wurflManager = $wurflManagerFactory->create();
+            $requestingDevice = $wurflManager->getDeviceForUserAgent($_SERVER['HTTP_USER_AGENT']);
+        }
+
+        if ($requestingDevice && (($requestingDevice->getCapability('is_wireless_device') == 'true') || ($requestingDevice->getCapability('is_tablet') == 'true'))) {
+            $user_params['os'] = $requestingDevice->getCapability('device_os');
+            $user_params['device'] = $requestingDevice->getCapability('brand_name') . '; ' . $requestingDevice->getCapability('model_name');
+            $user_params['platform'] = $requestingDevice->getCapability('brand_name');
+            $user_params['browser'] = $requestingDevice->getCapability('mobile_browser');
+        } else {
+            $parser = new UAParser;
+            $result = $parser->parse($user_params['agent']);
+            $user_params['browser'] = $result->ua->family;
+            $user_params['os'] = $result->os->family;
+            $user_params['device'] = '';
+            $user_params['platform'] = '';
+        }
+    }
+
+    // Задействованы ли в правилах геоданные (поля geo_country, provider, region, city)?
+    if (isset($arr_rules['geo_country']) or isset($arr_rules['provider']) or isset($arr_rules['region']) or isset($arr_rules['city'])) {
+        // Country and city
+        $geo_data = get_geodata($ip);
+
+        $user_params['city'] = $geo_data['city'];
+        $user_params['region'] = $geo_data['state'];
+        $user_params['provider'] = $geo_data['isp'];
+        $user_params['geo_country'] = $geo_data['country'];
     }
 
     $user_params['ip'] = $ip;
-    $user_params['city'] = $cur_city;
-    $user_params['region'] = $cur_state;
-    $user_params['provider'] = $isp;
     $user_params['lang'] = $user_lang;
     $user_params['referer'] = $_SERVER['HTTP_REFERER'];
-    $user_params['geo_country'] = $cur_country;
+
     $relevant_params = array();
 
     foreach ($arr_rules['geo_country'] as $key => $value) {
@@ -363,6 +265,11 @@ if (count($arr_rules) == 0) {
     }
 }
 
+$redirect_link = get_out_link($out_id);
+if (!$redirect_link) {
+    exit('Offer #' . $out_id . ' not found.');
+}
+
 $redirect_link = str_ireplace('[SUBID]', $subid, get_out_link($out_id));
 
 // Add rule id
@@ -423,27 +330,25 @@ if (strlen($request_string) > 0) {
 $write_to_file = true; // пишем данные о переходе в файл 
 $time_key = date('Y-m-d-H-i');
 
-if (_SELF_STORAGE_ENGINE == 'redis') {
-    $rds = new Redis();
-    if($rds->connect(_REDIS_HOST, _REDIS_PORT)) {
-        $t = explode('/', _TRACK_PATH);
-        $uid = end($t);
+// Задействуем Redis-хранилище
+if ($rds) {
+    $t = explode('/', _TRACK_PATH);
+    $uid = end($t);
 
-        // Ключ хранилища переходов (list)
-        $k = 'cpa_tr_clicks_' . $uid . '_' . $time_key;
+    // Ключ хранилища переходов (list)
+    $k = 'cpa_tr_clicks_' . $uid . '_' . $time_key;
 
-        $n = $rds->rpush($k, $str);
+    $n = $rds->rpush($k, $str);
 
-        // Вставка удалась
-        if(!empty($n)) {
-            $write_to_file = false; // в файл писать ничего не надо
-        }
+    // Вставка удалась
+    if (!empty($n)) {
+        $write_to_file = false; // в файл писать ничего не надо
     }
-} 
+}
 
-if($write_to_file) {
+if ($write_to_file) {
     // Save click information in file
-    if (!is_dir(_CACHE_PATH . '/clicks')) {
+    if ((!defined(_CACHE_PATH_CLICKS_CREATED) or !_CACHE_PATH_CLICKS_CREATED) and !is_dir(_CACHE_PATH . '/clicks')) {
         mkdir(_CACHE_PATH . '/clicks');
         chmod(_CACHE_PATH . '/clicks', 0777);
     }
@@ -453,4 +358,3 @@ if($write_to_file) {
 // Redirect
 header("Location: " . $redirect_link);
 exit();
-?>

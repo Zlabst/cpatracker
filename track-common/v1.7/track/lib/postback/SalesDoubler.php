@@ -40,22 +40,23 @@ class SalesDoubler {
         array_push($return, array(
             'id' => 0,
             'description' => 'Вставьте эту ссылку в поле "Постбэк - В ожидании"',
-            'url' => $url . '&status=pending'
+            'url' => $url . '&status=pending',
+            'title' => 'В ожидании',
         ));
         array_push($return, array(
             'id' => 1,
             'description' => 'Вставьте эту ссылку в поле "Постбэк - Принято"',
-            'url' => $url . '&status=approved'
+            'url' => $url . '&status=approved',
+            'title' => 'Принято',
         ));
         array_push($return, array(
             'id' => 2,
             'description' => 'Вставьте эту ссылку в поле "Постбэк - Отклонено"',
-            'url' => $url . '&status=rejected'
+            'url' => $url . '&status=rejected',
+            'title' => 'Отклонено',
         ));
 
-
         $return = $return + array('reg_url' => $this->reg_url, 'net_text' => $this->net_text);
-
 
         return $return;
     }

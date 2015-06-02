@@ -1,0 +1,155 @@
+@font-face {
+	font-family: 'cpa';
+	src:url('cpa.eot?t6lwq8');
+	src:url('cpa.eot?#iefixt6lwq8') format('embedded-opentype'),
+		url('cpa.woff?t6lwq8') format('woff'),
+		url('cpa.ttf?t6lwq8') format('truetype'),
+		url('cpa.svg?t6lwq8#cpa') format('svg');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.cpa {
+	font-family: 'cpa';
+	speak: none;
+	font-style: normal;
+	font-weight: normal;
+	font-variant: normal;
+	text-transform: none;
+	line-height: 1;
+	vertical-align: middle;
+
+	/* Better Font Rendering =========== */
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+.cpa-switch:before {
+	content: "\e610";
+}
+
+.cpa-bubbles:before {
+	content: "\e60f";
+}
+
+.cpa-plus:before {
+	content: "\e600";
+}
+
+.cpa-info:before {
+	content: "\e601";
+}
+
+.cpa-refresh:before {
+	content: "\e602";
+}
+
+.cpa-plane:before {
+	content: "\e603";
+}
+
+.cpa-folders:before {
+	content: "\e604";
+}
+
+.cpa-trash:before {
+	content: "\e605";
+}
+
+.cpa-pencil:before {
+	content: "\e606";
+}
+
+.cpa-magnifier:before {
+	content: "\e607";
+}
+
+.cpa-logout:before {
+	content: "\e608";
+}
+
+.cpa-folder:before {
+	content: "\e609";
+}
+
+.cpa-edit:before {
+	content: "\e60a";
+}
+
+.cpa-drawer:before {
+	content: "\e60b";
+}
+
+.cpa-cog:before {
+	content: "\e60c";
+}
+
+.cpa-check-o:before {
+	content: "\e60d";
+}
+
+.cpa-clock:before {
+	content: "\e60e";
+}
+
+.cpa-download:before {
+	content: "\f019";
+}
+
+.cpa-exclamation-triangle:before {
+	content: "\f071";
+}
+
+.cpa-warning:before {
+	content: "\f071";
+}
+
+.cpa-bell-o:before {
+	content: "\f0a2";
+}
+
+.cpa-file-text-o:before {
+	content: "\f0f6";
+}
+
+.cpa-close:before {
+	content: "\f00d";
+}
+
+.cpa-remove:before {
+	content: "\f00d";
+}
+
+.cpa-times:before {
+	content: "\f00d";
+}
+
+.cpa-bars:before {
+	content: "\f0c9";
+}
+
+.cpa-navicon:before {
+	content: "\f0c9";
+}
+
+.cpa-reorder:before {
+	content: "\f0c9";
+}
+
+.cpa-angle-left:before {
+	content: "\f104";
+}
+
+.cpa-angle-right:before {
+	content: "\f105";
+}
+
+.cpa-angle-up:before {
+	content: "\f106";
+}
+
+.cpa-angle-down:before {
+	content: "\f107";
+}
+
+

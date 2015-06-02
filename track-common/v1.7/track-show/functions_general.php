@@ -43,7 +43,7 @@ $option_currency = array(
 // Группы источников
 $source_types = array(
     0 => array(
-        'name' => '',
+        'name' => 'Контекстная реклама',
         'values' => array('yadirect', 'adwords') //'landing', 
     ),
     1 => array(
@@ -639,6 +639,7 @@ function check_crontab_markers() {
     $result = array('error' => false);
     $crontab_clicks = _CACHE_PATH . '/.crontab_clicks';
     $crontab_postback = _CACHE_PATH . '/.crontab_postback';
+    $api_connect_error = _CACHE_PATH . '/.api_connect_error';
 
     if (is_file($crontab_clicks)) {
         $result['error'] = true;
@@ -648,6 +649,11 @@ function check_crontab_markers() {
     if (is_file($crontab_postback)) {
         $result['error'] = true;
         $result['crontab_postback'] = true;
+    }
+    
+    if (is_file($api_connect_error)) {
+        $result['error'] = true;
+        $result['api_connect'] = true;
     }
 
     return $result;
@@ -1032,7 +1038,7 @@ function cache_remove_rule($rule_name) {
 /**
  * Полный пересчёт кэша правил: берём данные из базы и отправляем по всем трекерам
  */
-function cache_rules_update() {
+function cache_rules_update($link_name = '', $old_name = '') {
     global $_DB_LOGIN, $_DB_PASSWORD, $_DB_NAME, $_DB_HOST, $tracklist;
 
     // Connect to DB
@@ -1040,35 +1046,50 @@ function cache_rules_update() {
     mysql_select_db($_DB_NAME);
     mysql_query('SET NAMES utf8');
 
-    $rules = array();
+    $rules = array(); // маccив с правилами
+    $rules_md5 = array(); // массив правил, подготовленных для кэширования
+    
     $out = array(
         'status' => 1, // Всё хорошо
     );
 
     // Get cache strings
 
-    $sql = "select tbl_rules.id as rule_id, tbl_rules.link_name, tbl_rules_items.id, tbl_rules_items.parent_id, tbl_rules_items.type, tbl_rules_items.value 
-		from tbl_rules 
-		left join tbl_rules_items on tbl_rules_items.rule_id=tbl_rules.id 
-		where tbl_rules.status=0 and tbl_rules_items.status=0 
-		order by tbl_rules_items.parent_id, tbl_rules_items.id";
-    if ($result = mysql_query($sql) and mysql_num_rows($result) > 0) {
-        while ($row = mysql_fetch_assoc($result)) {
+    $q = "select tbl_rules.id as rule_id, tbl_rules.link_name, tbl_rules_items.id, tbl_rules_items.parent_id, tbl_rules_items.type, tbl_rules_items.value 
+        from tbl_rules 
+        left join tbl_rules_items on tbl_rules_items.rule_id=tbl_rules.id 
+        where tbl_rules.status=0 and tbl_rules_items.status=0 " . (empty($link_name) ? '' : " and `link_name` = '" . $link_name . "'") . "
+        order by tbl_rules_items.parent_id, tbl_rules_items.id";
+    $rs = db_query($q);
+    if (mysql_num_rows($rs) > 0) {
+        while ($row = mysql_fetch_assoc($rs)) {
             //$rule_id = $row['rule_id'];
             //$arr_items[$row['id']] = $row;
             $rules[$row['link_name']][$row['id']] = $row;
         }
 
         // name -> md5
-        $tmp = array();
         foreach ($rules as $rule_name => $arr_items) {
-            $tmp[md5($rule_name)] = $arr_items;
+            $rules_md5[md5($rule_name)] = $arr_items;
         }
-        $rules = $tmp;
 
-        // Send to all tracks
-        $out = send2trackers('rules_update', $rules);
+        // Обновляем все правила или одно конкретное с названием $link_name
+        $act = empty($link_name) ? 'rules_update' : 'rule_update';
+    
+    // У нас единственное правило и оно не найдено, а значит удалено
+    } elseif(!empty($link_name)) {
+        $act = 'rule_update';
+        $rules_md5[md5($link_name)] = '';
     }
+    
+    // Это старое имя, его надо удалить (костылик для переименования правила)
+    if($old_name != '') {
+        $rules_md5[md5($old_name)] = '';
+    }
+    
+    // Send to all tracks
+    $out = send2trackers($act, $rules_md5);
+    
     return $out;
 }
 
@@ -1136,6 +1157,16 @@ function offers_have_status($status) {
         return 1;
     }
     return 0;
+}
+
+function sources_favorits() {
+    $out = array();
+    $q = "select `id` from `tbl_sources`";
+    $rs = db_query($q);
+    while ($r = mysql_fetch_assoc($rs)) {
+        $out[] = $r['id'];
+    }
+    return $out;
 }
 
 function get_links_categories_list() {
@@ -1346,40 +1377,22 @@ function delete_sale($click_id, $conversion_id, $type) {
     return;
 }
 
-function delete_rule($rule_id) {
+function delete_rule($rule_id, $status = 1) {
     // Get rule name
-    $sql = "select id, link_name from tbl_rules where id='" . _str($rule_id) . "'";
-    $result = mysql_query($sql);
-    $row = mysql_fetch_assoc($result);
-    if ($row['id'] > 0) {
-        $sql = "update tbl_rules set status='1' where id='" . _str($rule_id) . "'";
-        mysql_query($sql);
+    $q = "select id, link_name from tbl_rules where id='" . _str($rule_id) . "'";
+    $rs = db_query($q);
+    $r = mysql_fetch_assoc($rs);
+    if ($r['id'] > 0) {
+        $q = "update tbl_rules set status='" . $status . "' where id='" . _str($rule_id) . "'";
+        db_query($q);
 
-        $sql = "update tbl_rules_items set status='1' where rule_id='" . _str($rule_id) . "'";
-        mysql_query($sql);
-
-        // Remove rule from cache	
-        $rule_hash = md5($row['link_name']);
-
-        $rules_path = _CACHE_PATH . "/rules";
-        $rule_path = "{$rules_path}/.{$rule_hash}";
-
-        if (is_file($rule_path)) {
-            unlink($rule_path);
-        }
-    } else {
-        return;
+        $q = "update tbl_rules_items set status='" . $status . "' where rule_id='" . _str($rule_id) . "'";
+        db_query($q);
+		
+		// Обновление кэша
+        cache_rules_update($row['link_name']);
     }
-
     return;
-}
-
-function restore_rule($rule_id) {
-    $sql = "update tbl_rules set status='0' where id='" . _str($rule_id) . "'";
-    mysql_query($sql);
-
-    $sql = "update tbl_rules_items set status='0' where rule_id='" . _str($rule_id) . "'";
-    mysql_query($sql);
 }
 
 function show_country_select($selected = '') {
@@ -2279,35 +2292,48 @@ function edit_offer($category_id, $link_name, $link_url, $link_id = 0) {
         }
     }
 
-    cache_links_update();
+    cache_outs_update($link_id);
 }
 
 /**
  * Обновление кэша линков в БД
  */
-function cache_links_update($id = 0) {
+function cache_outs_update($ids = false) {
     global $_DB_LOGIN, $_DB_PASSWORD, $_DB_NAME, $_DB_HOST;
 
     // Connect to DB
     mysql_connect($_DB_HOST, $_DB_LOGIN, $_DB_PASSWORD) or die("Could not connect: " . mysql_error());
     mysql_select_db($_DB_NAME);
     mysql_query('SET NAMES utf8');
-
-    $sql = "select id, offer_tracking_url 
-		from tbl_offers
-		where `status` = '0' or `status` = '3'";
-    if ($id > 0)
-        $sql .= " and `id` = '" . intval($id) . "'";
-
+    
     $links = array();
-
-    if ($result = mysql_query($sql) and mysql_num_rows($result) > 0) {
+    
+    $q = "select id, offer_tracking_url 
+        from tbl_offers
+        where (`status` = '0' or `status` = '3')";  // обычные или избранные
+    
+    // ids у нас используется только для кэша
+    if ($ids !== false) {
+        if(!is_array($ids)) {
+            $ids = array($ids);
+        }
+        $act = 'out_update';
+        $q .= " and `id` in (" . join(',', $ids) . ")";
+        
+        // Инициализируем пустые ссылки, чтобы отослать их в АПИ с пустым содержимым
+        foreach($ids as $id) {
+            $links[$id] = '';
+        }
+    } else {
+        $act = 'outs_update';
+    }
+    if ($result = mysql_query($q) and mysql_num_rows($result) > 0) {
         while ($row = mysql_fetch_assoc($result)) {
             $links[$row['id']] = $row['offer_tracking_url'];
         }
     }
-
-    $out = send2trackers('links_update', $links);
+    
+    $out = send2trackers($act, $links);
     return $out;
 }
 
@@ -2315,6 +2341,8 @@ function cache_links_update($id = 0) {
  * Отсылка информации на трекер
  */
 function api_send($url, $postdata = '') {
+    //echo $url;
+    //dmp($postdata);
     $c = curl_init();
     //curl_setopt($c, CURLOPT_HTTPHEADER, array("Content-type: multipart/form-data"));
     curl_setopt($c, CURLOPT_URL, $url);
@@ -2323,8 +2351,28 @@ function api_send($url, $postdata = '') {
     curl_setopt($c, CURLOPT_POST, true);
     curl_setopt($c, CURLOPT_POSTFIELDS, http_build_query($postdata));
     $out = curl_exec($c);
+    
+    // Если произошла ошибка - создаём флаг о необходимости синхронизации
+    if(empty($out) or curl_error($c) != '') {
+    	$api_error_marker = _CACHE_PATH . '/.api_connect_error';
+    	file_put_contents($api_error_marker, '');
+    }
+    
+    //dmp($out);
     curl_close($c);
     return $out;
+}
+
+/** 
+ * Проверка каталога на существование. Если нет - создаём
+ */
+function dir_exists($dir) {
+    if (!is_dir($dir)) {
+        mkdir($dir);
+        chmod($dir, 0777);
+        return is_dir($dir);
+    }
+    return true;
 }
 
 /**
@@ -2337,8 +2385,9 @@ function send2trackers($name, $data) {
     );
     $error = array();
     switch ($name) {
-        // Обновление правил
-        case 'rules_update':
+        
+        case 'rule_update':  // Обновление ОДНОГО правила
+        case 'rules_update': // Обновление ВСЕХ правил
             $rules_cache = array();
             foreach ($data as $rule_name => $arr_items) {
                 $i = 1;
@@ -2354,18 +2403,17 @@ function send2trackers($name, $data) {
                         $i++;
                     }
                 }
-                $str_rules = serialize($arr_rules);
+                $str_rules = empty($arr_rules) ? '' : serialize($arr_rules);
                 $rules_cache[$rule_name] = $str_rules;
             }
 
             foreach ($tracklist as $track) {
                 $type = substr($track['path'], 0, 4) == 'http' ? 'remote' : 'local';
+
+                // Локальный трекер
                 if ($type == 'local') {
                     $rules_path = $track['path'] . '/cache/rules';
-                    if (!is_dir($rules_path)) {
-                        mkdir($rules_path);
-                        chmod($rules_path, 0777);
-                    }
+                    dir_exists($rules_path);
 
                     // Записываем новые хеши
                     foreach ($rules_cache as $rule_name => $str_rules) {
@@ -2376,21 +2424,28 @@ function send2trackers($name, $data) {
                             $error[] = 'Can\'t create file ' . $path;
                         }
                     }
-
-                    // Удаляем неактуальные кэши
-                    $files = dir_files($rules_path);
-                    foreach ($files as $f) {
-                        if (!array_key_exists(substr($f, 1), $rules_cache)) {
-                            unlink($rules_path . '/' . $f);
+                    
+                    // Удаляем кэши, которые есть, но нам их не прислали в обновлениях
+                    if($name == 'rules_update') {
+                        $files = dir_files($rules_path);
+                        foreach ($files as $f) {
+                            if (!array_key_exists(substr($f, 1), $rules_cache)) {
+                                unlink($rules_path . '/' . $f);
+                            }
                         }
                     }
+
+                    // Удаленный трекер
                 } else {
-                    $url = $track['path'] . '/api.php?act=ping&key=' . $track['key'];
+                    $url = $track['path'] . '/api.php?act=ping';
                     $answer_text = api_send($url);
                     $answer = json_decode($answer_text, true);
                     if ($answer['status'] == 1) {
-                        $url = $track['path'] . '/api.php?act=rules_update&key=' . $track['key'];
-                        $answer_text = api_send($url, array('rules' => $rules_cache));
+                        
+                        // Полное или частичное обновление
+                        $url = $track['path'] . '/api.php?act=rules_update' . ($name == 'rules_update' ? '&full=1' : '');
+                        
+                        $answer_text = api_send($url, array('cache' => $rules_cache, 'key' => $track['key']));
                         $answer = json_decode($answer_text, true);
 
                         if ($answer['status'] != 1) {
@@ -2413,17 +2468,14 @@ function send2trackers($name, $data) {
             }
             break;
 
-        // Обновление ссылок
-        case 'links_update':
+        case 'out_update': // Обновление одной ссылки
+        case 'outs_update': // Обновление всех ссылок
 
             foreach ($tracklist as $track) {
                 $type = substr($track['path'], 0, 4) == 'http' ? 'remote' : 'local';
                 if ($type == 'local') {
                     $outs_path = $track['path'] . '/cache/outs';
-                    if (!is_dir($outs_path)) {
-                        mkdir($outs_path);
-                        chmod($outs_path, 0777);
-                    }
+                    dir_exists($outs_path);
 
                     foreach ($data as $id => $link) {
                         $path = $outs_path . '/.' . $id;
@@ -2442,12 +2494,12 @@ function send2trackers($name, $data) {
                         }
                     }
                 } else {
-                    $url = $track['path'] . '/api.php?act=ping&key=' . $track['key'];
+                    $url = $track['path'] . '/api.php?act=ping';
                     $answer_text = api_send($url);
                     $answer = json_decode($answer_text, true);
                     if ($answer['status'] == 1) {
-                        $url = $track['path'] . '/api.php?act=links_update&key=' . $track['key'];
-                        $answer_text = api_send($url, array('links' => $data));
+                        $url = $track['path'] . '/api.php?act=outs_update' . ($name == 'outs_update' ? '&full=1' : '');
+                        $answer_text = api_send($url, array('cache' => $data, 'key' => $track['key']));
                         $answer = json_decode($answer_text, true);
 
                         if ($answer['status'] != 1) {

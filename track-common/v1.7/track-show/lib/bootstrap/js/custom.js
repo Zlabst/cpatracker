@@ -64,46 +64,105 @@ $(document).ready(function() {
 		});
 	}
 
-	<!-- =============================================== -->
+		<!-- =============================================== -->
 	<!-- =========== Start Tooltip  ========== -->
 	<!-- =============================================== --> 
-	 $('[data-toggle="tooltip"]').tooltip({
-	 	container: 'body',
-		delay: { "show": 1300, "hide": 100 }
-	 });
+	if ($('[data-toggle="tooltip"]').length > 0) {
+		 $('[data-toggle="tooltip"]').tooltip({
+		 	container: 'body',
+		 	delay: { "show": 500, "hide": 100 }
+		 });
+	 }
 	 
 	<!-- =============================================== -->
 	<!-- =========== Start Popover  ========== -->
 	<!-- =============================================== --> 
-     $('a[data-toggle="popover"]').popover({
-	    container: 'body',
-	    trigger: 'click',
-		html: 'true',
-		placement: 'bottom',
-		content : function() {
-		    return $('#popover-content').html();
-		}
-    }).on('shown.bs.popover', function(e) {
-        $('.selectpicker2').selectpicker('refresh');
-        
-           // Define elements
-		    var current_trigger=$(this);
-		    var current_popover=current_trigger.data('bs.popover').tip();
-		
-		    // Activate close button
-		    current_popover.find('#offer-form-close').click(function() {
-		        current_trigger.popover('hide');
-		    });
-    });
-	
-	$('html').on('mouseup', function (e) {
-	    $('a[data-toggle="popover"]').each(function () {
-	        //the 'is' for buttons that trigger popups
-	        //the 'has' for icons within a button that triggers a popup
-	        if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
-	            $(this).popover('hide');
-	        }
+	if ($('a[data-toggle="popover"]').length > 0) {
+	     $('a[data-toggle="popover"]').popover({
+		    container: 'body',
+		    trigger: 'click',
+			html: 'true',
+			placement: 'bottom',
+			content : function() {
+			    return $('#popover-content').html();
+			}
+	    }).on('shown.bs.popover', function(e) {
+	        $('.selectpicker2').selectpicker('refresh');
+	        
+	           // Define elements
+			    var current_trigger=$(this);
+			    var current_popover=current_trigger.data('bs.popover').tip();
+			
+			    // Activate close button
+			    current_popover.find('#offer-form-close').click(function() {
+			        current_trigger.popover('hide');
+			    });
 	    });
-	});    
+		
+		$('html').on('mouseup', function (e) {
+		    $('a[data-toggle="popover"]').each(function () {
+		        //the 'is' for buttons that trigger popups
+		        //the 'has' for icons within a button that triggers a popup
+		        if (!$(this).is(e.target) && $(this).has(e.target).length === 0 && $('.popover').has(e.target).length === 0) {
+		            $(this).popover('hide');
+		        }
+		    });
+		});
+	}
+	
+	$('[data-toggle="install-popover"]').popover({
+		container: "body",
+		placement: "right",
+		trigger: "click",
+		html : true,
+        content: function() {
+			var content = $(this).attr("data-popover-content");
+			return $(content).children(".popover-body").html();
+        },
+		template: '<div class="popover install-popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'		
+	})
+	
+	<!-- =============================================== -->
+	<!-- =========== Table collapse  ========== -->
+	<!-- =============================================== --> 
+	if ($('[data-toggle=collapse-next]').length > 0) {	
+		$('body').on('click.collapse-next.data-api', '[data-toggle=collapse-next]', function (e) {
+//			var $target = $(this).parent().parent().next().find('.collapse');
+			var $target = $(this).parent().next().find('.collapse');
+			$target.collapse('toggle');	
+		})
+	}
+	
+	<!-- =============================================== -->
+	<!-- =========== Select2  Dropdowns ========== -->
+	<!-- =============================================== --> 
+	if ($('.select2').length > 0) {
+		$('.select2').select2({
+			theme: 'classic',
+			language: 'ru',
+		    minimumResultsForSearch: 5,
+			matcher: function (params, data) {
+			  if ($.trim(params.term) === '') {
+			    return data;
+			  }
+			  if (data.text.indexOf(params.term) > -1) {
+			    var modifiedData = $.extend({}, data, true);
+			    modifiedData.text += ' (совпадение)';
+			    return modifiedData;
+			  }
+			  return null;
+			}
+		});
+	}
+//	if ($('.condition-add').length > 0) {
+//		$('.condition-add').select2({
+//			theme: 'classic',
+//			language: 'ru',
+//		    minimumResultsForSearch: 20,
+//		    placeholder: "Добавить условие",
+//		});
+//	}
+
+
 
 }); // Document ready

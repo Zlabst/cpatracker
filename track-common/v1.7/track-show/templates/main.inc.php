@@ -38,17 +38,20 @@ if (empty($_COOKIE['cpa_menu_main'])) {
             // Меню слева
             $sidebar = _TRACK_SHOW_COMMON_PATH . '/templates/' . (in_array($page_sidebar, $page_sidebar_allowed) ? $page_sidebar : 'sidebar-left.inc.php');
             include $sidebar;
+            
+            echo '<div class="page-content' . $menu_toggle_class.'">';
         }
         ?>
-        <div class="page-content<?php echo $menu_toggle_class; ?>">
+        
             <?php
             if ($_REQUEST['page'] != 'login') {
                 echo load_plugin('payreminder');
                 echo load_plugin('expiry');
             }
             echo $main_content;
-            ?>
-        </div>
+		if ($_REQUEST['page'] != 'login') { ?>
+        	</div>
+        <? } ?>
         <?php echo tpx('footer'); ?>
         <?php
         	if(!empty($_GET['debug'])) {

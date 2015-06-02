@@ -40,17 +40,20 @@ class ActionPay {
         array_push($return, array(
             'id' => 0,
             'description' => 'Вставьте эту ссылку в поле "Постбэк - Создание"',
-            'url' => $url . '&status=created'
+            'url' => $url . '&status=created',
+            'title' => 'Создание'
         ));
         array_push($return, array(
             'id' => 1,
             'description' => 'Вставьте эту ссылку в поле "Постбэк - Принятие"',
-            'url' => $url . '&status=approved'
+            'url' => $url . '&status=approved',
+            'title' => 'Принятие'
         ));
         array_push($return, array(
             'id' => 2,
             'description' => 'Вставьте эту ссылку в поле "Постбэк - Отклонение"',
-            'url' => $url . '&status=declined'
+            'url' => $url . '&status=declined',
+            'title' => 'Отклонение'
         ));
 
 

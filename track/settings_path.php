@@ -30,4 +30,11 @@ $s = (empty($_SERVER["HTTPS"]) && empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) ? '
 	define('_HTML_TRACK_PATH',     $uri_root . $delta_uri . '/track');
 	
 	define('_SELF_TRACK_KEY',      'key123');
+	
+	// Оптимизируем trk4
+	/*
+	define('_SERVER_TYPE',         'apache'); // тип сервера
+	define('_XMLREADER_INSTALLED',  true);    // расширение точно установлено
+	define('_CACHE_PATH_CLICKS_CREATED',  true);  // каталоги точно созданы
+	*/
 ?>

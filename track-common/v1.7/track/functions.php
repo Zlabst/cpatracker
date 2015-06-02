@@ -4,6 +4,145 @@
 //ini_set('display_errors', true);
 //error_reporting(E_ERROR | E_PARSE);
 
+
+/*
+ * Геоданные на основании IP
+ */
+function get_geodata($ip) {
+    require (_TRACK_LIB_PATH . "/maxmind/geoip.inc.php");
+    require (_TRACK_LIB_PATH . "/maxmind/geoipcity.inc.php");
+    require (_TRACK_LIB_PATH . "/maxmind/geoipregionvars.php");
+    $gi = geoip_open(_TRACK_STATIC_PATH . "/maxmind/MaxmindCity.dat", GEOIP_STANDARD);
+    $record = geoip_record_by_addr($gi, $ip);
+    $isp = geoip_org_by_addr($gi, $ip);
+    geoip_close($gi);
+
+    $cur_country = $record->country_code;
+
+    // Resolve GeoIP extension conflict
+    if (function_exists('geoip_country_code_by_name') && ($cur_country == '')) {
+        $cur_country = geoip_country_code_by_name($ip);
+    }
+
+    return array('country' => $cur_country, 'state' => $GEOIP_REGION_NAME[$record->country_code][$record->region], 'city' => $record->city, 'region' => $record->region, 'isp' => $isp);
+}
+
+/*
+ * Загрузка исходящей ссылки из кэша
+ */
+function get_out_link($id) {
+	global $rds;
+    $link = '';
+    
+    $id = intval($id);
+    
+    // Задействуем Redis
+    if($rds) {
+    	$redis_offer_key = 'cpa_' . _SELF_TRACK_KEY . '_l_' . $id;
+    	if($link = $rds->get($redis_offer_key)) {
+			return $link;
+    		// В противном случае (если строчка пустая), 
+    		// значит что-то пошло не так, возвращаемся к чтению из файла
+    	}
+    }
+    
+    $outs_path = _CACHE_PATH . "/outs";
+    $out_path = "{$outs_path}/.{$id}";
+    
+    if ($id > 0 and is_file($out_path)) {
+        $link = file_get_contents($out_path);
+        
+        if($rds) {
+        	$rds->get($redis_offer_key, $link);
+        }
+    } else {
+        track_error('Out link ' . $id . ' not found');
+    }
+    return $link;
+}
+
+/*
+ * Загрузка правила из кэша
+ */
+function get_rules($rule_name) {
+	global $rds;
+    $rule_hash = md5($rule_name);
+    
+    // Задействуем Redis
+    if($rds) {
+    	$redis_rule_key = 'cpa_' . _SELF_TRACK_KEY . '_r_' . $rule_hash;
+    	if($str_rules = $rds->get($redis_rule_key)) {
+			$arr_rules = unserialize($str_rules);
+			return $arr_rules;
+    		// В противном случае (если строчка пустая), 
+    		// значит что-то пошло не так, возвращаемся к чтению из файла
+    	}
+    }
+
+    $rules_path = _CACHE_PATH . "/rules";
+    $rule_path = "{$rules_path}/.{$rule_hash}";
+
+    if (is_file($rule_path)) {
+        $str_rules = file_get_contents($rule_path);
+        
+        if($rds) {
+        	$rds->set($redis_rule_key, $str_rules, 86400);
+        }
+        
+        $arr_rules = unserialize($str_rules);
+        return $arr_rules;
+    } else {
+        track_error('Rule ' . $rule_name . ' not found');
+    }
+}
+
+/*
+ * Устанавливаем кукисы для учета родительских и уникальных переходов
+ */
+function add_parent_subid($domain, $subid) {
+    $unique = 0;
+    if (array_key_exists('cpa_parents', $_COOKIE)) {
+        $parents = json_decode($_COOKIE['cpa_parents'], true);
+    } else {
+        $parents = array();
+    }
+    $parents[$domain] = $subid;
+
+    // Parent click
+    $cookie_time = $_SERVER['REQUEST_TIME'] + 60;
+
+    // Unique user
+    $cookie_name = 'cpa_was_here_' . str_replace('.', '_', $domain);
+    if (empty($_COOKIE[$cookie_name])) {
+        $cookie_time = $_SERVER['REQUEST_TIME'] + (60 * 60 * 24 * 31);
+        setcookie($cookie_name, 1, $cookie_time, "/", $_SERVER['HTTP_HOST']);
+        $unique = 1;
+    }
+
+    setcookie("cpa_parents", json_encode($parents), $cookie_time, "/", $_SERVER['HTTP_HOST']);
+    return $unique;
+}
+
+/*
+ * Проверка на кодировку Windows
+ */
+function detector_cp1251($str) {
+    $tmp = str_replace(array('Р', 'ћ', 'Ђ', 'є', 'Ѓ', '°'), '#', $str);
+    $l1 = mb_strlen($tmp, 'UTF-8');
+    $l2 = mb_strlen(str_replace('#', '', $tmp), 'UTF-8');
+    if ($l1 - $l2 > $l1 / 3) {
+        return iconv('UTF-8', 'cp1251', $str);
+    }
+    return $str;
+}
+
+/*
+ * Замена табов пробелами
+ */
+function remove_tab($str) {
+	return str_replace("\t", ' ', $str);
+}
+
 /*
  * Список файлов из директории
  */
@@ -229,6 +368,8 @@ function track_error($error) {
 	fwrite($fp, date("Y-m-d H:i:s") . ' ' . $error . "\n");
 	fclose($fp);
 	chmod($path, 0777);
+	
+	exit($error);
 }
 
 

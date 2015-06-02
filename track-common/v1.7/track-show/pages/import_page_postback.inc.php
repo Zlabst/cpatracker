@@ -55,10 +55,21 @@ $custom = new custom();
                     $('#netlink_href').attr('href', data.reg_url);
                     var template = $('#linkTemplate').html();
                     var template_data = data;
+                    if(!template_data.title) template_data.title = 'Создание';
 
                     var html = Mustache.to_html(template, template_data);
 
                     $('#links').html(html);
+                    
+                    // Переинициализируем tooltips
+                    
+                    if ($('[data-toggle="tooltip"]').length > 0) {
+						$('[data-toggle="tooltip"]').tooltip({
+							container: 'body',
+							delay: { "show": 500, "hide": 100 }
+						});
+					}
+                    
 
                     $('button[id^="copy-button"]').each(function(i)
                     {
@@ -123,7 +134,6 @@ $custom = new custom();
 		checkbox_change();
     });
 
-
     function show_urls(is_lead, is_sale) {
         $.each(links, function(i, item) {
             var url = item.url;
@@ -141,55 +151,102 @@ $custom = new custom();
 
 <script id="linkTemplate" type="text/template">
     {{#links}}
-    <div>
-    <em id="instruction">{{{description}}}</em>
-    <div class="input-group">
-    <span class="input-group-btn">
-    <button id="copy-button" class="btn btn-default clpbrd-copy" id="{{id}}" data-clipboard-target='net-link-{{id}}' title="Скопировать в буфер" type="button"><i class='fa fa-copy' id='clipboard_copy_icon'></i></button>
-    </span>
-    <input type="text" style="width:100%;" class="form-control" id="net-link-{{id}}" value="{{url}}" readonly><br>
-    </div>
-    </div>
+    <form class="form-horizontal" data-toggle="tooltip" data-placement="top" title="{{{description}}}">
+		<div class="form-group">
+			<label class="control-label col-sm-3" for="linkCreate">{{{title}}}</label>
+			<div class="col-sm-9">
+				<div class="input-group">
+					<span class="input-group-btn"> <a class=" btn btn-default btn-input"><i class="icon icon-folders "></i></a></span>
+					<input type="text" class="form-control" id="linkCreate" name="linkCreate" value="{{url}}">
+				</div>
+			</div>
+		</div>
+	</form>
     {{/links}}
 </script>
 
-
-<div class="row">
-    <div class="col-md-12">
-        <h3>Настройка Postback</h3>
-    </div>
+<!-- Page heading -->
+<div class="page-heading">
+	<p>Интеграция с CPA сетями</p>
+	<div class="header-content">
+		<h2>Настройка Postback</h2>
+	</div><!--Header-content-->			
 </div>
 
-<div class="row" id="net-row2">
-    <div class="col-md-12">
-        В данном разделе вы можете настроить автоматический импорт информации о продажах из поддерживаемых CPA сетей.
-    </div>
-</div>
-<br>
-<div class="row" id="net-row">
-    <div class="col-md-12">
-        <div class="btn-group">
-            <?php $i = 0; ?>
-            <?php foreach ($available_nets as $net => $name) : ?>
-                <button class="btn btn-default net-btn" net="<?php echo  $net ?>"><?php echo  $name; ?></button>
-                <?php $i++; ?>
-                <?php if ($i % 7 == 0): ?>
-                </div>
-                <div class="btn-group">
-                <?php endif; ?>
-            <?php endforeach; ?>
-        </div>
-        <button class="btn btn-default net-btn" id="custom-master-start">Универсальная ссылка</button>
-    </div>
-</div>
-<br>
+<!-- Network selection -->
+<div class="panel panel-default panel-tools">
+	<div class="panel-body">
+		<div class="row">
+		
+			<div class="col-md-5">
+				<p>Выберите партнерскую сеть для которой вы хотели бы настроить Postback</p>
+				<p>Если сеть отсутствует в списке - используйте <span>«Универсальную ссылку»</span></p>
+				<a class="btn btn-default" href="#fakelink" id="custom-master-start">Универсальная ссылка</a>				
+			</div><!--col-->
+			
+			<div class="col-md-6 col-md-offset-1">
+				<ul class="link-columns">
+					<?php 
+					$i = 0;
+					$first_letter = $first_letter_old = '';
+		            foreach ($available_nets as $net => $name) { 
+		            	$first_letter = mb_strtoupper(mb_substr($name, 0, 1, 'UTF-8'), 'UTF-8');
+		            	echo '<li>
+						<span '.($first_letter_old == $first_letter ? 'class="is-hidden"' : '').' >' . $first_letter . '</span>
+						<a class="btn btn-link-alt net-btn" href="#fakelink" net="' . $net . '">' . $name . '</a>
+					</li>';
+						$first_letter_old = $first_letter;
+		            }
+		            ?>
+				</ul>
+			</div><!--col-->
+		
+		</div><!--row-->
+		
+	</div><!--panel-body-->
+</div><!--panel-->
 
-<div class="row" id="result-row" style="display:none;">
+<!-- *************************************************** -->
+
+
+<div class="panel panel-default panel-partner" id="result-row" style="display:none;">
+	<div class="panel-body">
+				<div class="row">
+				
+					<div class="col-md-5">
+						<div class="partner-description">
+							<h4>Партнерская сеть <span class="net-name"></span></h4>
+							<a  href="#fakelink">
+								<img src="assets/images/partner-logo.png" alt="logo" />
+							</a>				
+							
+							<p id="netlink_text"> </p>
+							<div class="btn-group">
+								<a href="#fakelink">Читать далее<i class="fa fa-angle-down"></i></a>
+								<a href="#fakelink" id="netlink_href">Регистрация в сети</a>
+							</div>
+						</div>
+					</div><!--col-->
+					
+					<div class="col-md-6 col-md-offset-1">
+						<div class="partner-links">
+							<h4>Postback <span>ссылка для сети <span class="net-name"></span></span></h4>
+							<div id="links"></div>
+						</div><!--partner-links-->
+					</div><!--col-->
+					
+				</div><!--row-->			
+			</div><!--panel-body-->
+	
+	
+	
+	
+	<!---
+	Postback ссылка для сети <b><span class="net-name"></span></b>:<br><br>
     <div class="col-md-12">
         Postback ссылка для сети <b><span class="net-name"></span></b>:<br><br>
-        <div id="links">
-
-        </div>
+    
+        <div id="links"></div>
         <div class="panel panel-primary" style="margin-top: 30px;">
             <div class="panel-heading">
                 <h3 class="panel-title">Партнерская сеть <span class="net-name"></span></h3>
@@ -201,7 +258,8 @@ $custom = new custom();
                 </div>
             </div>
         </div>
-    </div>
+    </div>-->
+    
 </div>
 
 <div class="row" id="master-form" style="display:none;">

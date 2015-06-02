@@ -27,7 +27,7 @@ if (_ENABLE_DEBUG && isset($_GET['debug'])) {
 }
 
 // Set allowed for inclusion files list, security measure
-$page_sidebar_allowed = array('sidebar-left-links.inc.php', 'sidebar-left-reports.inc.php');
+$page_sidebar_allowed = array('sidebar-left-links.inc.php', 'sidebar-left-reports.inc.php', 'sidebar-left-rules.inc.php');
 $page_content_allowed = array('reports.php', 'sales.php', 'stats-flow.php', 'links_page.inc.php', 'rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'import_page_postback.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'register.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php', 'landing_page.inc.php');
 
 // Include main functions
@@ -323,8 +323,23 @@ if ($_REQUEST['ajax_act'] == 'get_source_link') {
 }
 
 if ($_REQUEST['ajax_act'] == 'sync_slaves') {
-    dmp(cache_rules_update());
-    dmp(cache_links_update());
+    $sync_rules = cache_rules_update();
+    $sync_outs = cache_outs_update();
+    
+    if($sync_rules['status'] == 1 and $sync_outs['status'] == 1) {
+        echo 'Синхронизация выполнена успешно.';
+        
+        // Удаляем маркер ошибки соединения с API
+        $api_connect_error = _CACHE_PATH . '/.api_connect_error'; 
+        if(is_file($api_connect_error)) {
+            unlink($api_connect_error);
+        }
+    } else {
+        echo 'Ошибка сихронизации';
+        
+        dmp($sync_rules);
+        dmp($sync_outs);
+    }
     exit();
 }
 
@@ -478,7 +493,7 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             $ids = rq('id', -2);
             $arch = rq('arch', 2);
             delete_offer($ids, $arch ? 2 : 0);
-            cache_links_update();
+            cache_outs_update($ids);
             break;
 
         case 'fave_link':
@@ -497,7 +512,7 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             $cat_type = rq('cat_type');
             $cat_id = rq('cat_id', 2);
             delete_offer($ids);
-            cache_links_update();
+            cache_outs_update($ids);
             $offers_arr = offers_total($cat_type, $cat_id);
             $out = array(
                 'total' => $offers_arr['total'],
@@ -507,13 +522,36 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             echo json_encode($out);
             exit;
             break; // ну а вдруг кто-то уберёт exit ;)
+            
+        case 'fave_source':
+        	$id = rq('id');
+        	$fave = rq('fave', 2);
+        	
+        	if($fave) {
+        		$q = "insert ignore into `tbl_sources` (`id`) values ('" . mysql_escape_string($id) . "')";
+        	} else {
+        		$q = "delete from `tbl_sources` where `id` = '" . mysql_escape_string($id) . "'";
+        	}
+        	db_query($q);
+        	
+        	$q = "select count(id) as `cnt` from `tbl_sources`";
+        	$rs = db_query($q);
+        	$r = mysql_fetch_assoc($rs);
+        	
+        	$out = array(
+        		'total' => intval($r['cnt']),
+        		'have_favorits' => $r['cnt'] > 0 ? 1 : 0
+        	);
+        	echo json_encode($out);
+            exit;
+        	break;
 
         case 'restore_link':
             $ids = rq('id', -2);
             $cat_type = rq('cat_type');
             $cat_id = rq('cat_id', 2);
             delete_offer($ids, 0);
-            cache_links_update();
+            cache_outs_update($ids);
             $offers_arr = offers_total($cat_type, $cat_id);
             $out = array(
                 'total' => $offers_arr['total'],
@@ -539,14 +577,14 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             break;
 
         case 'delete_rule':
-            $rule_id = $_REQUEST['id'];
+            $rule_id = rq('id', 2);
             delete_rule($rule_id);
-            exit();
+            exit;
             break;
 
         case 'restore_rule':
-            $rule_id = intval($_POST['id']);
-            restore_rule($rule_id);
+            $rule_id = rq('id', 2);
+            delete_rule($rule_id, 0);
             exit;
             break;
 
@@ -634,7 +672,7 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
 
             cache_rules_update();
             header('Location: ' . full_url() . "?page=rules");
-            exit();
+            exit;
             break;
 
         case 'update_rule_name':
@@ -643,21 +681,15 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             $old_rule_name = trim(rq('old_rule_name'));
 
             if ($rule_id == 0 || $rule_id == '' || $rule_name == '' || $old_rule_name == '' || $old_rule_name == $rule_name) {
-                exit();
+                exit;
             }
 
             // Update rule name
-            $sql = "update tbl_rules set link_name='" . mysql_real_escape_string($rule_name) . "' where id='" . mysql_real_escape_string($rule_id) . "'";
-            mysql_query($sql);
-            cache_remove_rule($old_rule_name);
-            cache_rules_update();
-
-            exit();
-            break;
-
-        case 'sync_slaves':
-            cache_rules_update();
-            cache_links_update();
+            $q = "update `tbl_rules` set link_name='" . mysql_real_escape_string($rule_name) . "' where id='" . mysql_real_escape_string($rule_id) . "'";
+            db_query($q);
+            
+            cache_rules_update($rule_name, $old_rule_name);
+            exit;
             break;
 
         case 'update_rule':
@@ -710,7 +742,7 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
                 $i++;
             }
 
-            $out = cache_rules_update();
+            $out = cache_rules_update($rule_name);
             echo json_encode($out);
 
             // Create rule in tracker cache
@@ -720,8 +752,8 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
 
         case 'add_offer':
             $category_id = rq('category_id', 2);
-            $link_name = $_REQUEST['link_name'];
-            $link_url = $_REQUEST['link_url'];
+            $link_name = rq('link_name');
+            $link_url = rq('link_url');
             $link_id = rq('link_id', 2);
 
             edit_offer($category_id, $link_name, $link_url, $link_id);
@@ -855,6 +887,10 @@ if ($result['error']) {
     if ($result['crontab_postback']) {
         $global_notifications[] = 'CRONTAB_POSTBACK_NOT_INSTALLED';
     }
+    
+    if ($result['api_connect']) {
+        $global_notifications[] = 'API_CONNECT_ERROR';
+    }
 }
 
 header('Content-Type: text/html; charset=utf-8');
@@ -901,6 +937,8 @@ switch ($_REQUEST['page']) {
         break;
 
     case 'rules':
+    	$page_sidebar = 'sidebar-left-rules.inc.php';
+    
         $arr_offers = get_rules_offers();
         list ($js_last_offer_id, $js_offers_data) = get_offers_data_js($arr_offers);
         $js_sources_data = get_sources_data_js();
@@ -973,7 +1011,7 @@ switch ($_REQUEST['page']) {
                     setcookie("cpatracker_auth_password", $salted_password, time() + 3600 * 24 * 365, "/");
                     header('Location: ' . full_url());
                 } else {
-                    header('Location: ' . full_url() . '?page=login');
+                    header('Location: ' . full_url() . '?page=login&error=1');
                 }
                 exit();
                 break;

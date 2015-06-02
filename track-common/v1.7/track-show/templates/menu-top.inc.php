@@ -39,6 +39,15 @@
             		<li <?php if ($_REQUEST['page']=='links'){echo 'class="active"';}?>><a href="?page=links&type=favorits">Офферы</a></li>
             		<li <?php if ($_REQUEST['page']=='rules'){echo 'class="active"';}?>><a href="?page=rules">Ссылки</a></li>
             		<li <?php if (in_array($_REQUEST['page'], array('import', 'costs', 'postback'))){echo 'class="active"';}?>><a href="?page=import">Инструменты</a></li>
+            			
+            			<?php
+              $notifications_count=count($global_notifications);
+              if ($notifications_count>0)
+              {
+                echo "<li><a href='?page=notifications'><span class='label label-danger'><i class='fa fa-info-circle'></i> ".declination($notifications_count, array(' сообщение', ' сообщения', ' сообщений'))."</span></a></li>";
+              }
+            ?>
+            			
 				</ul>
 
 				<!-- New offer form-->

@@ -1,12 +1,10 @@
-<link href="<?php echo _HTML_LIB_PATH;?>/select2/select2.css" rel="stylesheet"/>
-<link href="<?php echo _HTML_LIB_PATH;?>/select2/select2-bootstrap.css" rel="stylesheet"/>
-
+<!--<link href="<?php echo _HTML_LIB_PATH;?>/select2/select2.css" rel="stylesheet"/>-->
 <script src="<?php echo _HTML_LIB_PATH;?>/mustache/mustache.js"></script>
-<script src="<?php echo _HTML_LIB_PATH;?>/select2/select2.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/select2/dist/js/select2.js"></script>
 <script src="<?php echo _HTML_LIB_PATH;?>/clipboard/ZeroClipboard.min.js"></script>
 <style>
 	.rule-link-text {
-		width: 500px; /* 345px; */
+		width: 500px;
 		border: none;
 		margin-top: 10px;
 	}
@@ -31,7 +29,60 @@
 	    min-width: 50px;
 	    padding: 10px 0;
 	}
+	
 </style>
+
+
+<!-- Page heading -->
+<div class="page-heading">
+	<p>Ссылка</p>
+	<div class="header-content">
+	
+		<!--Header-->
+		<div class="btn-group header-left">
+			<h2>Яндекс.Директ</h2>
+		</div>
+		
+		<div role="toolbar" class="btn-toolbar">
+
+			<!--Right buttons-->
+			<div class="form-inline pull-right">
+			
+				<div class="btn-group">
+					<input type="text" class="form-control" placeholder="Добавление по url">
+				</div>
+				<div class="btn-group">
+				  <form class="form-horizontal" role="form">
+				        <select class="select2" style="width: 300px">
+				          <option>Онлайн-игры</option>
+				          <option>Мобильные</option>
+				          <option class="get-class" disabled>Disabled</option>
+				          <optgroup label="Секция">
+				            <option>Страхование и финансы</option>
+				            <option>Интернет-магазины</option>
+				            <option>Туризм и путешествия</option>
+				          </optgroup>
+				          <optgroup label="Секция">
+				            <option selected>Страхование и финансы</option>
+				            <option>Интернет-магазины</option>
+				            <option>Туризм и путешествия</option>
+				          </optgroup>
+				       </select>
+				  </form>
+				</div>
+			
+				<div class="btn-group">
+					<a class="btn btn-default" href="#fakelink"><i class="cpa cpa-plus icon-lg"></i></a>
+				</div>
+
+			</div>
+		</div><!--Toolbar-->
+
+						
+	</div><!--Header-content-->
+	
+</div><!--page-heading-->
+
 <script>
     var last_removed = 0;
 	window.path_level = <?php echo count(explode('/', tracklink())); ?>;
@@ -283,17 +334,7 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
                 var flag = true;
                 var rule_id = $(this).attr('id');
                 var rule_table = $('#rule' + rule_id + ' tbody');
-                /*
-                $(rule_table).find('input.in1').each(function() {                                      
-                     if(!(/(^[a-z0-9_]+$)/.test($(this).val()))){
-                          flag = false;  
-                        }                     
-                });
-                 $(rule_table).find('input.in2').each(function() {                                      
-                     if(!(/(^[a-z0-9_]+$)/.test($(this).val()))){
-                          flag = false;  
-                        }                     
-                });*/
+
                 if(!flag){ alert("В полях ввода для ссылки GET можно использовать только цифры и буквы латинского алфавита.");  return false;}
                 $(rule_table).find('input.select-link').each(function() {                                      
                        $(this).addClass('toSave');                      
@@ -572,8 +613,8 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
 </script>
 
 <style>
-
-    .btn-rule-copy{
+	
+	.btn-rule-copy{
         border: none; 
         border-radius:0px; 
         padding:10px 0px; 
@@ -637,15 +678,12 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
         border-bottom: none;
     }
 
-    table.table-rules:last-child{
-       /* border-bottom: 1px solid #ddd; */
-    }
+
     table.table-rules th:hover{
         background: linen;
     }
     .table-rules tbody{
         margin-bottom:10px;
-        /* [!] */
         display: none;
         border:1px solid lightgray;
     }
@@ -687,7 +725,8 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
     .trash-button .btn {
         border:none;
         border-radius:0px; 
-    }    
+    }   
+    
 </style>
 <!-- Modal -->
 <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
@@ -995,8 +1034,30 @@ rule_table.find('input.select-sources').first().select2('val',$('#rule'+rule_id)
     </div>
 </div>
 
-<div class='row'>
-    <div class="col-md-9" id='rules_container'></div>
-</div>
+
+
+<!-- Table -->
+<div class="link-list-box">
+
+	<table class="table table-striped table-link-list">
+	
+		<thead>
+			<tr>
+				<th></th>
+				<th>Название ссылки</th>
+				<th>Название оффера</th>
+				<th></th>
+				<th></th>
+				<th></th>
+			</tr>
+		</thead>
+		
+		<tbody id="rules_container"></tbody>
+	</table>
+</div>			
+
+<!--<div class="row">
+    <div class="col-md-9" id="rules_container"></div>
+</div>-->
 
 <div class="row">&nbsp;</div>
