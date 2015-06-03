@@ -217,6 +217,9 @@ function ip_in_range($ip, $ip_start, $ip_end = '') {
  */
 function track_error($error) {
 	if($error == '') return false;
+	/*
+	Отключаем в угоду производительности
+	https://uniquedesign.teamworkpm.net/tasks/4041672
 	
 	$log_dir = _CACHE_PATH . '/log';
 	if(!is_dir($log_dir)) {
@@ -229,6 +232,7 @@ function track_error($error) {
 	fwrite($fp, date("Y-m-d H:i:s") . ' ' . $error . "\n");
 	fclose($fp);
 	chmod($path, 0777);
+	*/
 }
 
 
