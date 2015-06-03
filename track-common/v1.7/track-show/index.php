@@ -304,8 +304,6 @@ if ($_REQUEST['ajax_act'] == 'get_source_link') {
                 $tmp[] = $param_name . '=' . $param_value['url'];
             }
 
-
-
             if (count($tmp) > 0) {
                 $lnk .= (strstr($lnk, '?') === false ? '?' : '&') . join('&', $tmp);
             }

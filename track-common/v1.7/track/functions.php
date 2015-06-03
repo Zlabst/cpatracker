@@ -4,27 +4,46 @@
 //ini_set('display_errors', true);
 //error_reporting(E_ERROR | E_PARSE);
 
-
 /*
  * Геоданные на основании IP
  */
 function get_geodata($ip) {
-    require (_TRACK_LIB_PATH . "/maxmind/geoip.inc.php");
-    require (_TRACK_LIB_PATH . "/maxmind/geoipcity.inc.php");
-    require (_TRACK_LIB_PATH . "/maxmind/geoipregionvars.php");
-    $gi = geoip_open(_TRACK_STATIC_PATH . "/maxmind/MaxmindCity.dat", GEOIP_STANDARD);
-    $record = geoip_record_by_addr($gi, $ip);
-    $isp = geoip_org_by_addr($gi, $ip);
-    geoip_close($gi);
+	require (_TRACK_LIB_PATH . "/maxmind/geoipregionvars.php"); // названия регионов
+	
+	if(_PHP5_GEOIP_ENABLED or function_exists('geoip_record_by_name')) {
+		$geoinfo = geoip_record_by_name($ip);
+        $ispname = geoip_isp_by_name($ip);
+        
+        $cur_city = $geoinfo['city'];
+        $cur_region = $geoinfo['region'];
+        $cur_country = $geoinfo['country_code'];
+	
+	} else {
+		require (_TRACK_LIB_PATH . "/maxmind/geoip.inc.php");
+	    require (_TRACK_LIB_PATH . "/maxmind/geoipcity.inc.php");
+	    
+	    $gi = geoip_open(_TRACK_STATIC_PATH . "/maxmind/MaxmindCity.dat", GEOIP_STANDARD);
+	    $record = geoip_record_by_addr($gi, $ip);
+	    $ispname = geoip_org_by_addr($gi, $ip);
+	    geoip_close($gi);
+		
+		$cur_city = $record->city;
+	    $cur_region = $record->region;
+	    $cur_country = $record->country_code;
 
-    $cur_country = $record->country_code;
-
-    // Resolve GeoIP extension conflict
-    if (function_exists('geoip_country_code_by_name') && ($cur_country == '')) {
-        $cur_country = geoip_country_code_by_name($ip);
-    }
-
-    return array('country' => $cur_country, 'state' => $GEOIP_REGION_NAME[$record->country_code][$record->region], 'city' => $record->city, 'region' => $record->region, 'isp' => $isp);
+	    // Resolve GeoIP extension conflict
+	    if (function_exists('geoip_country_code_by_name') && ($cur_country == '')) {
+	        $cur_country = geoip_country_code_by_name($ip);
+	    }
+	}
+	
+    return array(
+    	'country' => $cur_country, 
+    	'region' => $cur_region, 
+    	'state' => $GEOIP_REGION_NAME[$cur_country][$cur_region], 
+    	'city' => $cur_city, 
+    	'isp' => $ispname
+    );
 }
 
 /*

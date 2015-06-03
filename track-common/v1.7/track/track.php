@@ -5,15 +5,15 @@ ob_start();
   error_reporting(E_ALL);
   ini_set('display_errors', 1);
   ini_set('display_startup_errors', true);
- */
+*/
 
 require _TRACK_COMMON_PATH . '/functions.php';
 
 if (_SELF_STORAGE_ENGINE == 'redis') {
     $rds = new Redis();
-    if(!$rds->connect(_REDIS_HOST, _REDIS_PORT)) {
+    if (!$rds->connect(_REDIS_HOST, _REDIS_PORT)) {
         $rds = false;
-    }    
+    }
 } else {
     $rds = false;
 }
@@ -104,40 +104,70 @@ if (count($arr_rules) == 0) {
 
     // Задействованы ли в правилах параметры устройства (поля os, browser, platform, device)
     if (isset($arr_rules['os']) or isset($arr_rules['browser']) or isset($arr_rules['platform']) or isset($arr_rules['device'])) {
-        require _TRACK_LIB_PATH . "/ua-parser/uaparser.php";
 
-        $requestingDevice = null;
+        $cache_use = false;
 
-        if ((defined(_XMLREADER_INSTALLED) and _XMLREADER_INSTALLED) or extension_loaded('xmlreader')) {
-            // Init WURFL library for mobile device detection
-            $wurflDir = _TRACK_LIB_PATH . '/wurfl/WURFL';
-            $resourcesDir = _TRACK_LIB_PATH . '/wurfl/resources';
-            require $wurflDir . '/Application.php';
-            $persistenceDir = _CACHE_COMMON_PATH . '/wurfl-persistence';
-            $cacheDir = _CACHE_COMMON_PATH . '/wurfl-cache';
-            $wurflConfig = new WURFL_Configuration_InMemoryConfig();
-            $wurflConfig->wurflFile(_TRACK_STATIC_PATH . '/wurfl/wurfl_1.5.3.xml');
-            $wurflConfig->matchMode('accuracy');
-            $wurflConfig->allowReload(true);
-            $wurflConfig->persistence('file', array('dir' => $persistenceDir));
-            $wurflConfig->cache('file', array('dir' => $cacheDir, 'expiration' => 36000));
-            $wurflManagerFactory = new WURFL_WURFLManagerFactory($wurflConfig);
-            $wurflManager = $wurflManagerFactory->create();
-            $requestingDevice = $wurflManager->getDeviceForUserAgent($_SERVER['HTTP_USER_AGENT']);
+        // Задействуем Redis-кэш
+        if ($rds) {
+            $redis_key = 'cpa_tr_wurfl_' . md5($user_params['agent']);
+            $wurfl_cache = $rds->get($redis_key);
+            if (!empty($wurfl_cache)) {
+                $wurfl_cache = unserialize($wurfl_cache);
+                $user_params['platform'] = $wurfl_cache['pl'];
+                $user_params['browser'] = $wurfl_cache['br'];
+                $user_params['device'] = $wurfl_cache['dv'];
+                $user_params['os'] = $wurfl_cache['os'];
+                $cache_use = true;
+            }
         }
 
-        if ($requestingDevice && (($requestingDevice->getCapability('is_wireless_device') == 'true') || ($requestingDevice->getCapability('is_tablet') == 'true'))) {
-            $user_params['os'] = $requestingDevice->getCapability('device_os');
-            $user_params['device'] = $requestingDevice->getCapability('brand_name') . '; ' . $requestingDevice->getCapability('model_name');
-            $user_params['platform'] = $requestingDevice->getCapability('brand_name');
-            $user_params['browser'] = $requestingDevice->getCapability('mobile_browser');
-        } else {
-            $parser = new UAParser;
-            $result = $parser->parse($user_params['agent']);
-            $user_params['browser'] = $result->ua->family;
-            $user_params['os'] = $result->os->family;
-            $user_params['device'] = '';
-            $user_params['platform'] = '';
+        if (!$cache_use) {
+            require _TRACK_LIB_PATH . '/ua-parser/uaparser.php';
+
+            $requestingDevice = null;
+
+            if ((defined(_XMLREADER_INSTALLED) and _XMLREADER_INSTALLED) or extension_loaded('xmlreader')) {
+                // Init WURFL library for mobile device detection
+                $wurflDir = _TRACK_LIB_PATH . '/wurfl/WURFL';
+                $resourcesDir = _TRACK_LIB_PATH . '/wurfl/resources';
+                require $wurflDir . '/Application.php';
+                $persistenceDir = _CACHE_COMMON_PATH . '/wurfl-persistence';
+                $cacheDir = _CACHE_COMMON_PATH . '/wurfl-cache';
+                $wurflConfig = new WURFL_Configuration_InMemoryConfig();
+                $wurflConfig->wurflFile(_TRACK_STATIC_PATH . '/wurfl/wurfl_1.5.3.xml');
+                $wurflConfig->matchMode('accuracy');
+                $wurflConfig->allowReload(true);
+                $wurflConfig->persistence('file', array('dir' => $persistenceDir));
+                $wurflConfig->cache('file', array('dir' => $cacheDir, 'expiration' => 36000));
+                $wurflManagerFactory = new WURFL_WURFLManagerFactory($wurflConfig);
+                $wurflManager = $wurflManagerFactory->create();
+                $requestingDevice = $wurflManager->getDeviceForUserAgent($_SERVER['HTTP_USER_AGENT']);
+            }
+
+            if ($requestingDevice && (($requestingDevice->getCapability('is_wireless_device') == 'true') || ($requestingDevice->getCapability('is_tablet') == 'true'))) {
+                $user_params['os'] = $requestingDevice->getCapability('device_os');
+                $user_params['device'] = $requestingDevice->getCapability('brand_name') . '; ' . $requestingDevice->getCapability('model_name');
+                $user_params['platform'] = $requestingDevice->getCapability('brand_name');
+                $user_params['browser'] = $requestingDevice->getCapability('mobile_browser');
+            } else {
+                $parser = new UAParser;
+                $result = $parser->parse($user_params['agent']);
+                $user_params['browser'] = $result->ua->family;
+                $user_params['os'] = $result->os->family;
+                $user_params['device'] = '';
+                $user_params['platform'] = '';
+            }
+            
+            // Кладём в кэш
+            if ($rds) {
+                $wurfl_cache = array(
+                    'pl' => $user_params['platform'],
+                    'br' => $user_params['browser'],
+                    'dv' => $user_params['device'],
+                    'os' => $user_params['os'],
+                );
+                $rds->set($redis_key, $wurfl_cache);
+            }
         }
     }
 
@@ -355,6 +385,7 @@ if ($write_to_file) {
     file_put_contents(_CACHE_PATH . '/clicks/' . '.clicks_' . $time_key, $str . "\n", FILE_APPEND | LOCK_EX);
 }
 
+//echo "Location: " . $redirect_link;
 // Redirect
 header("Location: " . $redirect_link);
 exit();
