@@ -54,13 +54,13 @@ $source_types = array(
         'name' => 'Тизерные сети',
         'values' => array('actionteaser', 'adhub', 'adlabs', 'adprofy', 'advertlink', 'bannerbook', 'bodyclick', 'cashprom', 'directadvert', 'globalteaser', 'kadam', 'marketgid', 'mediatarget', 'novostimira', 'privatteaser', 'redclick', 'redtram', 'teasermedia', 'teasernet', 'visitweb', 'yottos')
     ),
-    3 => array(
-        'name' => 'Рекламные сети',
-        'values' => array('dntx', 'exoclick', 'leadimpact', 'plugrush', 'popunder', 'sitescout', 'zeropark')
-    ),
     4 => array(
         'name' => 'Мобильные сети',
         'values' => array('adinch', 'admoda', 'adtwirl', 'adultmoda', 'airpush', 'buzzcity', 'decisive', 'go2mobi', 'inmobi', 'jumptap', 'leadbolt', 'mmedia', 'mobfox', 'mobiads', 'octobird', 'startapp', 'tapgage', 'tapit', 'wapstart')
+    ),
+    3 => array(
+        'name' => 'Рекламные сети',
+        'values' => array('dntx', 'exoclick', 'leadimpact', 'plugrush', 'popunder', 'sitescout', 'zeropark')
     ),
 );
 
@@ -1797,16 +1797,19 @@ function get_rules_offers() {
     return $arr_offers;
 }
 
-function get_rules_list($arr_offers) {
+function get_rules_list($arr_offers, $offset = 0, $limit = 50) {
     $arr_rules = array();
-    $sql = "SELECT tbl_rules.id AS rule_id, tbl_rules.link_name, tbl_rules_items.id AS rule_item_id, tbl_rules_items.parent_id, tbl_rules_items.type, tbl_rules_items.value FROM tbl_rules LEFT JOIN tbl_rules_items ON tbl_rules_items.rule_id = tbl_rules.id WHERE tbl_rules.status = 0 AND tbl_rules_items.status = 0 ORDER BY rule_id desc, tbl_rules_items.parent_id ASC, rule_item_id ASC";
-    $result = db_query($sql);
+    $q = "SELECT tbl_rules.id AS rule_id, tbl_rules.link_name, tbl_rules_items.id AS rule_item_id, tbl_rules_items.parent_id, tbl_rules_items.type, tbl_rules_items.value 
+        FROM tbl_rules 
+        LEFT JOIN tbl_rules_items ON tbl_rules_items.rule_id = tbl_rules.id 
+        WHERE tbl_rules.status = 0 AND tbl_rules_items.status = 0 
+        ORDER BY rule_id desc, tbl_rules_items.parent_id ASC, rule_item_id ASC";
+    $rs = db_query($q);
     $cur_rule_id = '';
     $i = 0;
-    while ($row = mysql_fetch_assoc($result)) {
+    while ($row = mysql_fetch_assoc($rs)) {
         if ($cur_rule_id != $row['rule_id']) {
             $cur_rule_id = $row['rule_id'];
-
             $arr_rules[$row['rule_id']] = array('id' => $row['rule_id'], 'name' => $row['link_name']);
         }
 
@@ -1822,7 +1825,11 @@ function get_rules_list($arr_offers) {
                 break;
         }
     }
-    return $arr_rules;
+    
+    $total = count($arr_rules);
+    $arr_rules = array_slice($arr_rules, $offset, $limit);
+    
+    return array('rules' => $arr_rules, 'total' => $total);
 }
 
 function declination($number, $titles) {

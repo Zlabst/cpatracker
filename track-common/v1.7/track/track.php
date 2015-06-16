@@ -63,6 +63,14 @@ if (strpos($ip, ',') !== false) {
     }
 }
 
+if(!empty($_GET['geo'])) {
+	dmp($_SERVER_TYPE);
+	dmp($_SERVER);
+	dmp($ip);
+	dmp(get_geodata($ip));
+	exit;
+}
+
 $str.=remove_tab($ip) . "\t";
 
 // User language

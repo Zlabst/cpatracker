@@ -10,7 +10,9 @@ function modify_links(name, val) {
 		// console.log($(els[i]).parent().parent().parent().parent().parent());
 		if(name == 'col' && $(els[i]).parent().attr('id') == 'rt_sale_section') continue;
 		
-		href = els[i].href;
+		els[i].href = modify_link(els[i].href, name, val);
+		/*
+		href = els[i].href
 		offset = href.indexOf(name);
 		if(offset == -1) {
 	    	divider = href.indexOf('?') == -1 ? '?' : '&';
@@ -26,7 +28,27 @@ function modify_links(name, val) {
 			}
 			now = unescape(href.substring(offset, end));
 			els[i].href = els[i].href.substring(0, offset + name.length + 1) + val + els[i].href.substring(offset + now.length, href.length);
-		}	
+		}
+		*/	
+	}
+}
+
+function modify_link(href, name, val) {
+	offset = href.indexOf(name);
+	if(offset == -1) {
+    	divider = href.indexOf('?') == -1 ? '?' : '&';
+    	end = href.indexOf('#');
+    	if (end == -1) {
+    		end = href.length;
+    	}
+    	return href.substring(0, end) + divider + name + '=' + val + href.substring(end, href.length);
+	} else {
+		end = href.indexOf('&', offset);
+		if (end == -1) {
+			end = href.length;
+		}
+		now = unescape(href.substring(offset, end));
+		return href.substring(0, offset + name.length + 1) + val + href.substring(offset + now.length, href.length);
 	}
 }
 

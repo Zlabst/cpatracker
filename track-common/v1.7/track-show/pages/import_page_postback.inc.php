@@ -216,9 +216,9 @@ $custom = new custom();
 					<div class="col-md-5">
 						<div class="partner-description">
 							<h4>Партнерская сеть <span class="net-name"></span></h4>
-							<a  href="#fakelink">
+							<!--<a  href="#fakelink">
 								<img src="assets/images/partner-logo.png" alt="logo" />
-							</a>				
+							</a>-->				
 							
 							<p id="netlink_text"> </p>
 							<div class="btn-group">

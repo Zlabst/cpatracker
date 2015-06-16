@@ -21,6 +21,7 @@ if ($_REQUEST['act'] != 'reports') {
 	    </a>
 	</li>
 	<?php
+		if($bHideLeftSidebar !== true) {
 		$active = ($_REQUEST['type'] == 'basic' and $_REQUEST['mode'] != 'lp' and $_REQUEST['mode'] != 'lp_offers');
 	?>
 	<li <?php if ($active) { echo 'class="active"'; } ?>><a href="<?php echo $reports_lnk; ?>">Переходы</a>
@@ -48,6 +49,7 @@ if ($_REQUEST['act'] != 'reports') {
     		<?php echo type_subpanel2($params, 'basic', 'lp'); ?>
             </ul>
         </li>
+       	<?php } ?>
     </ul>
 <?php
 echo load_plugin('demo', 'demo_well');

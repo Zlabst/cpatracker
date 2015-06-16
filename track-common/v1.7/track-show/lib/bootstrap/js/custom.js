@@ -122,38 +122,6 @@ $(document).ready(function() {
 		template: '<div class="popover install-popover" role="tooltip"><div class="arrow"></div><h3 class="popover-title"></h3><div class="popover-content"></div></div>'		
 	})
 	
-	<!-- =============================================== -->
-	<!-- =========== Table collapse  ========== -->
-	<!-- =============================================== --> 
-	if ($('[data-toggle=collapse-next]').length > 0) {	
-		$('body').on('click.collapse-next.data-api', '[data-toggle=collapse-next]', function (e) {
-//			var $target = $(this).parent().parent().next().find('.collapse');
-			var $target = $(this).parent().next().find('.collapse');
-			$target.collapse('toggle');	
-		})
-	}
-	
-	<!-- =============================================== -->
-	<!-- =========== Select2  Dropdowns ========== -->
-	<!-- =============================================== --> 
-	if ($('.select2').length > 0) {
-		$('.select2').select2({
-			theme: 'classic',
-			language: 'ru',
-		    minimumResultsForSearch: 5,
-			matcher: function (params, data) {
-			  if ($.trim(params.term) === '') {
-			    return data;
-			  }
-			  if (data.text.indexOf(params.term) > -1) {
-			    var modifiedData = $.extend({}, data, true);
-			    modifiedData.text += ' (совпадение)';
-			    return modifiedData;
-			  }
-			  return null;
-			}
-		});
-	}
 //	if ($('.condition-add').length > 0) {
 //		$('.condition-add').select2({
 //			theme: 'classic',
@@ -163,6 +131,62 @@ $(document).ready(function() {
 //		});
 //	}
 
-
+	<!-- =============================================== -->
+	<!-- =========== Bootstrap Date Picker ========== -->
+	<!-- =============================================== --> 
+	var tmp = $.fn.popover.Constructor.prototype.show;
+	$.fn.popover.Constructor.prototype.show = function () {
+	  tmp.call(this);
+	  if (this.options.callback) {
+	    this.options.callback();
+	  }
+	}
+	if ($('[data-toggle="range-popover"]').length > 0) {
+		$('[data-toggle="range-popover"]').popover({
+			container: "body",
+			placement: "right",
+			trigger: "click",
+			html : true,
+	        content: function() {
+				var content = $(this).attr("data-popover-content");
+				return $(content).children(".popover-body").html();
+	        },
+			template: '<div class="popover range-popover" role="tooltip"><div class="arrow"></div><div class="popover-content"></div></div>',		
+	     
+		    callback: function () {
+		        $(".datepicker").datepicker({
+			       format: 'dd.mm.yyyy',
+			       language: 'ru',
+		        });
+		    }
+	 	}).click(function (e) {
+	        e.preventDefault();
+		});
+	}
+	
+	// Avoid dropdown menu close on click inside
+//    $('.date-select .dropdown-footer a').click(function(e) {
+//          e.stopPropagation();
+//    });
+	if ($('.date-select a').length > 0) {
+	    $('.date-select a').on('click', function (event) {
+		    $(this).parent().toggleClass("open");
+		    return false;
+		});
+	}
+//	$('body').on('click', function (e) {
+//	    if (!$('li.dropdown.mega-dropdown').is(e.target) && $('li.dropdown.mega-dropdown').has(e.target).length === 0 && $('.open').has(e.target).length === 0) {
+//	        $('li.dropdown.mega-dropdown').removeClass('open');
+//	    }
+//	});
+	if ($("#datepicker-single").length > 0) {
+		$("#datepicker-single").datepicker({
+		   format: 'dd.mm.yyyy',
+		   language: 'ru',
+		}).on('changeDate', function(e){
+	        $(this).find('h2 span').text(e.format('dd MM yyyy'));
+	        window.location.href = modify_link(window.location.href, 'date', e.format('yyyy-mm-dd'));
+	    });
+	}
 
 }); // Document ready

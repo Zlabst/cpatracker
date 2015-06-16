@@ -12,6 +12,11 @@ if (empty($_COOKIE['cpa_menu_main'])) {
     $menu_sidebar_style = ' style="display: none;"';
     $menu_icon_class = ' rotate-180';
 }
+
+if($page_content == 'stats-flow.php') {
+	$menu_toggle_class = ' no-sidebar';
+	$bHideLeftSidebar = true;
+}
 ?>
 <!-- CPA Tracker, http://www.cpatracker.ru -->
 <!DOCTYPE html>

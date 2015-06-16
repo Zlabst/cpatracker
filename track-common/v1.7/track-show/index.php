@@ -64,23 +64,23 @@ if ($_REQUEST['ajax_act'] == 'create_database') {
                 exit();
             }
 
-            
+
             $temp_dir = ini_get('upload_tmp_dir');
             if (!$temp_dir)
                 $temp_dir = '/tmp';
             $temp_dir = realpath($temp_dir);
-            
+
             // tmp dir is writable
-            
+
             $tmp_file = 'cpa_tmp.test';
             $tmp_rand = date('Y-m-d H:i') . mt_rand(11111, 99999);
-            
+
             file_put_contents($temp_dir . '/' . $tmp_file, $tmp_rand);
-            if(!(file_get_contents($tmp_rand) == $tmp_rand and unlink($temp_dir . '/' . $tmp_file))) {
+            if (!(file_get_contents($tmp_rand) == $tmp_rand and unlink($temp_dir . '/' . $tmp_file))) {
                 echo json_encode(array(false, 'cache_not_writable', $temp_dir));
                 exit();
             }
-            
+
             // tmp file for WURFL
 
             $wurfl_tmp_files = array('wurfl.xml', 'wurfl_builder.lock');
@@ -98,8 +98,8 @@ if ($_REQUEST['ajax_act'] == 'create_database') {
                     }
                 }
             }
-            
-            
+
+
 
             // Check datababase
 
@@ -247,19 +247,72 @@ if ($_REQUEST['ajax_act'] == 'a_load_flow') {
     }
 
     list($more, $arr_data, $start, $start_s) = get_visitors_flow_data($filter, rq('start', 2), rq('start_s', 2), 100, $_REQUEST['date']);
-	
-	$out = array(
-		'data' => tpx('stats-flow-rows', array('data' => $arr_data)),
-		'more' => $more,
-		'start' => $start,
-		'start_s' => $start_s,
-	);
-	echo json_encode($out);
-	/*
-    foreach ($arr_data as $row) {
-        include _TRACK_SHOW_COMMON_PATH . '/pages/stats-flow-row.php';
+
+    $out = array(
+        'data' => tpx('stats-flow-rows', array('data' => $arr_data)),
+        'more' => $more,
+        'start' => $start,
+        'start_s' => $start_s,
+    );
+    echo json_encode($out);
+    /*
+      foreach ($arr_data as $row) {
+      include _TRACK_SHOW_COMMON_PATH . '/pages/stats-flow-row.php';
+      }
+     */
+    exit();
+}
+
+if ($_REQUEST['ajax_act'] == 'copy_link') {
+    $old_id = rq('link_id', 2);
+
+    // Создаём новый линк в базе
+    $ins = array(
+        'link_name' => 'lnk_' . mt_rand(11111, 99999), // случайное имя новому линку
+        'date_add' => date('Y-m-d H:i:s'),
+    );
+    $q = insertsql($ins, 'tbl_rules');
+    db_query($q);
+
+    $new_id = mysql_insert_id();
+
+    // Корректируем имя линка
+    $link_name = 'lnk_' . $new_id;
+    $upd = array(
+        'link_name' => $link_name,
+        'id' => $new_id,
+    );
+    $q = updatesql($upd, 'tbl_rules', 'id');
+    db_query($q);
+
+    // Копируем правила из существующего линка в новый
+    $links = array();
+    $q = "select `type`, `value` 
+        from `tbl_rules_items` 
+        where `status` = '0' 
+            and rule_id = '" . $old_id . "'
+            order by `id`";
+    $rs = db_query($q);
+    while ($r = mysql_fetch_assoc($rs)) {
+        $links[] = $r;
     }
-    */
+
+    foreach ($links as $link) {
+        $ins = array(
+            'rule_id' => $new_id,
+            'parent_id' => ($link['type'] == 'redirect') ? mysql_insert_id() : 0,
+            'type' => $link['type'],
+            'value' => $link['value'],
+            'status' => 0
+        );
+        $q = insertsql($ins, 'tbl_rules_items');
+        db_query($q);
+    }
+
+    // Синхронизация кэша (временное имя)
+    cache_rules_update($link_name);
+
+    echo $new_id;
     exit();
 }
 
@@ -323,18 +376,18 @@ if ($_REQUEST['ajax_act'] == 'get_source_link') {
 if ($_REQUEST['ajax_act'] == 'sync_slaves') {
     $sync_rules = cache_rules_update();
     $sync_outs = cache_outs_update();
-    
-    if($sync_rules['status'] == 1 and $sync_outs['status'] == 1) {
+
+    if ($sync_rules['status'] == 1 and $sync_outs['status'] == 1) {
         echo 'Синхронизация выполнена успешно.';
-        
+
         // Удаляем маркер ошибки соединения с API
-        $api_connect_error = _CACHE_PATH . '/.api_connect_error'; 
-        if(is_file($api_connect_error)) {
+        $api_connect_error = _CACHE_PATH . '/.api_connect_error';
+        if (is_file($api_connect_error)) {
             unlink($api_connect_error);
         }
     } else {
         echo 'Ошибка сихронизации';
-        
+
         dmp($sync_rules);
         dmp($sync_outs);
     }
@@ -365,13 +418,22 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
         case 'get_rules_json':
 
             $arr_offers = get_rules_offers();
+            $limit = 50;
+            $offset = rq('offset', 2);
+            //dmp($arr_offers);
+            $source = rq('source');
+            if (empty($source_config[$source]))
+                $source = 'source';
+
             $condition_types = array('geo_country' => 'Страна', 'lang' => 'Язык', 'referer' => 'Реферер', 'city' => 'Город', 'region' => 'Регион', 'provider' => 'Провайдер', 'ip' => 'IP адрес', 'os' => 'ОС', 'platform' => 'Платформа', 'browser' => 'Браузер', 'agent' => 'User-agent', 'get' => 'GET', 'device' => 'Устройство');
-            $arr_rules = get_rules_list($arr_offers);
+            $rules_list = get_rules_list($arr_offers, $offset, $limit);
+            $arr_rules = $rules_list['rules'];
+            $total_rules = $rules_list['total'];
             $arr = array();
             $i = 0;
 
             foreach ($arr_rules as $cur) {
-                $arr['rules'][$i] = array('id' => $cur['id'], 'name' => $cur['name'], 'url' => tracklink() . "/{$cur['name']}/source/campaign-ads");
+                $arr['rules'][$i] = array('id' => $cur['id'], 'name' => $cur['name'], 'url' => tracklink() . "/{$cur['name']}/" . $source . "/campaign-ads");
 
                 $arr_destinations = array();
                 $default_destination_id = '';
@@ -392,25 +454,35 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
 
                 $arr_destinations = array_keys($arr_destinations);
                 $destinations_count = count($arr_destinations);
-                switch ($destinations_count) {
-                    case 0:
-                        break;
-
-                    case 1:
-                        $str = current($arr_destinations);
-                        $arr['rules'][$i]['destination'] = $arr_offers[$str]['offer_name'];
-                        $arr['rules'][$i]['destination_id'] = $arr_offers[$str]['id'];
-                        break;
-
-                    default:
-                        $arr['rules'][$i]['destination_multi'] = declination($destinations_count, array(' оффер', ' оффера', ' офферов'));
-                        break;
+                $offer_names = array(); // 3 первых оффера
+                
+                $n = 0;
+                foreach ($arr_destinations as $offer_id) {
+                    $offer_names[] = $arr_offers[$offer_id]['offer_name'];
+                    if(++$n >= 3) break;
                 }
+
+
+                $arr['rules'][$i]['offer_names'] = join(' / ', $offer_names);
+                if ($destinations_count > 3) {
+                    $arr['rules'][$i]['destination_multi'] = '+' . ($destinations_count - 3);
+                }
+
                 $arr['rules'][$i]['default_destination_id'] = $default_destination_id;
                 $arr['rules'][$i]['other_users'] = count($cur['items']) > 1 ? 'Остальные посетители' : 'Все посетители';
 
                 $i++;
             }
+            
+            // Ссылки вперёд-назад
+            if($offset > 0) {
+                $arr['prev'] = '?page=rules&source=' . $source . '&offset=' . ($offset - $limit);
+            }
+            
+            if(($offset + $limit) < $total_rules) {
+                $arr['next'] = '?page=rules&source=' . $source . '&offset=' . ($offset + $limit);
+            }
+            
             echo json_encode($arr);
 
             exit();
@@ -520,29 +592,29 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             echo json_encode($out);
             exit;
             break; // ну а вдруг кто-то уберёт exit ;)
-            
+
         case 'fave_source':
-        	$id = rq('id');
-        	$fave = rq('fave', 2);
-        	
-        	if($fave) {
-        		$q = "insert ignore into `tbl_sources` (`id`) values ('" . mysql_escape_string($id) . "')";
-        	} else {
-        		$q = "delete from `tbl_sources` where `id` = '" . mysql_escape_string($id) . "'";
-        	}
-        	db_query($q);
-        	
-        	$q = "select count(id) as `cnt` from `tbl_sources`";
-        	$rs = db_query($q);
-        	$r = mysql_fetch_assoc($rs);
-        	
-        	$out = array(
-        		'total' => intval($r['cnt']),
-        		'have_favorits' => $r['cnt'] > 0 ? 1 : 0
-        	);
-        	echo json_encode($out);
+            $id = rq('id');
+            $fave = rq('fave', 2);
+
+            if ($fave) {
+                $q = "insert ignore into `tbl_sources` (`id`) values ('" . mysql_escape_string($id) . "')";
+            } else {
+                $q = "delete from `tbl_sources` where `id` = '" . mysql_escape_string($id) . "'";
+            }
+            db_query($q);
+
+            $q = "select count(id) as `cnt` from `tbl_sources`";
+            $rs = db_query($q);
+            $r = mysql_fetch_assoc($rs);
+
+            $out = array(
+                'total' => intval($r['cnt']),
+                'have_favorits' => $r['cnt'] > 0 ? 1 : 0
+            );
+            echo json_encode($out);
             exit;
-        	break;
+            break;
 
         case 'restore_link':
             $ids = rq('id', -2);
@@ -685,18 +757,17 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             // Update rule name
             $q = "update `tbl_rules` set link_name='" . mysql_real_escape_string($rule_name) . "' where id='" . mysql_real_escape_string($rule_id) . "'";
             db_query($q);
-            
+
             cache_rules_update($rule_name, $old_rule_name);
             exit;
             break;
 
         case 'update_rule':
-            $rule_id = $_REQUEST['rule_id'];
-            $rule_name = $_REQUEST['rule_name'];
-            $rules_item = $_REQUEST['rules_item'];
-            $rule_values = $_REQUEST['rule_value'];
+            $rule_id = rq('rule_id');
+            $rule_name = rq('rule_name');
+            $rules_item = rq('rules_item');
+            $rule_values = rq('rule_value');
 
-            //$pattern = '/(^[a-z0-9_]+$)/';
             $pattern = '/^[ЎўІіёa-zA-Zа-яА-Я0-9_-]*$/u';
             foreach ($rules_item as $key => $rull) {
                 if ($rull['type'] == 'get') {
@@ -714,33 +785,57 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             }
 
             // Update rule name
-            $sql = "update tbl_rules set link_name='" . mysql_real_escape_string($rule_name) . "' where id='" . mysql_real_escape_string($rule_id) . "'";
-            mysql_query($sql);
+            $q = "update tbl_rules set link_name='" . mysql_real_escape_string($rule_name) . "' where id='" . mysql_real_escape_string($rule_id) . "'";
+            db_query($q);
 
             // Remove old rules
-            $sql = "delete from tbl_rules_items where rule_id='" . mysql_real_escape_string($rule_id) . "'";
-            mysql_query($sql);
+            $q = "delete from tbl_rules_items where rule_id='" . mysql_real_escape_string($rule_id) . "'";
+            db_query($q);
 
             // Remove rule from tracker cache
             cache_remove_rule($rule_name);
 
             // Add new rules
             $i = 0;
+            $out_ids = array(); // ID офферов
             foreach ($rules_item as $cur_item) {
                 $item = $rules_item[$i];
                 $out_id = $rule_values[$i];
+                $out_ids[] = intval($out_id);
                 if ($item['val'] != '') {
-                    $sql = "insert into tbl_rules_items (rule_id, parent_id, type, value) values ('" . mysql_real_escape_string($rule_id) . "', '0', '" . mysql_real_escape_string($item['type']) . "', '" . mysql_real_escape_string($item['val']) . "')";
-                    mysql_query($sql);
+                    $q = "insert into tbl_rules_items (rule_id, parent_id, type, value) values ('" . mysql_real_escape_string($rule_id) . "', '0', '" . mysql_real_escape_string($item['type']) . "', '" . mysql_real_escape_string($item['val']) . "')";
+                    db_query($q);
                     $parent_id = mysql_insert_id();
 
-                    $sql = "insert into tbl_rules_items (rule_id, parent_id, type, value) values ('" . mysql_real_escape_string($rule_id) . "', '" . mysql_real_escape_string($parent_id) . "', 'redirect', '" . mysql_real_escape_string($out_id) . "')";
-                    mysql_query($sql);
+                    $q = "insert into tbl_rules_items (rule_id, parent_id, type, value) values ('" . mysql_real_escape_string($rule_id) . "', '" . mysql_real_escape_string($parent_id) . "', 'redirect', '" . mysql_real_escape_string($out_id) . "')";
+                    db_query($q);
                 }
                 $i++;
             }
 
             $out = cache_rules_update($rule_name);
+
+
+            // Добавляем в вывод названия первых трёх офферов
+            if (!empty($out_ids)) {
+                $outs_all = array();
+                $q = "select `id`, `offer_name`
+                    from `tbl_offers`
+                    where `id` in (" . join(',', $out_ids) . ")";
+                $rs = db_query($q);
+                while($r = mysql_fetch_assoc($rs)) {
+                    $outs_all[$r['id']] = $r['offer_name'];
+                }
+
+                $i = 0;
+                $outs = array();
+                foreach($out_ids as $out_id) {
+                    $outs[] = $outs_all[$out_id];
+                    if(++$i >= 3) break;
+                }
+                $out['offers_text'] = join(' / ', $outs);
+            }
+
             echo json_encode($out);
 
             // Create rule in tracker cache
@@ -885,7 +980,7 @@ if ($result['error']) {
     if ($result['crontab_postback']) {
         $global_notifications[] = 'CRONTAB_POSTBACK_NOT_INSTALLED';
     }
-    
+
     if ($result['api_connect']) {
         $global_notifications[] = 'API_CONNECT_ERROR';
     }
@@ -935,8 +1030,8 @@ switch ($_REQUEST['page']) {
         break;
 
     case 'rules':
-    	$page_sidebar = 'sidebar-left-rules.inc.php';
-    
+        $page_sidebar = 'sidebar-left-rules.inc.php';
+
         $arr_offers = get_rules_offers();
         list ($js_last_offer_id, $js_offers_data) = get_offers_data_js($arr_offers);
         $js_sources_data = get_sources_data_js();
@@ -1069,7 +1164,7 @@ switch ($_REQUEST['page']) {
     default:
         $page_top_menu = "top_menu.php";
         $sidebar_inc = "left-sidebar.php";
-        
+
         switch ($_REQUEST['act']) {
             case 'reports':
                 switch ($_REQUEST['type']) {

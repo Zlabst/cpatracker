@@ -4819,7 +4819,7 @@ a.label:hover,a.label:focus {
 }
 
 .label-default {
-    background-color:#ccc
+    /* background-color:#ccc */
 }
 
 .label-default[href]:hover,.label-default[href]:focus {
