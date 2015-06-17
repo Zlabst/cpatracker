@@ -128,6 +128,12 @@ if (count($arr_rules) == 0) {
                 $cache_use = true;
             }
         }
+        /*
+        if($_GET['a'] == 1) {
+            echo $redis_key . '<br >';
+            dmp($user_params);
+            die();
+        }*/
 
         if (!$cache_use) {
             require _TRACK_LIB_PATH . '/ua-parser/uaparser.php';
@@ -174,7 +180,7 @@ if (count($arr_rules) == 0) {
                     'dv' => $user_params['device'],
                     'os' => $user_params['os'],
                 );
-                $rds->set($redis_key, $wurfl_cache);
+                $rds->set($redis_key, serialize($wurfl_cache));
             }
         }
     }

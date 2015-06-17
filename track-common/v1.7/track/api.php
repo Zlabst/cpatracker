@@ -8,12 +8,22 @@ $track_key = rq('key');
 if (get_magic_quotes_gpc()) {
     $_REQUEST = stripslashes2($_REQUEST);
 }
+
+if (_SELF_STORAGE_ENGINE == 'redis') {
+    $rds = new Redis();
+    if (!$rds->connect(_REDIS_HOST, _REDIS_PORT)) {
+        $rds = false;
+    }
+} else {
+    $rds = false;
+}
+
 /*
   if($act != 'ping') {
   dmp($_REQUEST);
   } */
-  
- 
+
+
 
 $out = array(
     'status' => 1, // Всё хорошо
@@ -77,11 +87,11 @@ if ($act == 'data_get') {
 
 // Обновление кэша
 } elseif ($act == 'outs_update' or $act == 'rules_update') {
-	//dmp($_REQUEST);
+    //dmp($_REQUEST);
     $cache = rq('cache');
     $full = rq('full', 2); // признак получения полныго списка кэша. Чего в нём нет - быть не должно и на диске
     $errors = array();
-    
+
     $type = str_replace('_update', '', $act);
     $cache_path = _CACHE_PATH . '/' . $type;
 
@@ -90,21 +100,27 @@ if ($act == 'data_get') {
         'rules' => '/^[0-9a-f]{32}$/'
     );
 
-    
-
     if (!is_dir($cache_path)) {
         mkdir($cache_path);
         chmod($cache_path, 0777);
     }
     /*
-    dmp($act);
-    dmp($full);
-    dmp($cache);
-	*/
+      dmp($act);
+      dmp($full);
+      dmp($cache);
+     */
     foreach ($cache as $id => $content) {
         if (!preg_match($masks[$type], $id)) {
             $errors[] = 'Неверное имя кэша ' . $id;
             break;
+        }
+        
+         // Чистим редис-кэш
+        if ($rds) {
+            $letter = $act == 'outs_update' ? 'l' : 'r';
+            $redis_offer_key = 'cpa_' . _SELF_TRACK_KEY . '_' . $letter . '_' . $id;
+            $r = $rds->delete($redis_offer_key);
+            //var_export($r);
         }
 
         $path = $cache_path . '/.' . $id;
