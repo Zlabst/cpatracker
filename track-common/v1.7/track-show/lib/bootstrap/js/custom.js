@@ -188,5 +188,15 @@ $(document).ready(function() {
 	        window.location.href = modify_link(window.location.href, 'date', e.format('yyyy-mm-dd'));
 	    });
 	}
+	
+	<!-- =============================================== -->
+	<!-- =========== Table collapse  ========== -->
+	<!-- =============================================== --> 
+	if ($('[data-toggle=collapse-next]').length > 0) {	
+		$('body').on('click.collapse-next.data-api', '[data-toggle=collapse-next]', function (e) {
+			var $target = $(this).parent().next().find('.collapse');
+			$target.collapse('toggle');	
+		})
+	}
 
 }); // Document ready
