@@ -9,9 +9,16 @@
         width: 100%;
 
     }    
+    .btn-default.zeroclipboard-is-hover {background-color:#cbe4f5 !important; border-bottom: 1px solid #95b4c9 !important; }
+    .btn-default.zeroclipboard-is-active { background-color:#cbe4f5 !important; box-shadow: 0 3px 5px rgba(0, 0, 0, 0.125) inset;}
 </style>
 
 <?php
+
+// Проверка на наличие избранного
+$sources_favorits = sources_favorits();
+$have_favorits = count($sources_favorits) > 0;
+
 
 $offset = rq('offset', 2);
 $source = rq('source');
@@ -55,7 +62,7 @@ $source_name = (empty($source) or $source == 'source' or empty($source_config[$s
 
         <!--Header-->
         <div class="btn-group header-left">
-            <h2><?php echo $source_name; ?></h2>
+            <h2><?php echo $source_name; ?><input type="checkbox" value="" class="i-star" source="<?php echo $source; ?>" <?php echo in_array($source, $sources_favorits) ? 'checked' : ''; ?>></h2>
         </div>
 
         <div role="toolbar" class="btn-toolbar">
@@ -257,12 +264,12 @@ $source_name = (empty($source) or $source == 'source' or empty($source_config[$s
                         $("#rn" + id).focus();                         
                     }
                 });
-                
             }
             
             // Копируем ссылку в интерфейсе
             function copy_link(id) {
-                var new_rule = $('#rule' + id).clone();
+                var old_rule = $('#rule' + id);
+                var new_rule = old_rule.clone();
                 var new_link_id = 0;
                     
                 $.ajax({
@@ -285,6 +292,8 @@ $source_name = (empty($source) or $source == 'source' or empty($source_config[$s
                     
                     // Открываем поля редактирования имени
                     rename_link(new_link_id, rule_name, true);
+                    $('#rn' + new_link_id).val(old_rule.find('.rule-name-title').text());
+                    $('#rn' + new_link_id).select();
                 });
             }
             
@@ -309,6 +318,7 @@ $source_name = (empty($source) or $source == 'source' or empty($source_config[$s
                 row.find('.label-default').text(title);
                 row.find('.select-item').attr('placeholder', title);
                 row.find('.select-item').attr('itemtype', name);
+                row.find('.select-item').focus();
                 //row.find('.select-link').select2({data: {results: dictionary_links}, width: 'copy', containerCssClass: 'form-control select2'});
             } 
             
@@ -357,6 +367,8 @@ $source_name = (empty($source) or $source == 'source' or empty($source_config[$s
                 var rule_id = rule_table.attr('id');
                 users_label(rule_table);
                 rule_table.prepend(template);
+                var row = rule_table.find('div').first();
+                prepareTextInput(row, 'referer', 'Реферер');
                 init_links(rule_table);
             });
             
@@ -500,7 +512,7 @@ $source_name = (empty($source) or $source == 'source' or empty($source_config[$s
                 e.preventDefault();
                 var rule_id = $(this).closest("div.panel").attr('id');
                 $(this).parent().parent().parent().remove();
-                update_rule(rule_id);
+                //update_rule(rule_id);
                 
                 
                 if($('#' + rule_id).children().length < 3) {
@@ -637,6 +649,17 @@ $source_name = (empty($source) or $source == 'source' or empty($source_config[$s
                 var arr = text.split('=');
                 $(this).val(arr[1]);
             });
+        
+        
+        
+<?php
+$open_rule = rq('open_rule', 2);
+if ($open_rule > 0) {
+    ?>
+
+                $('#rule<?php echo $open_rule; ?> td').last().click();
+
+<?php } ?>
         });
     });
     
@@ -1048,8 +1071,8 @@ $source_name = (empty($source) or $source == 'source' or empty($source_config[$s
                                 </a>
                             </div>
                             <div class="btn-group pull-right no-margin" data-toggle="buttons">
-                                <label class="btn btn-toggle">
-                                    <input type="checkbox" autocomplete="off" class="lp_switch"> LP <i class="cpa cpa-switch"></i>
+                                <label class="btn btn-toggle active">
+                                    <input type="checkbox" autocomplete="off" class="lp_switch" checked> LP <i class="cpa cpa-switch"></i>
                                 </label>
                             </div>
                         </div><!--panel-->

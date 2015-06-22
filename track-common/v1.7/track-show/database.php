@@ -315,6 +315,15 @@
     `status` INT NOT NULL
     );";
     
+    $arr_sql[]='CREATE TABLE IF NOT EXISTS `tbl_notifications` (
+	  `id` int(11) NOT NULL AUTO_INCREMENT,
+	  `date` datetime NOT NULL,
+	  `title` varchar(255) CHARACTER SET utf8 NOT NULL,
+	  `text` text CHARACTER SET utf8 NOT NULL,
+	  `status` tinyint(1) NOT NULL DEFAULT '0',
+	  PRIMARY KEY (`id`)
+	) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;';
+    
     $arr_sql[]="UPDATE `tbl_offers` SET `offer_tracking_url` = REPLACE(`offer_tracking_url`, '%SUBID%', '[SUBID]')";
     
     //$arr_sql[]="ALTER TABLE `tbl_conversions` ADD `txt_status` VARCHAR(255), ADD `t1` TEXT,  ADD `t2` TEXT,  ADD `t3` TEXT ,  ADD `t4` TEXT ,  ADD `t5` TEXT ,  ADD `t6` TEXT ,  ADD `t7` TEXT ,  ADD `t8` TEXT ,  ADD `t9` TEXT ,  ADD `t10` TEXT ,  ADD `t11` TEXT ,  ADD `t12` TEXT ,  ADD `t13` TEXT ,  ADD `t14` TEXT ,  ADD `t15` TEXT ,  ADD `t16` TEXT ,  ADD `t17` TEXT ,  ADD `t18` TEXT ,  ADD `t19` TEXT ,  ADD `t20` TEXT ,  ADD `t21` TEXT ,  ADD `t22` TEXT ,  ADD `t23` TEXT ,  ADD `t24` TEXT ,  ADD `t25` TEXT ,   ADD `t26` TEXT ,   ADD `t27` TEXT ,   ADD `t28` TEXT ,   ADD `t29` TEXT ,   ADD `t30` TEXT ,  ADD `f1` FLOAT(10,4) ,  ADD `f2` FLOAT(10,4) ,  ADD `f3` FLOAT(10,4) ,  ADD `f4` FLOAT(10,4) ,  ADD `f5` FLOAT(10,4) ,  ADD `i1` INT(11) ,  ADD `i2` INT(11) ,  ADD `i3` INT(11) ,  ADD `i4` INT(11) ,  ADD `i5` INT(11) ,  ADD `i6` INT(11) ,  ADD `i7` INT(11) ,  ADD `i8` INT(11) ,  ADD `i9` INT(11) ,  ADD `i10` INT(11) ,  ADD `i11` INT(11) ,  ADD `i12` INT(11) ,  ADD `i13` INT(11) ,  ADD `i14` INT(11) ,  ADD `i15` INT(11) ,  ADD `i16` INT(11) ,  ADD `i17` INT(11) ,  ADD `i18` INT(11) ,  ADD `i19` INT(11) ,  ADD `i20` INT(11) ,  ADD `d1` INT ,  ADD `d2` DATETIME ,  ADD `d3` DATETIME ,  ADD `d4` DATETIME ,  ADD `d5` DATETIME ";

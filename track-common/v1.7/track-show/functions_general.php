@@ -606,6 +606,43 @@ function _e($str) {
     return htmlspecialchars($str, ENT_QUOTES, 'UTF-8', false);
 }
 
+// Смена статуса записи в любой таблице
+function change_status($table, $id, $status) {
+    $q = "UPDATE `" . $table . "` SET `status` = '" . $status . "' WHERE `id` = '" . $id . "'";
+    db_query($q);
+}
+
+// Пользовательские уведомления
+function user_notifications($status = -1, $offset = 0, $limit = 20) {
+    // Общее количество строк
+    $q = "SHOW TABLE STATUS LIKE 'tbl_notifications'";
+    $rs = db_query($q);
+    $r = mysql_fetch_assoc($rs);
+    $total = $r['Rows'];
+
+    // Количество непрочитанных
+    $q = "select count(id) as `cnt` 
+        from `tbl_notifications`
+        where `status` = '0'";
+    $rs = db_query($q);
+    $r = mysql_fetch_assoc($rs);
+    $total_unread = $r['cnt'];
+
+    $out = array();
+    if($limit > 0) {
+        $q = "select * 
+            from `tbl_notifications`
+            where 1 " . ($status != -1 ? "and `status` = '" . intval($status) . "'" : '' ) . "
+            order by `id` desc
+            limit $offset, $limit";
+        $rs = db_query($q);
+        while ($r = mysql_fetch_assoc($rs)) {
+            $out[$r['id']] = $r;
+        }
+    }
+    return array($total, $total_unread, $out);
+}
+
 function disable_magic_quotes() {
     if (get_magic_quotes_gpc()) {
         $process = array(&$_GET, &$_POST, &$_COOKIE, &$_REQUEST);
@@ -833,6 +870,7 @@ function get_last_sales($filter_by = '') {
 
 function mysqldate2string($date) {
     $arr_months = array('января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря');
+    $date = current(explode(' ', $date));
     $d = explode('-', $date);
     return $d[2] . ' ' . $arr_months[$d[1] - 1] . ' ' . $d[0];
 }
@@ -1825,16 +1863,16 @@ function get_rules_list($arr_offers, $offset = 0, $limit = 50) {
                 break;
         }
     }
-    
+
     $total = count($arr_rules);
     $arr_rules = array_slice($arr_rules, $offset, $limit);
-    
+
     return array('rules' => $arr_rules, 'total' => $total);
 }
 
-function declination($number, $titles) {
+function declination($number, $titles, $show_number = true) {
     $cases = array(2, 0, 1, 1, 1, 2);
-    return $number . " " . $titles[($number % 100 > 4 && $number % 100 < 20) ? 2 : $cases[min($number % 10, 5)]];
+    return ($show_number ? $number . " " : '') . $titles[($number % 100 > 4 && $number % 100 < 20) ? 2 : $cases[min($number % 10, 5)]];
 }
 
 function convert_to_usd($from_currency, $amount) {

@@ -3,7 +3,7 @@ if (!$include_flag)
     exit;
 
 // Состояние главного меню
-if (empty($_COOKIE['cpa_menu_main'])) {
+if (empty($_COOKIE['cpa_menu_main']) or $page_content == 'stats-flow.php') {
     $menu_toggle_class = '';
     $menu_sidebar_style = '';
     $menu_icon_class = '';

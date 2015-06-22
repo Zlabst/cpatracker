@@ -27,8 +27,11 @@ if (_ENABLE_DEBUG && isset($_GET['debug'])) {
 }
 
 // Set allowed for inclusion files list, security measure
-$page_sidebar_allowed = array('sidebar-left-links.inc.php', 'sidebar-left-reports.inc.php', 'sidebar-left-rules.inc.php');
+$page_sidebar_allowed = array('sidebar-left-links.inc.php', 'sidebar-left-reports.inc.php', 'sidebar-left-rules.inc.php', 'sidebar-left-support.inc.php');
 $page_content_allowed = array('reports.php', 'sales.php', 'stats-flow.php', 'links_page.inc.php', 'rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'import_page_postback.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'register.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php', 'landing_page.inc.php');
+
+// Показывать выбор часового пояса в шапке
+$timezone_select = false;
 
 // Include main functions
 require _TRACK_SHOW_COMMON_PATH . "/functions_general.php";
@@ -413,8 +416,38 @@ if ($_REQUEST['page'] != 'login') {
     }
 }
 
+// Check if crontab is installed
+$result = check_crontab_markers();
+if ($result['error']) {
+    if ($result['crontab_clicks']) {
+        $global_notifications[] = 'CRONTAB_CLICKS_NOT_INSTALLED';
+    }
+    if ($result['crontab_postback']) {
+        $global_notifications[] = 'CRONTAB_POSTBACK_NOT_INSTALLED';
+    }
+    if ($result['api_connect']) {
+        $global_notifications[] = 'API_CONNECT_ERROR';
+    }
+}
+
+list($user_ntf_cnt, $user_ntf_unread_cnt, $user_ntf_arr) = user_notifications(-1, 0, 0);
+
 if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
     switch ($_REQUEST['ajax_act']) {
+        case 'mark_notify_as_read':
+            $id = rq('id', 2);
+            change_status('tbl_notifications', $id, 1);
+            list($user_ntf_cnt, $user_ntf_unread_cnt, $user_ntf_arr) = user_notifications(-1, 0);
+            $global_ntf_cnt = count($global_notifications);
+            $out = array(
+                'cnt' => $user_ntf_cnt + $global_ntf_cnt,
+                'unread_cnt' => $user_ntf_unread_cnt,
+                'unread_cnt_all' => $user_ntf_unread_cnt + $global_ntf_cnt,
+            );
+            echo json_encode($out);
+            exit;
+            break;
+        
         case 'get_rules_json':
 
             $arr_offers = get_rules_offers();
@@ -433,7 +466,26 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             $i = 0;
 
             foreach ($arr_rules as $cur) {
-                $arr['rules'][$i] = array('id' => $cur['id'], 'name' => $cur['name'], 'url' => tracklink() . "/{$cur['name']}/" . $source . "/campaign-ads");
+                $lnk = tracklink() . "/{$cur['name']}/" . $source . "/campaign-ads/";
+
+                if ($source != 'source' and !empty($source_config[$source]['params'])) {
+                    $tmp = array();
+                    foreach ($source_config[$source]['params'] as $param_name => $param_value) {
+                        if (empty($param_value['url']) or strstr($lnk, $param_value['url']) !== false)
+                            continue;
+                        $tmp[] = $param_name . '=' . $param_value['url'];
+                    }
+
+                    if (count($tmp) > 0) {
+                        $lnk .= (strstr($lnk, '?') === false ? '?' : '&') . join('&', $tmp);
+                    }
+                }
+
+                $arr['rules'][$i] = array(
+                    'id' => $cur['id'],
+                    'name' => $cur['name'],
+                    'url' => $lnk
+                );
 
                 $arr_destinations = array();
                 $default_destination_id = '';
@@ -455,11 +507,12 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
                 $arr_destinations = array_keys($arr_destinations);
                 $destinations_count = count($arr_destinations);
                 $offer_names = array(); // 3 первых оффера
-                
+
                 $n = 0;
                 foreach ($arr_destinations as $offer_id) {
                     $offer_names[] = $arr_offers[$offer_id]['offer_name'];
-                    if(++$n >= 3) break;
+                    if (++$n >= 3)
+                        break;
                 }
 
 
@@ -473,16 +526,16 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
 
                 $i++;
             }
-            
+
             // Ссылки вперёд-назад
-            if($offset > 0) {
+            if ($offset > 0) {
                 $arr['prev'] = '?page=rules&source=' . $source . '&offset=' . ($offset - $limit);
             }
-            
-            if(($offset + $limit) < $total_rules) {
+
+            if (($offset + $limit) < $total_rules) {
                 $arr['next'] = '?page=rules&source=' . $source . '&offset=' . ($offset + $limit);
             }
-            
+
             echo json_encode($arr);
 
             exit();
@@ -716,6 +769,7 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             ob_start();
             $rule_name = trim($_REQUEST['rule_name']);
             $out_id = trim($_REQUEST['out_id']);
+            $source = rq('source');
 
             // Check if we already have rule with this name
             $sql = "select id from tbl_rules where link_name='" . mysql_real_escape_string($rule_name) . "' and status=0";
@@ -741,7 +795,7 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             }
 
             cache_rules_update();
-            header('Location: ' . full_url() . "?page=rules");
+            header('Location: ' . full_url() . '?page=rules&source=' . $source . '&open_rule=' . $rule_id);
             exit;
             break;
 
@@ -818,20 +872,22 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
 
             // Добавляем в вывод названия первых трёх офферов
             if (!empty($out_ids)) {
+                $out_ids = array_unique($out_ids);
                 $outs_all = array();
                 $q = "select `id`, `offer_name`
                     from `tbl_offers`
                     where `id` in (" . join(',', $out_ids) . ")";
                 $rs = db_query($q);
-                while($r = mysql_fetch_assoc($rs)) {
+                while ($r = mysql_fetch_assoc($rs)) {
                     $outs_all[$r['id']] = $r['offer_name'];
                 }
 
                 $i = 0;
                 $outs = array();
-                foreach($out_ids as $out_id) {
+                foreach ($out_ids as $out_id) {
                     $outs[] = $outs_all[$out_id];
-                    if(++$i >= 3) break;
+                    if (++$i >= 3)
+                        break;
                 }
                 $out['offers_text'] = join(' / ', $outs);
             }
@@ -971,20 +1027,6 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             break;
     }
 } // End CSRF check
-// Check if crontab is installed
-$result = check_crontab_markers();
-if ($result['error']) {
-    if ($result['crontab_clicks']) {
-        $global_notifications[] = 'CRONTAB_CLICKS_NOT_INSTALLED';
-    }
-    if ($result['crontab_postback']) {
-        $global_notifications[] = 'CRONTAB_POSTBACK_NOT_INSTALLED';
-    }
-
-    if ($result['api_connect']) {
-        $global_notifications[] = 'API_CONNECT_ERROR';
-    }
-}
 
 header('Content-Type: text/html; charset=utf-8');
 header('X-Frame-Options: DENY');
@@ -1078,6 +1120,7 @@ switch ($_REQUEST['page']) {
         break;
 
     case 'notifications':
+        $page_sidebar = 'sidebar-left-support.inc.php';
         $page_content = 'notifications_page.inc.php';
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
         exit();
@@ -1167,6 +1210,7 @@ switch ($_REQUEST['page']) {
 
         switch ($_REQUEST['act']) {
             case 'reports':
+                $timezone_select = true; // показываем выбор часового пояса в шапке
                 switch ($_REQUEST['type']) {
                     case 'sales':
                         $page_content = 'sales.php';
@@ -1192,6 +1236,7 @@ switch ($_REQUEST['page']) {
                 break;
 
             default:
+                $timezone_select = true; // показываем выбор часового пояса в шапке
                 $search = $_REQUEST['search'];
                 $filter = '';
                 if ($_REQUEST['filter_by'] != '') {

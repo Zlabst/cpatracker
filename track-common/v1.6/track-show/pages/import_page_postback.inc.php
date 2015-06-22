@@ -233,7 +233,7 @@ $custom = new custom();
             <tr>
                 <td><input type="checkbox" id="status"></td>
                 <td>Статус:</td>
-                <td><input type="text" id="subid_val" value="{status}"></td>
+                <td><input type="text" id="status_val" value="{status}"></td>
             </tr>
             <tr>
                 <td><input type="checkbox" id="date_add"></td>

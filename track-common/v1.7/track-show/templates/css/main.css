@@ -723,7 +723,7 @@ ul.sidebar-menu li.active > a,
 ul.sidebar-menu li.active > a:hover,
 ul.sidebar-menu li.active > a:focus {
   background-color: #314b66;
-  font-weight: 600;
+  /* font-weight: 600; */
 }
 ul.sidebar-menu li ul.submenu {
   background: rgba(21, 29, 38, 0.7);
@@ -2040,6 +2040,12 @@ ol.help li p {
 	display: none;
 }
 #rules_favorits div.checkbox {
+	display: none;
+}
+.header-left .icheckbox-cpa-star {
+	margin-left: 10px;
+}
+.no-sidebar .btn-collapse-sidebar-left {
 	display: none;
 }
 /* /jQ */

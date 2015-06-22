@@ -128,13 +128,7 @@ if (count($arr_rules) == 0) {
                 $cache_use = true;
             }
         }
-        /*
-        if($_GET['a'] == 1) {
-            echo $redis_key . '<br >';
-            dmp($user_params);
-            die();
-        }*/
-
+        
         if (!$cache_use) {
             require _TRACK_LIB_PATH . '/ua-parser/uaparser.php';
 
@@ -194,6 +188,11 @@ if (count($arr_rules) == 0) {
         $user_params['region'] = $geo_data['state'];
         $user_params['provider'] = $geo_data['isp'];
         $user_params['geo_country'] = $geo_data['country'];
+    }
+    
+    if($_GET['a'] == 1) {
+        dmp($user_params);
+        die();
     }
 
     $user_params['ip'] = $ip;

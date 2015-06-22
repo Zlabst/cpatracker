@@ -79,6 +79,10 @@ function load_from_cache($params) {
     return array($out, $click_params, $campaign_params);
 }
 
+function pos_class($num) {
+    return $num < 0 ? 'negative' : 'positive';
+}
+
 function get_visitors_flow_data($filter = '', $start = 0, $start_s = 0, $limit = 20, $date = 0) {
     if (empty($date) or !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
         $timezone_shift_simple = get_current_timezone_shift(true);

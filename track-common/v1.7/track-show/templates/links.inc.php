@@ -4,7 +4,7 @@ if (!$include_flag) {
 }
 
 global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $cat_type,
-        $delete_cat, $delete_category_info;
+ $delete_cat, $delete_category_info;
 ?><script>
     var last_removed = 0;     // id последнего удалённого офера
     var offer_sale_timer = 0; // таймер проверки на [SUBID] в поле ссылки нового офера
@@ -103,9 +103,9 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
                     $('#linkrow-' + id[i]).hide();
                 }
                 if(id.length > 1) {
-                	$('#remove_alert .alert-text').html(id.length + ' оффер' + numform(id.length, ['', 'а', 'ов']) +  ' были удален' + numform(id.length, ['', 'ы', 'ы']) + ', вы можете их');
+                    $('#remove_alert .alert-text').html(id.length + ' оффер' + numform(id.length, ['', 'а', 'ов']) +  ' были удален' + numform(id.length, ['', 'ы', 'ы']) + ', вы можете их');
                 } else {
-                	$('#remove_alert .alert-text').html('Оффер &laquo;' + offer_name(id[0]) + '&raquo; был удален, вы можете его');
+                    $('#remove_alert .alert-text').html('Оффер &laquo;' + offer_name(id[0]) + '&raquo; был удален, вы можете его');
                 }
             } else {
                 $('#linkrow-' + id).hide();
@@ -202,14 +202,14 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
     // Запуск таймера проверки на [SUBID] в форме добавления офера
     function start_offer_sale_timer() {
     	
-    	if($('#add-offer-url').val().toUpperCase().indexOf('[SUBID]') >= 0) {
-    		if($('#add-offer-url').val().indexOf('[SUBID]') < 0) {
-    			$('#add-offer-url').val($('#add-offer-url').val().replace(/\[subid\]/i, '[SUBID]'));
-    		}
-    		$('#offer_sale').css('display', 'inline');
-    	} else {
-    		$('#offer_sale').css('display', 'none');
-    	}
+        if($('#add-offer-url').val().toUpperCase().indexOf('[SUBID]') >= 0) {
+            if($('#add-offer-url').val().indexOf('[SUBID]') < 0) {
+                $('#add-offer-url').val($('#add-offer-url').val().replace(/\[subid\]/i, '[SUBID]'));
+            }
+            $('#offer_sale').css('display', 'inline');
+        } else {
+            $('#offer_sale').css('display', 'none');
+        }
     	
     	
         //$('#offer_sale').css('display', $('#add-offer-url').val().indexOf('[SUBID]') >= 0 ? 'inline' : 'none');
@@ -217,7 +217,7 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
     }
     
     function offer_name(offer_id) {
-    	return $($('#linkrow-' + offer_id).find('td')[2]).text();
+        return $($('#linkrow-' + offer_id).find('td')[2]).text();
     }
     
     // Показ/сокрытие формы редактирования офера
@@ -228,15 +228,16 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
         $('#add-offer-id').val(offer_id);
         $('#add-offer-form-submit').html('<i class="icon icon-pencil"></i> Редактировать оффер');
        
-       if($('#add_offer_form').css('display') != 'block') {
-           $('#add_offer_form').show();
+        if($('#add_offer_form').css('display') != 'block') {
+            $('#add_offer_form').show();
             start_offer_sale_timer();
         }
         return false;
     }
     
     // Показ/сокрытие формы добавления офера
-    function toggle_offer_add_form() {
+    function toggle_offer_add_form(e) {
+        e.stopPropagation();
         $('#add_offer_form').toggle();
         if($('#add_offer_form').css('display') == 'block') {
             $('#add-offer-name').val('');
@@ -245,9 +246,17 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
             $('#add-offer-name').focus();
             $('#add-offer-form-submit').html('<i class="icon icon-plus"></i> Добавить новый оффер');
             start_offer_sale_timer();
+            $('#add_offer_form').click(function(e){
+                e.stopPropagation();
+            });
+            $('body').click(function(e) {
+                toggle_offer_add_form(e);
+            });
         } else {
             $('#add_offer_form').find('form')[0].reset();
             clearTimeout(offer_sale_timer);
+            
+            $('body').unbind();
         }
         return false;
     }
@@ -276,23 +285,23 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
     }
     
     function numform(n, expr) {
-	    i = n % 100;
-	    if (i >= 5 && i <= 20) {
-			return expr[2];
-	    } else {
-			i %= 10;
-			if (i == 1) {
-			    res = expr[0];
-			} else { 
-				if (i >= 2 && i <= 4) {
-			    	res = expr[1];
-				} else {
-			    	res = expr[2];
-			    }
-		    }
-	    }
-	    return res;
-	}
+        i = n % 100;
+        if (i >= 5 && i <= 20) {
+            return expr[2];
+        } else {
+            i %= 10;
+            if (i == 1) {
+                res = expr[0];
+            } else { 
+                if (i >= 2 && i <= 4) {
+                    res = expr[1];
+                } else {
+                    res = expr[2];
+                }
+            }
+        }
+        return res;
+    }
 	    
     function objk2arr(obj) {
         arr = []
@@ -308,10 +317,9 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
     }
     
     $(function() {
-        
         $('#form_add_offer').bind("keydown", function(event){
             if(event.which == 27) {
-                toggle_offer_add_form();
+                toggle_offer_add_form(event);
             }
             if(event.which == 13) {
                 $('#form_add_offer').submit();
@@ -321,10 +329,10 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
         // Убираем отметки (фикс глюка при обновлении страницы)
         $('.offer_checkbox').iCheck('uncheck');
     	
-    	// Редактирование офера из верхнего меню
+        // Редактирование офера из верхнего меню
         $('.sel-link-edit').click(function(event) {
-        	toggle_offer_edit_form(checked_offers()[0]);
-        	return false;
+            toggle_offer_edit_form(checked_offers()[0]);
+            return false;
         });
     	
         // Показать кнопки действий, если отмечен хотя бы один оффер
@@ -380,7 +388,7 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
 	
         // Отменить добавление офера
         $('#add-offer-form-close').click(function(event) {
-            return toggle_offer_add_form();
+            return toggle_offer_add_form(event);
         });
 	
         // Добавить новый офер
@@ -400,20 +408,19 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
     <a class="alert-link" href="#" onClick="return restore_link();"><strong><u>восстановить</u></strong></a>
 </div>
 <?php
-
 // Была удалена категория
-if(!empty($delete_category_info['id'])) {
-?><div class="alert alert-warning fade in alert-dismissible" role="alert">
-    <button class="close" aria-label="Close" data-dismiss="alert" type="button">
-        <span aria-hidden="true">×</span>
-    </button>
-    <strong>Внимание!</strong> 
-    Категория  &laquo;<strong><?php echo $delete_category_info['category_caption']?></strong>&raquo; была удалена, Вы можете её 
-    <a class="alert-link" href="?page=links&ajax_act=category_edit&is_delete=0&category_id=<?php echo $delete_category_info['id'];?>&csrfkey=<?php echo CSRF_KEY; ?>"><strong><u>восстановить</u></strong></a>
-</div>
-<?php    
+if (!empty($delete_category_info['id'])) {
+    ?><div class="alert alert-warning fade in alert-dismissible" role="alert">
+        <button class="close" aria-label="Close" data-dismiss="alert" type="button">
+            <span aria-hidden="true">×</span>
+        </button>
+        <strong>Внимание!</strong> 
+        Категория  &laquo;<strong><?php echo $delete_category_info['category_caption'] ?></strong>&raquo; была удалена, Вы можете её 
+        <a class="alert-link" href="?page=links&ajax_act=category_edit&is_delete=0&category_id=<?php echo $delete_category_info['id']; ?>&csrfkey=<?php echo CSRF_KEY; ?>"><strong><u>восстановить</u></strong></a>
+    </div>
+    <?php
 }
-    
+
 if ($page_type == 'network') {
     echo "<p align=right><img style='margin-right:15px; display: none;' id='networks_import_ajax' src='img/icons/ajax.gif'><span class='btn' onclick='import_offers_from_network(\"" . _e($category_id) . "\")'>Импорт офферов</span></p>";
     echo "<div class='alert' id='networks_import_status' style='display:none;'>
@@ -463,8 +470,8 @@ if ($page_type == 'network') {
                         foreach ($arr_categories as $cur) {
                             // Отвечать за сок
                             //if ($category_id != $cur['id'] or ($cur['id'] == 0 and $cat_type == 'favorits'))
-                            
-                            echo '<li class="move2cat move2cat_'.$cur['id'].'"><a class="dropdown-link" href="#" onclick="return move_links_to_category(' . $cur['id'] . ');">' . _e($cur['category_caption']) . '</a></li>';
+
+                            echo '<li class="move2cat move2cat_' . $cur['id'] . '"><a class="dropdown-link" href="#" onclick="return move_links_to_category(' . $cur['id'] . ');">' . _e($cur['category_caption']) . '</a></li>';
                         }
                         ?>
                     </ul>
@@ -488,7 +495,7 @@ if ($page_type == 'network') {
                                                         </div>-->
                 <?php if ($cat_type == 'all' or $cat_type == 'favorits') { ?>
                     <div class="btn-group pull-right">
-                        <a class="btn btn-default single-icon" href="#" onclick="return toggle_offer_add_form()"><i class="icon icon-plus"></i></a>
+                        <a class="btn btn-default single-icon" href="#" onclick="return toggle_offer_add_form(event)"><i class="icon icon-plus"></i></a>
                     </div>
                 <?php } ?>
             </div><!--Toolbar-->
@@ -559,12 +566,12 @@ if (count($arr_offers['data']) > 0) {
                 <?php
                 foreach ($arr_offers['data'] as $cur) {
                     //dmp($cur);
-                    
+
                     $tracking_url = str_replace(array('http://', 'https://'), '', $cur['offer_tracking_url']);
                     $total_visits = intval($offers_stats_array[$cur['offer_id']]);
                     ?>
                     <!--row-->
-                    <tr id="linkrow-<?php echo $cur['offer_id']; ?>" category="<?php echo $cur['category_id']?>">
+                    <tr id="linkrow-<?php echo $cur['offer_id']; ?>" category="<?php echo $cur['category_id'] ?>">
                         <td>
                             <form role="form">
                                 <div class="checkbox">
@@ -589,15 +596,15 @@ if (count($arr_offers['data']) > 0) {
                         </td>
                         <td><?php echo _e($cur['offer_name']); ?></td>
                         <td><?php
-                                       if (strstr($tracking_url, '[SUBID]') !== false) {
-                                           echo '<i class="icon icon-one"></i>';
-                                       }
+                                if (strstr($tracking_url, '[SUBID]') !== false) {
+                                    echo '<i class="icon icon-one"></i>';
+                                }
                     ?></td>
                         <td><?php echo $tracking_url; ?></td>
                         <td class="dropdown-cell">
                             <div class="dropdown">
-                                <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                                    <i class="fa fa-angle-down"></i>
+                                <a href="#" class="dropdown-toggle a-default" data-toggle="dropdown" role="button" aria-expanded="false">
+                                    <i class="cpa cpa-bars"></i>
                                 </a>
                                 <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                     <li>

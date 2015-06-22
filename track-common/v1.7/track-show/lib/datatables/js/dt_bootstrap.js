@@ -159,8 +159,9 @@ $(document).ready(function() {
 } );
 
 /* Set the defaults for DataTables initialisation */
+	// <'row'<'col-sm-12'<'pull-right'f><'pull-left'l>r<'clearfix'>>>t<'row'<'col-sm-12'<'pull-left'i><'pull-right'p><'clearfix'>>>
 $.extend( true, $.fn.dataTable.defaults, {
-        "sDom": "<'row'<'col-sm-12'<'pull-right'f><'pull-left'l>r<'clearfix'>>>t<'row'<'col-sm-12'<'pull-left'i><'pull-right'p><'clearfix'>>>",
+        "sDom": "", 
     "sPaginationType": "bs_normal",
     "oLanguage": {
         "sLengthMenu": "Show _MENU_ Rows",
