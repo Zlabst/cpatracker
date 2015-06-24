@@ -16,14 +16,16 @@ define("CSRF_KEY", md5(session_id()));
 $include_flag = true;
 
 // Debug
-ini_set('display_errors', true);
+
 if (_ENABLE_DEBUG && isset($_GET['debug'])) {
-    ini_set('display_startup_errors', true);
-    error_reporting(E_ALL & ~E_NOTICE);
+	//ini_set('display_errors', true);
+    //ini_set('display_startup_errors', true);
+    //error_reporting(E_ALL & ~E_NOTICE);
 } else {
     // Disable PHP warnings
     $_GET['debug'] = 0;
-    error_reporting(E_ERROR | E_PARSE);
+    ini_set('display_errors', false);
+    //error_reporting(E_ERROR | E_PARSE);
 }
 
 // Set allowed for inclusion files list, security measure
@@ -38,7 +40,6 @@ require _TRACK_SHOW_COMMON_PATH . "/functions_general.php";
 
 // Disable excess quoting for unusual hosting environments
 disable_magic_quotes();
-
 
 // Check file with db and server settings
 $settings = check_settings();
