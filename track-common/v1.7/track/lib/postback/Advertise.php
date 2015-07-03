@@ -64,7 +64,7 @@ class Advertise {
 
     function process_conversion($data_all) {
         $this->common->log($this->net, $data_all['post'], $data_all['get']);
-        $data = $data_all['get'];
+        $data = $this->common->request($data_all);
         $data['network'] = $this->net;
 
         if (empty($data['type'])) {

@@ -15,19 +15,16 @@ class ActionPay {
         'i8' => 'source',
         't9' => 'uniqueid'
     );
-    
     private $reg_url = 'http://www.cpatracker.ru/networks/actionpay';
-    
     private $net_text = 'Одна из старейших партнерских сетей рунета. Быстрые выплаты, удобный интерфейс пользователя, отзывчивый саппорт. Основные тематики: магазины одежды, банки и кредиты, инфопродукты, онлайн-игры. Офферы из России, Украины, Казахстана и Молдовы, есть предложения для зарубежного трафика. Прекрасная сеть для долгосрочного сотрудничества.';
-    
 
     function __construct() {
         $this->common = new common($this->params);
     }
 
     function get_links() {
-        $url = tracklink() . '/p.php?n='.$this->net;
-        
+        $url = tracklink() . '/p.php?n=' . $this->net;
+
         foreach ($this->params as $name => $value) {
             $url .= '&' . $name . '={' . $value . '}';
         }
@@ -62,7 +59,7 @@ class ActionPay {
 
     function process_conversion($data_all = array()) {
         $this->common->log($this->net, $data_all['post'], $data_all['get']);
-        $data = $data_all['get'];
+        $data = $this->common->request($data_all);
         $data['network'] = $this->net;
         if (!isset($data['date_add'])) {
             $data['date_add'] = date('Y-m-d H:i:s');
@@ -88,7 +85,7 @@ class ActionPay {
                 $data['status'] = 0;
                 break;
         }
-        
+
         $this->common->process_conversion($data);
     }
 

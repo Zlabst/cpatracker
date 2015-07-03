@@ -57,15 +57,15 @@ class common {
         dmp($data);
 
         if (isset($data['subid']) && $data['subid'] != '') {
-            
-            if(_CLICKS_SPOT_SIZE > 0) {
+
+            if (_CLICKS_SPOT_SIZE > 0) {
                 $tmp = subidtotime($data['subid']);
                 $spot_ids = clicks_spot_get($tmp, $tmp);
                 $table = 'tbl_clicks_s' . current($spot_ids);
             } else {
                 $table = 'tbl_clicks';
             }
-            
+
             //strtotime(
 
             $subid = $data['subid']; // мы скоро обнулим массив data, а subid нам ещё понадобится
@@ -74,7 +74,7 @@ class common {
             // Проверяем есть ли клик с этим SibID
             $q = 'SELECT `id`, `is_sale`, `is_lead` FROM `' . $table . '` WHERE `subid` = "' . mysql_real_escape_string($subid) . '"';
             $r = mysql_query($q) or die($q . '<br />' . mysql_error());
-                        
+
             if (mysql_num_rows($r) > 0) {
                 $f = mysql_fetch_assoc($r);
                 $click_id = $f['id'];
@@ -88,9 +88,9 @@ class common {
 
                 $q = 'UPDATE `' . $table . '` SET `is_sale` = ' . $is_sale . ', `is_lead` = ' . intval($is_lead) . ', `conversion_price_main` = "' . mysql_real_escape_string($data['profit']) . '" WHERE `id` = ' . $click_id;
                 mysql_query($q) or die(mysql_error());
-                
+
                 // Обновление кэша
-                if(_CLICKS_SPOT_SIZE > 0) {
+                if (_CLICKS_SPOT_SIZE > 0) {
                     $time_from = time_edge(strtotime($tmp), 'hour', 'begin');
                     $q = "UPDATE `tbl_clicks_cache_hour` SET `rebuild` = '1' WHERE `time` = '" . date('Y-m-d H:i:s', $time_from) . "'";
                     mysql_query($q);
@@ -201,6 +201,29 @@ class common {
             fwrite($log, '[' . date('Y-m-d H:i:s') . '] [GET] ' . var_export($get));
             fclose($log);
         }
+    }
+
+    /*
+     * https://uniquedesign.teamworkpm.net/tasks/4128742
+     * Если данные есть и в GET и в POST - формируем общий массив по следующему правилу:
+      1. Сохраняем данные из GET
+      2. Заменяем/добавляем данные из POST, если это не приведет к удалению ключей
+     */
+
+    function request($data) {
+        $out = array();
+
+        if (!empty($data['get'])) {
+            $out = $data['get'];
+        }
+
+        if (!empty($data['post'])) {
+            foreach ($data['post'] as $k => $v) {
+                $out[$k] = $v;
+            }
+        }
+
+        return $out;
     }
 
 }

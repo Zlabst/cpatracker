@@ -9,16 +9,14 @@ class SalesDoubler {
         'profit' => 'AFF_REV',
         'status' => 'status',
         'f1' => 'SALE_AMOUNT',
-        't4' => 'CAMPAIGN', 
-        't7' => 'SOURCE', 
+        't4' => 'CAMPAIGN',
+        't7' => 'SOURCE',
         't8' => 'PROMO',
         't9' => 'TID1',
         't10' => 'TID2',
         'i3' => 'CONVERSION_ID',
     );
-    
     private $reg_url = 'http://www.cpatracker.ru/networks/salesdoubler';
-    
     private $net_text = 'Украинская CPA-сеть с проверенными офферам, которые тщательно отбираются и тестируются представителями сети. Собственная платформа, отзывчивая техническая поддержка, много эксклюзивных рекламодателей с хорошей конверсией. Основные тематики: интернет-магазины, образовательные услуги, потребительские кредиты.';
 
     function __construct() {
@@ -26,8 +24,8 @@ class SalesDoubler {
     }
 
     function get_links() {
-        $url = tracklink() . '/p.php?n='.$this->net;
-        
+        $url = tracklink() . '/p.php?n=' . $this->net;
+
         foreach ($this->params as $name => $value) {
             $url .= '&' . $name . '={' . $value . '}';
         }
@@ -62,10 +60,10 @@ class SalesDoubler {
 
     function process_conversion($data_all = array()) {
         $this->common->log($this->net, $data_all['post'], $data_all['get']);
-        $data = $data_all['get'];
+        $data = $this->common->request($data_all);
         $data['network'] = $this->net;
         $data['txt_param20'] = 'uah';
-        
+
         if (!isset($data['date_add'])) {
             $data['date_add'] = date('Y-m-d H:i:s');
         }
@@ -89,7 +87,7 @@ class SalesDoubler {
                 $data['status'] = 0;
                 break;
         }
-        
+
         $this->common->process_conversion($data);
     }
 
