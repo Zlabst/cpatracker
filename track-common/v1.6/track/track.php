@@ -440,6 +440,12 @@ if (!is_dir(_CACHE_PATH . '/clicks')) {
 file_put_contents(_CACHE_PATH . '/clicks/' . '.clicks_' . date('Y-m-d-H-i'), $str, FILE_APPEND | LOCK_EX);
 
 // Redirect
-header("Location: " . $redirect_link);
+if ($_REQUEST['blind'] === '1') {
+    // Meta-refresh
+    echo '<!doctype html><html lang=en><head><meta http-equiv="refresh" content="0;URL=' . $redirect_link . '" /><title>Default</title></head><body></body></html>';
+} else {
+    // Location
+    header("Location: " . $redirect_link);
+}
 exit();
 ?>

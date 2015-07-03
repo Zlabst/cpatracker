@@ -5,7 +5,7 @@ ob_start();
   error_reporting(E_ALL);
   ini_set('display_errors', 1);
   ini_set('display_startup_errors', true);
-*/
+ */
 
 require _TRACK_COMMON_PATH . '/functions.php';
 
@@ -63,12 +63,12 @@ if (strpos($ip, ',') !== false) {
     }
 }
 
-if(!empty($_GET['geo'])) {
-	dmp($_SERVER_TYPE);
-	dmp($_SERVER);
-	dmp($ip);
-	dmp(get_geodata($ip));
-	exit;
+if (!empty($_GET['geo'])) {
+    dmp($_SERVER_TYPE);
+    dmp($_SERVER);
+    dmp($ip);
+    dmp(get_geodata($ip));
+    exit;
 }
 
 $str.=remove_tab($ip) . "\t";
@@ -128,7 +128,7 @@ if (count($arr_rules) == 0) {
                 $cache_use = true;
             }
         }
-        
+
         if (!$cache_use) {
             require _TRACK_LIB_PATH . '/ua-parser/uaparser.php';
 
@@ -165,7 +165,7 @@ if (count($arr_rules) == 0) {
                 $user_params['device'] = '';
                 $user_params['platform'] = '';
             }
-            
+
             // Кладём в кэш
             if ($rds) {
                 $wurfl_cache = array(
@@ -189,8 +189,8 @@ if (count($arr_rules) == 0) {
         $user_params['provider'] = $geo_data['isp'];
         $user_params['geo_country'] = $geo_data['country'];
     }
-    
-    if($_GET['a'] == 1) {
+
+    if ($_GET['a'] == 1) {
         dmp($user_params);
         die();
     }
@@ -400,5 +400,10 @@ if ($write_to_file) {
 
 //echo "Location: " . $redirect_link;
 // Redirect
-header("Location: " . $redirect_link);
-exit();
+if ($_REQUEST['blind'] === '1') {
+    // Meta-refresh
+    echo '<!doctype html><html lang=en><head><meta http-equiv="refresh" content="0;URL=' . $redirect_link . '" /><title>Default</title></head><body></body></html>';
+} else {
+    // Location
+    header("Location: " . $redirect_link);
+}
