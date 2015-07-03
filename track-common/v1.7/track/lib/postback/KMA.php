@@ -50,7 +50,7 @@ class KMA {
     function process_conversion($data_all) {
     	print_r($data_all);
         $this->common->log($this->net, $data_all['post'], $data_all['get']);
-        $data = $data_all['post'];
+        $data = $data_all['get'];
         $data['network'] = $this->net;
         $data['status'] = 1;
         $data['txt_param20'] = 'rub';
