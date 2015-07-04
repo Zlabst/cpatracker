@@ -17,6 +17,8 @@ if($page_content == 'stats-flow.php') {
 	$menu_toggle_class = ' no-sidebar';
 	$bHideLeftSidebar = true;
 }
+
+$is_authorized = !in_array($_REQUEST['page'], $open_pages);
 ?>
 <!-- CPA Tracker, http://www.cpatracker.ru -->
 <!DOCTYPE html>
@@ -36,7 +38,7 @@ if($page_content == 'stats-flow.php') {
             $main_content = '';
         }
 
-        if ($_REQUEST['page'] != 'login') {
+        if ($is_authorized) {
             // Меню сверху
             include _TRACK_SHOW_COMMON_PATH . "/templates/menu-top.inc.php";
             
@@ -49,12 +51,12 @@ if($page_content == 'stats-flow.php') {
         ?>
         
             <?php
-            if ($_REQUEST['page'] != 'login') {
+            if ($is_authorized) {
                 echo load_plugin('payreminder');
                 echo load_plugin('expiry');
             }
             echo $main_content;
-		if ($_REQUEST['page'] != 'login') { ?>
+		if ($is_authorized) { ?>
         	</div>
         <? } ?>
         <?php echo tpx('footer'); ?>

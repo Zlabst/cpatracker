@@ -788,17 +788,56 @@ function check_settings() {
     }
 }
 
-function check_user_credentials($email, $password) {
+function change_password($email, $new_password) {
     $sql = "select id, email, password, salt from tbl_users where email='" . mysql_real_escape_string($email) . "'";
     $result = db_query($sql);
     $row = mysql_fetch_assoc($result);
 
     if ($row['id'] > 0) {
+        $user_password = md5($row['salt'] . $new_password);
+        $sql = "update `tbl_users` set `password` = '" . mysql_real_escape_string($user_password) . "' where id = '" . $row['id'] . "'";
+        return db_query($sql);
+    }
+}
+
+/**
+ * Генерируем хэш для сброса пароля
+ * @param string $email
+ * @return string 
+ */
+function reset_password_hash($email = '') {
+    $sql = "select id, email, password, salt from tbl_users where 1";
+
+    if ($email != '')
+        $sql .= " and email='" . mysql_real_escape_string($email) . "'";
+
+    $result = db_query($sql);
+    $row = mysql_fetch_assoc($result);
+
+    return array('hash' => md5($row['salt'] . $row['password']), 'email' => $row['email']);
+}
+
+function check_user_credentials($email = '', $password = '') {
+
+    $q = "select id, email, password, salt from tbl_users where 1";
+
+    if ($email != '')
+        $q .= " and email='" . mysql_real_escape_string($email) . "'";
+    
+    $rs = db_query($q) or die(mysql_error());
+    
+    // Custom authentication plugin, if any.
+    $admin_login = (load_plugin('admin_login') == 'admin');
+
+    if ($email == '' and !$admin_login)
+        return array(false);
+
+    $row = mysql_fetch_assoc($rs);
+    if ($row['id'] > 0) {
         $user_password = md5($row['salt'] . $password);
-        if ($user_password == $row['password']
-                or load_plugin('admin_login') == 'admin') { // Custom authentication plugin, if any.
+        if ($user_password == $row['password'] or $admin_login) {
             // Password is correct
-            return array(true, $row['password']);
+            return array(true, $row['email'], $row['password']);
         }
     }
     return array(false);
@@ -3180,6 +3219,20 @@ function get_cache_timers() {
 function set_cache_timer($type, $t) {
     $q = "update `tbl_clicks_cache_time` set `" . $type . "` = '" . $t . "'";
     $rs = db_query($q);
+}
+
+/**
+ * Случайная строка произвольной длины (пароли)
+ * @param int $length
+ * @return string 
+ */
+function generate_random_string($length = 10) {
+    $characters = '0123456789abcdefghijklmnopqrstuvwxyz';
+    $out = '';
+    for ($i = 0; $i < $length; $i++) {
+        $out .= $characters[mt_rand(0, strlen($characters) - 1)];
+    }
+    return $out;
 }
 
 ?>

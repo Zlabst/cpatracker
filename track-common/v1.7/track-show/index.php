@@ -30,7 +30,7 @@ if (_ENABLE_DEBUG && isset($_GET['debug'])) {
 
 // Set allowed for inclusion files list, security measure
 $page_sidebar_allowed = array('sidebar-left-links.inc.php', 'sidebar-left-reports.inc.php', 'sidebar-left-rules.inc.php', 'sidebar-left-support.inc.php');
-$page_content_allowed = array('reports.php', 'sales.php', 'stats-flow.php', 'links_page.inc.php', 'rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'import_page_postback.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'register.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php', 'landing_page.inc.php');
+$page_content_allowed = array('reports.php', 'sales.php', 'stats-flow.php', 'links_page.inc.php', 'rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'import_page_postback.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'register.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php', 'landing_page.inc.php', 'reset_password.inc.php', 'lost_password.inc.php');
 
 // Показывать выбор часового пояса в шапке
 $timezone_select = false;
@@ -398,8 +398,11 @@ if ($_REQUEST['ajax_act'] == 'sync_slaves') {
     exit();
 }
 
+// Страницы, на которые можно войти без авторизации
+$open_pages = array('login', 'lostpassword', 'resetpassword');
+
 // Authentification
-if ($_REQUEST['page'] != 'login') {
+if (!in_array($_REQUEST['page'], $open_pages)) {
     $auth_info = is_auth();
 
     if ($auth_info[0] == false) {
@@ -1060,11 +1063,11 @@ switch ($page) {
 
 switch ($_REQUEST['page']) {
     case 'landing':
-
         $page_content = 'landing_page.inc.php';
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
         exit();
         break;
+    
     case 'links':
         $page_sidebar = 'sidebar-left-links.inc.php';
         $page_content = "links_page.inc.php";
@@ -1113,6 +1116,18 @@ switch ($_REQUEST['page']) {
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
         exit();
         break;
+    
+    case 'lostpassword':
+        $page_content = 'lost_password.inc.php';
+        include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
+        exit();
+        break;
+    
+    case 'resetpassword':
+        $page_content = 'reset_password.inc.php';
+        include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
+        exit();
+        break;
 
     case 'support':
         $page_content = 'support_page.inc.php';
@@ -1142,7 +1157,8 @@ switch ($_REQUEST['page']) {
             case 'login':
                 $email = $_REQUEST['email'];
                 $password = $_REQUEST['password'];
-                list ($is_valid, $salted_password) = check_user_credentials($email, $password);
+                
+                list ($is_valid, $email, $salted_password) = check_user_credentials($email, $password);
                 if ($is_valid) {
                     setcookie("cpatracker_auth_email", $email, time() + 3600 * 24 * 365, "/");
                     setcookie("cpatracker_auth_password", $salted_password, time() + 3600 * 24 * 365, "/");
