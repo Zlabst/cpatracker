@@ -691,7 +691,17 @@ function change_password($email, $new_password) {
     if ($row['id'] > 0) {
         $user_password = md5($row['salt'] . $new_password);
         $sql = "update `tbl_users` set `password` = '" . mysql_real_escape_string($user_password) . "' where id = '" . $row['id'] . "'";
-        return db_query($sql);
+        db_query($sql);
+        
+        $update = array(
+            'password' => $user_password,
+            'email' => $email,
+            'salt' => $row['salt'],
+        );
+        
+        load_plugin('change_billing_password_too', '', $update);
+
+        return true;
     }
 }
 
@@ -2472,7 +2482,7 @@ function send2trackers($name, $data) {
     return $out;
 }
 
-function load_plugin($name, $page = '') {
+function load_plugin($name, $page = '', $params = null) {
     $html = '';
     $plugin_path = _TRACK_SHOW_COMMON_PATH . '/../../plugins/' . $name . '/index.php';
     if (file_exists($plugin_path)) {
