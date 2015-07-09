@@ -63,19 +63,20 @@ class common {
 
             $subid = $data['subid']; // мы скоро обнулим массив data, а subid нам ещё понадобится
             $status = $data['status'];
-
+            $click_info = array(); // информация о клике
             //Проверяем есть ли клик с этим SibID
-            $r = mysql_query('SELECT `id`, `is_sale`, `is_lead` FROM `tbl_clicks` WHERE `subid` = "' . mysql_real_escape_string($subid) . '"') or die(mysql_error());
+            $q = 'SELECT * FROM `tbl_clicks` WHERE `subid` = "' . mysql_real_escape_string($subid) . '"';
+            $r = mysql_query($q) or die(mysql_error());
 
             if (mysql_num_rows($r) > 0) {
-                $f = mysql_fetch_assoc($r);
-                $click_id = $f['id'];
+                $click_info = mysql_fetch_assoc($r);
+                $click_id = $click_info['id'];
                 if ($data['profit'] > 0) {
-                    $is_lead = $f['is_lead'] > 0 ? 1 : 0;
+                    $is_lead = $click_info['is_lead'] > 0 ? 1 : 0;
                     $is_sale = 1;
                 } else {
                     $is_lead = 1;
-                    $is_sale = $f['is_sale'] > 0 ? 1 : 0;
+                    $is_sale = $click_info['is_sale'] > 0 ? 1 : 0;
                 }
                 mysql_query('UPDATE `tbl_clicks` SET `is_sale` = ' . $is_sale . ', `is_lead` = ' . intval($is_lead) . ', `conversion_price_main` = "' . mysql_real_escape_string($data['profit']) . '" WHERE `id` = ' . $click_id) or die(mysql_error());
             }
@@ -146,20 +147,30 @@ class common {
                     '[PROFIT_UAH]' => convert_usd_to('uah', $this->source_data['profit']),
                 );
 
+                // Добавляем параметры Postback
                 foreach ($this->source_data as $name => $value) {
-                    $replace['[PARAM_' . $name . ']'] = $value;
+                    $replace['[POSTBACK_' . $name . ']'] = $value;
                 }
+
+                // Добавляем параметры перехода
+                for ($i = 1; $i <= 15; $i++) {
+                    if(!empty($click_info['click_param_name' . $i])) {
+                        $replace['[CLICK_' . $click_info['click_param_name' . $i] . ']'] = $click_info['click_param_value' . $i];
+                    }
+                }
+                
+                dmp($replace);
 
                 while ($r = mysql_fetch_assoc($rs)) {
                     $url = $r['url'];
 
                     // Поставляем все переменные
                     foreach ($replace as $k => $v) {
-                        $url = str_replace($k, $v, $url);
+                        $url = str_ireplace($k, $v, $url);
                     }
 
                     // Cleaning not used []-params
-                    $url = preg_replace('/\=(\[[a-z\_0-9]+\])/i', '=', $url);
+                    $url = preg_replace('/\ = (\[[a-z\_0-9]+\])/i', ' = ', $url);
 
                     $result = send_post_request($url, array());
 
