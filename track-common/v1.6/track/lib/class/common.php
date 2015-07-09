@@ -3,6 +3,7 @@
 class common {
 
     private $params = array();
+    private $source_data = array();
 
     function __construct($params = array()) {
         $this->params = $params;
@@ -87,8 +88,6 @@ class common {
             // Дополнительные поля, которых нет в $params, но которые нам нужны в БД
             $additional_fields = array('date_add', 'txt_status', 'status', 'network', 'type');
 
-
-
             foreach ($data as $name => $value) {
                 if (array_key_exists($name, $this->params) or in_array($name, $additional_fields)) {
                     $upd[$name] = $value;
@@ -127,6 +126,50 @@ class common {
             if ($status == 2) {
                 delete_sale($click_id, $conv_id, 'sale');
                 //return false;
+            }
+
+            // S2S сети
+            // https://uniquedesign.teamworkpm.net/tasks/4160565
+
+            $q = "select * 
+            	from `tbl_adnets` 
+            	where `status` = '0' 
+            	and `name` = '" . mysql_real_escape_string($data['n']) . "'";
+            if ($rs = db_query($q) and mysql_num_rows($rs) > 0) {
+
+                // Подставляем переменные в ссылку
+                $replace = array(
+                    '[SUBID]' => $subid,
+                    '[PROFIT_USD]' => $this->source_data['profit'],
+                    '[PROFIT_RUB]' => convert_usd_to('rub', $this->source_data['profit']),
+                    '[PROFIT_EUR]' => convert_usd_to('eur', $this->source_data['profit']),
+                    '[PROFIT_UAH]' => convert_usd_to('uah', $this->source_data['profit']),
+                );
+
+                foreach ($this->source_data as $name => $value) {
+                    $replace['[PARAM_' . $name . ']'] = $value;
+                }
+
+                while ($r = mysql_fetch_assoc($rs)) {
+                    $url = $r['url'];
+
+                    // Поставляем все переменные
+                    foreach ($replace as $k => $v) {
+                        $url = str_replace($k, $v, $url);
+                    }
+
+                    // Cleaning not used []-params
+                    $url = preg_replace('/\=(\[[a-z\_0-9]+\])/i', '=', $url);
+
+                    $result = send_post_request($url, array());
+
+                    // Сохраняем S2S лог
+                    $str = date('Y-m-d H:i:s') . ' SubID: ' . $subid . "\nURL:" . $url . "\Result:" . $result[1] . "\n\n";
+
+                    dmp(htmlspecialchars($str));
+
+                    file_put_contents(_CACHE_PATH . '/log/' . '.s2s_' . date('Y-m-d'), $str, FILE_APPEND | LOCK_EX);
+                }
             }
 
             // Пишем postback логи
@@ -193,19 +236,19 @@ class common {
      */
 
     function request($data) {
-        $out = array();
+        $this->source_data = array();
 
         if (!empty($data['get'])) {
-            $out = $data['get'];
+            $this->source_data = $data['get'];
         }
 
         if (!empty($data['post'])) {
             foreach ($data['post'] as $k => $v) {
-                $out[$k] = $v;
+                $this->source_data[$k] = $v;
             }
         }
 
-        return $out;
+        return $this->source_data;
     }
 
 }

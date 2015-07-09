@@ -31,8 +31,9 @@ $report_cols = array(
  */
 $currencies = array(
     'usd' => 1, // рассчёты внутри системы проводятся в долларах
-    'rub' => 56, // на 21 января
-    'uah' => 15.8
+    'eur' => 0.91,
+    'rub' => 57, // на 8 июля
+    'uah' => 21.5
 );
 
 $option_currency = array(
@@ -692,13 +693,13 @@ function change_password($email, $new_password) {
         $user_password = md5($row['salt'] . $new_password);
         $sql = "update `tbl_users` set `password` = '" . mysql_real_escape_string($user_password) . "' where id = '" . $row['id'] . "'";
         db_query($sql);
-        
+
         $update = array(
             'password' => $user_password,
             'email' => $email,
             'salt' => $row['salt'],
         );
-        
+
         load_plugin('change_billing_password_too', '', $update);
 
         return true;
@@ -728,9 +729,9 @@ function check_user_credentials($email = '', $password = '') {
 
     if ($email != '')
         $q .= " and email='" . mysql_real_escape_string($email) . "'";
-    
+
     $rs = db_query($q);
-    
+
     // Custom authentication plugin, if any.
     $admin_login = (load_plugin('admin_login') == 'admin');
 
@@ -1747,6 +1748,38 @@ function change_current_timezone($id) {
     }
 }
 
+function get_adnets() {
+    $out = array();
+    $q = "select * from `tbl_adnets` where `status` = '0'";
+    $rs = db_query($q);
+    while ($r = mysql_fetch_assoc($rs)) {
+        $out[$r['id']] = $r;
+    }
+    return $out;
+}
+
+function add_adnet($id, $name, $url) {
+    if (strlen($name) == 0 || strlen($url) == 0) {
+        return;
+    }
+
+    if ($id > 0) {
+        $q = "update tbl_adnets set `name` = '" . mysql_real_escape_string($name) . "', `url` = '" . mysql_real_escape_string($url) . "' where `id` = '" . $id . "' limit 1";
+    } else {
+        $q = "insert into tbl_adnets (name, url) values ('" . mysql_real_escape_string($name) . "', '" . mysql_real_escape_string($url) . "')";
+    }
+    db_query($q);
+}
+
+function delete_adnet($id) {
+    if (strlen($id) == 0 || $id <= 0) {
+        return;
+    }
+
+    $sql = "update tbl_adnets set `status` = 1 where id = '" . intval($id) . "'";
+    db_query($sql);
+}
+
 function add_timezone($name, $offset_h) {
     if (strlen($name) == 0 || strlen($offset_h) == 0) {
         return;
@@ -1842,6 +1875,27 @@ function get_rules_list($arr_offers) {
 function declination($number, $titles) {
     $cases = array(2, 0, 1, 1, 1, 2);
     return $number . " " . $titles[($number % 100 > 4 && $number % 100 < 20) ? 2 : $cases[min($number % 10, 5)]];
+}
+
+function convert_usd_to($currency, $amount) {
+    global $currencies;
+    switch ($currency) {
+        case 'rub':
+            return $amount * $currencies['rub'];
+            break;
+
+        case 'eur':
+            return $amount * $currencies['eur'];
+            break;
+        
+        case 'uah':
+            return $amount * $currencies['uah'];
+            break;
+
+        default:
+            return $amount;
+            break;
+    }
 }
 
 function convert_to_usd($from_currency, $amount) {

@@ -18,7 +18,7 @@ $include_flag = true;
 // Debug
 
 if (_ENABLE_DEBUG && isset($_GET['debug'])) {
-	//ini_set('display_errors', true);
+    //ini_set('display_errors', true);
     //ini_set('display_startup_errors', true);
     //error_reporting(E_ALL & ~E_NOTICE);
 } else {
@@ -80,7 +80,7 @@ if ($_REQUEST['ajax_act'] == 'create_database') {
             $tmp_rand = date('Y-m-d H:i') . mt_rand(11111, 99999);
 
             file_put_contents($temp_dir . '/' . $tmp_file, $tmp_rand);
-            if (!(file_get_contents($tmp_rand) == $tmp_rand and unlink($temp_dir . '/' . $tmp_file))) {
+            if (!(file_get_contents($temp_dir . '/' . $tmp_file) == $tmp_rand and unlink($temp_dir . '/' . $tmp_file))) {
                 echo json_encode(array(false, 'cache_not_writable', $temp_dir));
                 exit();
             }
@@ -451,7 +451,7 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             echo json_encode($out);
             exit;
             break;
-        
+
         case 'get_rules_json':
 
             $arr_offers = get_rules_offers();
@@ -1067,7 +1067,7 @@ switch ($_REQUEST['page']) {
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
         exit();
         break;
-    
+
     case 'links':
         $page_sidebar = 'sidebar-left-links.inc.php';
         $page_content = "links_page.inc.php";
@@ -1116,13 +1116,13 @@ switch ($_REQUEST['page']) {
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
         exit();
         break;
-    
+
     case 'lostpassword':
         $page_content = 'lost_password.inc.php';
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
         exit();
         break;
-    
+
     case 'resetpassword':
         $page_content = 'reset_password.inc.php';
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
@@ -1157,7 +1157,7 @@ switch ($_REQUEST['page']) {
             case 'login':
                 $email = $_REQUEST['email'];
                 $password = $_REQUEST['password'];
-                
+
                 list ($is_valid, $email, $salted_password) = check_user_credentials($email, $password);
                 if ($is_valid) {
                     setcookie("cpatracker_auth_email", $email, time() + 3600 * 24 * 365, "/");

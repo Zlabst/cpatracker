@@ -3,7 +3,7 @@
 // Turn on output buffering to be able to send headers anytime
 ob_start();
 
-header('Content-Type: text/html; charset=utf-8'); 
+header('Content-Type: text/html; charset=utf-8');
 
 // Increase execution time, useful for the slow DB queries
 set_time_limit(0);
@@ -27,7 +27,7 @@ if (_ENABLE_DEBUG && isset($_GET['debug'])) {
 
 // Set allowed for inclusion files list, security measure
 $page_sidebar_allowed = array('sidebar-left-links.inc.php', 'sidebar-left-reports.inc.php');
-$page_content_allowed = array('reports.php', 'sales.php', 'stats-flow.php', 'links_page.inc.php', 'rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'import_page_postback.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'register.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php', 'landing_page.inc.php', 'reset_password.inc.php', 'lost_password.inc.php');
+$page_content_allowed = array('reports.php', 'sales.php', 'stats-flow.php', 'links_page.inc.php', 'rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'import_page_postback.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'register.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php', 'landing_page.inc.php', 'reset_password.inc.php', 'lost_password.inc.php', 'adnets_page.inc.php');
 
 // Include main functions
 require _TRACK_SHOW_COMMON_PATH . "/functions_general.php";
@@ -52,135 +52,134 @@ if ($_REQUEST['ajax_act'] == 'create_database') {
             break;
 
         case 'first_run':
-        	
-        	// Check file system
-			
-                // We have .htaccess files
-			
-        	if(!file_exists(dirname(__FILE__) . '/.htaccess')
-        		or !file_exists(dirname(__FILE__) . '/../track/.htaccess')
-        	) {
-        		echo json_encode(array(false, 'htaccess_not_found'));
+
+            // Check file system
+            // We have .htaccess files
+
+            if (!file_exists(dirname(__FILE__) . '/.htaccess')
+                    or !file_exists(dirname(__FILE__) . '/../track/.htaccess')
+            ) {
+                echo json_encode(array(false, 'htaccess_not_found'));
                 exit();
-        	}
-        	
-        	// tmp file for WURFL
-        	
-                $temp_dir = ini_get('upload_tmp_dir');
-                if (!$temp_dir)
-                    $temp_dir = '/tmp';
-                $temp_dir = realpath($temp_dir);
+            }
 
-                // tmp dir is writable
+            // tmp file for WURFL
 
-                $tmp_file = 'cpa_tmp.test';
-                $tmp_rand = date('Y-m-d H:i') . mt_rand(11111, 99999);
+            $temp_dir = ini_get('upload_tmp_dir');
+            if (!$temp_dir)
+                $temp_dir = '/tmp';
+            $temp_dir = realpath($temp_dir);
 
-                file_put_contents($temp_dir . '/' . $tmp_file, $tmp_rand);
-                if(!(file_get_contents($tmp_rand) == $tmp_rand and unlink($temp_dir . '/' . $tmp_file))) {
-                    echo json_encode(array(false, 'cache_not_writable', $temp_dir));
-                    exit();
-                }
+            // tmp dir is writable
 
-                // tmp file for WURFL
+            $tmp_file = 'cpa_tmp.test';
+            $tmp_rand = date('Y-m-d H:i') . mt_rand(11111, 99999);
 
-                $wurfl_tmp_files = array('wurfl.xml', 'wurfl_builder.lock');
+            file_put_contents($temp_dir . '/' . $tmp_file, $tmp_rand);
+            if (!(file_get_contents($temp_dir . '/' . $tmp_file) == $tmp_rand and unlink($temp_dir . '/' . $tmp_file))) {
+                echo json_encode(array(false, 'cache_not_writable', $temp_dir));
+                exit();
+            }
 
-                foreach ($wurfl_tmp_files as $tmp_file) {
-                    $wbase = $temp_dir . '/' . $tmp_file;
+            // tmp file for WURFL
+
+            $wurfl_tmp_files = array('wurfl.xml', 'wurfl_builder.lock');
+
+            foreach ($wurfl_tmp_files as $tmp_file) {
+                $wbase = $temp_dir . '/' . $tmp_file;
+                if (file_exists($wbase)) {
+                    unlink($wbase); // Попытка удалить
                     if (file_exists($wbase)) {
-                        unlink($wbase); // Попытка удалить
+                        rename($wbase, $wbase . '.old'); // Попытка переименовать
                         if (file_exists($wbase)) {
-                            rename($wbase, $wbase . '.old'); // Попытка переименовать
-                            if (file_exists($wbase)) {
-                                echo json_encode(array(false, 'wurfl_not_writable', $wbase));
-                                exit();
-                            }
+                            echo json_encode(array(false, 'wurfl_not_writable', $wbase));
+                            exit();
                         }
                     }
                 }
+            }
 
-                // Check datababase
+            // Check datababase
 
-                $login = $_REQUEST['login'];
-                $password = $_REQUEST['password'];
-                $dbname = $_REQUEST['dbname'];
-                $dbserver = $_REQUEST['dbserver'];
-                $server_type = $_REQUEST['server_type'];
+            $login = $_REQUEST['login'];
+            $password = $_REQUEST['password'];
+            $dbname = $_REQUEST['dbname'];
+            $dbserver = $_REQUEST['dbserver'];
+            $server_type = $_REQUEST['server_type'];
 
-                // Trying to connect
-                $connection = mysql_connect($dbserver, $login, $password);
-                if (!$connection) {
-                    echo json_encode(array(false, 'db_error', mysql_error()));
-                    exit();
-                }
+            // Trying to connect
+            $connection = mysql_connect($dbserver, $login, $password);
+            if (!$connection) {
+                echo json_encode(array(false, 'db_error', mysql_error()));
+                exit();
+            }
 
-                // Switch to database
-                $db_selected = mysql_select_db($dbname, $connection);
-                if (!$db_selected) {
-                    echo json_encode(array(false, 'db_not_found', $dbname));
-                    exit();
-                }
+            // Switch to database
+            $db_selected = mysql_select_db($dbname, $connection);
+            if (!$db_selected) {
+                echo json_encode(array(false, 'db_not_found', $dbname));
+                exit();
+            }
 
-                // Try create table
-                $access_ok = false;
+            // Try create table
+            $access_ok = false;
 
-                $q = "CREATE TABLE IF NOT EXISTS `tbl_users_test` ("
-                        . "`id` int(11) NOT NULL AUTO_INCREMENT,"
-                        . "`email` varchar(255) CHARACTER SET utf8 NOT NULL,"
-                        . "`password` varchar(255) CHARACTER SET utf8 NOT NULL,"
-                        . "`salt` varchar(255) NOT NULL,"
-                        . "PRIMARY KEY (`id`)"
-                        . ") ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
+            $q = "CREATE TABLE IF NOT EXISTS `tbl_users_test` ("
+                    . "`id` int(11) NOT NULL AUTO_INCREMENT,"
+                    . "`email` varchar(255) CHARACTER SET utf8 NOT NULL,"
+                    . "`password` varchar(255) CHARACTER SET utf8 NOT NULL,"
+                    . "`salt` varchar(255) NOT NULL,"
+                    . "PRIMARY KEY (`id`)"
+                    . ") ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
+            if (mysql_query($q)) {
+                $q = "INSERT INTO `tbl_users_test` (`email`, `password`) VALUES ('email', 'password')";
                 if (mysql_query($q)) {
-                    $q = "INSERT INTO `tbl_users_test` (`email`, `password`) VALUES ('email', 'password')";
-                    if (mysql_query($q)) {
-                        $id = mysql_insert_id();
-                        if ($id > 0) {
-                            $q = "DELETE FROM `tbl_users_test` WHERE `id` = '" . $id . "'";
-                            if (mysql_query($q)) {
-                                $ar = mysql_affected_rows();
-                                if ($ar > 0) {
-                                    $q = "DROP TABLE `tbl_users_test`";
-                                    if (mysql_query($q)) {
-                                        $access_ok = true;
-                                    }
+                    $id = mysql_insert_id();
+                    if ($id > 0) {
+                        $q = "DELETE FROM `tbl_users_test` WHERE `id` = '" . $id . "'";
+                        if (mysql_query($q)) {
+                            $ar = mysql_affected_rows();
+                            if ($ar > 0) {
+                                $q = "DROP TABLE `tbl_users_test`";
+                                if (mysql_query($q)) {
+                                    $access_ok = true;
                                 }
                             }
                         }
                     }
                 }
+            }
 
-                if (!$access_ok) {
-                    echo json_encode(array(false, 'table_not_create', $dbname));
-                    exit();
-                }
-
-                // Create tables
-                if (!is_file(_TRACK_SHOW_COMMON_PATH . '/database.php')) {
-                    echo json_encode(array(false, 'schema_not_found', $dbname));
-                    exit();
-                }
-
-                // Save settings in file
-                $settings_file = $settings[2];
-                file_put_contents($settings_file, '<?php exit(); ?>' . serialize(array('login' => $login, 'password' => $password, 'dbname' => $dbname, 'dbserver' => $dbserver, 'server_type' => $server_type)));
-                chmod($settings_file, 0777);
-
-                // Create tables and run mysql updates
-                require_once (_TRACK_SHOW_COMMON_PATH . '/database.php');
-                foreach ($arr_sql as $sql) {
-                    mysql_query($sql);
-                }
-
-                // Create first run marker for crontab
-                create_crontab_markers();
-
-                // Installation successful
-                echo json_encode(array(true, _HTML_ROOT_PATH));
-
+            if (!$access_ok) {
+                echo json_encode(array(false, 'table_not_create', $dbname));
                 exit();
-                break;
+            }
+
+            // Create tables
+            if (!is_file(_TRACK_SHOW_COMMON_PATH . '/database.php')) {
+                echo json_encode(array(false, 'schema_not_found', $dbname));
+                exit();
+            }
+
+            // Save settings in file
+            $settings_file = $settings[2];
+            file_put_contents($settings_file, '<?php exit(); ?>' . serialize(array('login' => $login, 'password' => $password, 'dbname' => $dbname, 'dbserver' => $dbserver, 'server_type' => $server_type)));
+            chmod($settings_file, 0777);
+
+            // Create tables and run mysql updates
+            require_once (_TRACK_SHOW_COMMON_PATH . '/database.php');
+            foreach ($arr_sql as $sql) {
+                mysql_query($sql);
+            }
+
+            // Create first run marker for crontab
+            create_crontab_markers();
+
+            // Installation successful
+            echo json_encode(array(true, _HTML_ROOT_PATH));
+
+            exit();
+            break;
     }
 }
 
@@ -554,7 +553,7 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             $row = mysql_fetch_assoc($rs);
 
             if ($row['id'] > 0) {
-;
+                ;
             } else {
                 $sql = "insert into tbl_rules (link_name, date_add) values ('" . mysql_real_escape_string($rule_name) . "', NOW())";
                 mysql_query($sql);
@@ -732,6 +731,12 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             exit();
             break;
 
+        case 'add_adnet':
+            $id = rq('adnet_id', 2);
+            add_adnet($id, $_REQUEST['name'], $_REQUEST['url']);
+            exit();
+            break;
+
         case 'add_timezone':
             add_timezone($_REQUEST['timezone_name'], $_REQUEST['timezone_offset_h']);
             exit();
@@ -739,6 +744,11 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
 
         case 'edit_timezone':
             update_timezone($_REQUEST['timezone_name'], $_REQUEST['timezone_offset_h'], $_REQUEST['timezone_id']);
+            exit();
+            break;
+
+        case 'delete_adnet':
+            delete_adnet($_REQUEST['id']);
             exit();
             break;
 
@@ -810,6 +820,7 @@ switch ($page) {
             'import' => array('link' => 'index.php?page=import', 'icon' => 'icon-shopping-cart', 'caption' => 'Добавление продаж'),
             'costs' => array('link' => 'index.php?page=costs', 'icon' => 'icon-credit-card', 'caption' => 'Добавление затрат'),
             'postback' => array('link' => 'index.php?page=postback', 'icon' => 'icon-cogs', 'caption' => 'Интеграция с CPA сетями'),
+            'adnets' => array('link' => 'index.php?page=adnets', 'icon' => 'icon-cogs', 'caption' => 'Интеграция с рекламными сетями'),
             //'pixel'    => array('link'=>'index.php?page=pixel', 'icon'=>'icon-cogs', 'caption'=>'Пиксель отслеживания'),
             'landing' => array('link' => 'index.php?page=landing', 'icon' => 'icon-cogs', 'caption' => 'Целевые страницы'),
         );
@@ -866,6 +877,12 @@ switch ($_REQUEST['page']) {
         exit();
         break;
 
+    case 'adnets':
+        $page_content = 'adnets_page.inc.php';
+        include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
+        exit();
+        break;
+
     case 'postback':
         $page_content = 'import_page_postback.inc.php';
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
@@ -877,13 +894,13 @@ switch ($_REQUEST['page']) {
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
         exit();
         break;
-    
+
     case 'lostpassword':
         $page_content = 'lost_password.inc.php';
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
         exit();
         break;
-    
+
     case 'resetpassword':
         $page_content = 'reset_password.inc.php';
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
