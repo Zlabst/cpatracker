@@ -68,7 +68,6 @@ if ($_REQUEST['ajax_act'] == 'create_database') {
                 exit();
             }
 
-
             $temp_dir = ini_get('upload_tmp_dir');
             if (!$temp_dir)
                 $temp_dir = '/tmp';

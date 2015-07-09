@@ -814,6 +814,7 @@ switch ($page) {
     case 'import':
     case 'costs':
     case 'postback':
+    case 'adnets':
     case 'pixel':
     case 'landing':
         $arr_left_menu = array(
