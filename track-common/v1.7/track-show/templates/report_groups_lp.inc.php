@@ -45,7 +45,8 @@ function glink($v, $li = false, $name = '') {
         echo glink('source_name') .
         glink('campaign_name') .
         glink('ads_name') .
-        glink('referer');
+        glink('referer') .
+        glink('rule_id');
         ?>
     </div>
 
@@ -127,7 +128,7 @@ function glink($v, $li = false, $name = '') {
         }
     }
 
-if ($campaign_params_html != '' or $click_params_html != '') {
+    if ($campaign_params_html != '' or $click_params_html != '') {
         ?>
         <div class="btn-group no-margin">
             <div class="dropdown">

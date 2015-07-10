@@ -18,24 +18,24 @@ function load_from_cache($params) {
     if (strlen($params['to']) == 10) {
         $params['to'] .= ' 23:59:59';
     }
-    
+
     $click_params = array();
     $campaign_params = array();
-    
+
     $cl_params = 0;
 
     $q = "select `type`, `id`, CONVERT_TZ(`time`, '+00:00', '" . _str($timezone_shift) . "') as `time`, `price`, `unique`, `income`, `direct`, `sale`, `lead`, `act`, `out`, `cnt`, `sale_lead`, `params`
         from `tbl_clicks_cache_hour` 
         where `type` = '" . $params['group_by'] . "' and
         CONVERT_TZ(`time`, '+00:00', '" . _str($timezone_shift) . "') BETWEEN STR_TO_DATE('" . $params['from'] . "', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('" . $params['to'] . "', '%Y-%m-%d %H:%i:%s')" . $where . (empty($params['where']) ? '' : " and " . $params['where'] ) . " ";
-    
+
     if ($rs = db_query($q) and mysql_num_rows($rs) > 0) {
         while ($r = mysql_fetch_assoc($rs)) {
             $r['name'] = param_val($r['id'], $params['group_by']);
             $tmp = $r;
-            
+
             $cl_params = $cl_params | $r['params'];
-            
+
             unset($tmp['time'], $tmp['type']);
 
             if ($params['part'] == 'all') {
@@ -59,23 +59,23 @@ function load_from_cache($params) {
                 }
             }
         }
-        
+
         // переводим параметры в 000011101011
-        $cl_params = decbin($cl_params); 
-        
-        if(strlen($cl_params) < 20) {
+        $cl_params = decbin($cl_params);
+
+        if (strlen($cl_params) < 20) {
             $cl_params = str_repeat('0', 20 - strlen($cl_params)) . $cl_params;
         }
-        
-        for($i = 1; $i <= 20; $i++) {
-            if($i <= 15) {
-                $click_params[$i] = $cl_params[$i-1];
+
+        for ($i = 1; $i <= 20; $i++) {
+            if ($i <= 15) {
+                $click_params[$i] = $cl_params[$i - 1];
             } else {
-                $campaign_params[$i-15] = $cl_params[$i-1];
+                $campaign_params[$i - 15] = $cl_params[$i - 1];
             }
-        }         
+        }
     }
-    
+
     return array($out, $click_params, $campaign_params);
 }
 
@@ -362,7 +362,7 @@ function get_clicks_rows($params, $start = 0, $start_s = 0, $limit = 0, $campaig
             $more = 1;
         }
     }
-    
+
     return array($more, $start, $start_s, $rows, $campaign_params, $click_params);
 }
 
@@ -514,34 +514,34 @@ function get_clicks_report_grouped2($params) {
     // Используем кэш
     if ($params['cache'] == 1) {
         $load_live_data = 0; // будем ли мы подгружать живые данные
-        
+
         /*
-        if ($params['part'] == 'hour') {
-            if ($params['from'] == date('Y-m-d')) {
-                
-            }
-            //$load_live_data = 0;
-            //dmp($params);
+          if ($params['part'] == 'hour') {
+          if ($params['from'] == date('Y-m-d')) {
 
-            $data = load_from_cache($params);
-            //dmp($data);
-            //die();
-        } elseif ($params['part'] == 'day') {
-            //die('123');
-            //$load_live_data = 0;
-            $data = load_from_cache($params);
+          }
+          //$load_live_data = 0;
+          //dmp($params);
 
-            if ($_GET['debug']) {
-                dmp($data);
-            }
-        }
+          $data = load_from_cache($params);
+          //dmp($data);
+          //die();
+          } elseif ($params['part'] == 'day') {
+          //die('123');
+          //$load_live_data = 0;
+          $data = load_from_cache($params);
+
+          if ($_GET['debug']) {
+          dmp($data);
+          }
+          }
          * 
          */
         list($data, $click_params, $campaign_params) = load_from_cache($params);
         if ($_GET['debug']) {
             dmp($data);
         }
-        
+
         $load_live_data = 0;
     } else {
         $load_live_data = 1;
@@ -741,7 +741,8 @@ function get_clicks_report_grouped2($params) {
                     if ($r['sale_lead'] > 2)
                         $r['sale_lead'] = 2; // Не более одного на переход
 
-                    // Подчиненные связи будут формироваться не по parent_id перехода,
+                        
+// Подчиненные связи будут формироваться не по parent_id перехода,
                     // а через другие параметры этого перехода (например через источники, с которых пришли)
                     // Лэндинг 1
                     // ├ Источник 1
@@ -766,17 +767,17 @@ function get_clicks_report_grouped2($params) {
                                 stat_inc($data[$k]['sub'][$k1][$timekey], $r, $k1, $r['name']);
                             }
                         } else {
-                        	// Будем считать исходящий только если у этого родителя его ещё нет
-	                    	$r['cnt'] = isset($parent_clicks[$r['parent_id']]) ? 0 : 1;
-	                    	$parent_clicks[$r['parent_id']] = 1;
-	                    	
-	                    	// Отмечаем исходящий для лэндинга
-		                    if ($r['cnt']) {
-		                    	$parent_row = parent_row($r['parent_id']);
-	                    		$k0 = param_key($parent_row, $params['group_by']);
-		                    	
-		                        $data[$k0]['out'] += 1;
-		                    }
+                            // Будем считать исходящий только если у этого родителя его ещё нет
+                            $r['cnt'] = isset($parent_clicks[$r['parent_id']]) ? 0 : 1;
+                            $parent_clicks[$r['parent_id']] = 1;
+
+                            // Отмечаем исходящий для лэндинга
+                            if ($r['cnt']) {
+                                $parent_row = parent_row($r['parent_id']);
+                                $k0 = param_key($parent_row, $params['group_by']);
+
+                                $data[$k0]['out'] += 1;
+                            }
                             continue;
                         }
                     }
@@ -874,7 +875,6 @@ function get_clicks_report_grouped2($params) {
         if ($_GET['debug']) {
             dmp($data);
         }
-        
     }
 
     // ----------------------------------------
@@ -1054,7 +1054,7 @@ function get_clicks_report_grouped2($params) {
             $data[-1] = $other;
         }
     }
-    
+
     //dmp($click_params);
     //dmp($campaign_params);
 
@@ -1291,6 +1291,7 @@ function type_subpanel() {
 // Литералы для группировок
 $group_types = array(
     'out_id' => array('Оффер', 'Без оффера', 'Офферы'),
+    'rule_id' => array('Ссылка', 'Без ссылки', 'Ссылки'),
     'source_name' => array('Источник', 'Не определён', 'Источники'),
     'campaign_name' => array('Кампания', 'Не определена', 'Кампании'),
     'ads_name' => array('Объявление', 'Не определено', 'Объявления'),
@@ -1718,7 +1719,8 @@ function stat_inc(&$arr, $r, $id, $name) {
 // Складываем дневную статистику для подведения итогов по строкам и колонкам
 function stat_inc_total($cur_date, $row) {
     global $row_total_data, $column_total_data, $table_total_data;
-    if(empty($row)) return false;
+    if (empty($row))
+        return false;
     foreach ($row as $k => $v) {
         if (is_array($v))
             continue;
@@ -1741,6 +1743,7 @@ function stat_inc_total($cur_date, $row) {
 
 function param_val($row, $type, $source_name = '') {
     global $group_types, $source_config;
+    static $outs = array();
     static $links = array();
 
     $name = '';
@@ -1773,11 +1776,17 @@ function param_val($row, $type, $source_name = '') {
                 $name = is_array($row) ? ($row['campaign_name'] . '-' . $row['ads_name']) : $row;
             }
         } elseif ($type == 'out_id') {
-
+            if (isset($outs[$v])) {
+                $name = $outs[$v];
+            } else {
+                $name = current(get_out_description($v));
+                $outs[$v] = $name;
+            }
+        } elseif ($type == 'rule_id') {
             if (isset($links[$v])) {
                 $name = $links[$v];
             } else {
-                $name = current(get_out_description($v));
+                $name = get_rule_description($v);
                 $links[$v] = $name;
             }
         } else {

@@ -47,7 +47,8 @@ if (!function_exists('glink')) {
         glink('source_name') .
         glink('campaign_name') .
         glink('ads_name') .
-        glink('referer');
+        glink('referer') . 
+        glink('rule_id');
         ?>
     </div>
 

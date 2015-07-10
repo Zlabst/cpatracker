@@ -42,10 +42,10 @@ function get_visitors_flow_data($filter = '', $offset = 0, $limit = 20, $date = 
                 break;
         }
     }
-	
-	
-	//$date2 = date('Y-m-d', strtotime($date) - (12 * 3600));
-	//tbl_clicks.date_add > STR_TO_DATE('" . $date2 . " 00:00:00', '%Y-%m-%d %H:%i:%s')
+
+
+    //$date2 = date('Y-m-d', strtotime($date) - (12 * 3600));
+    //tbl_clicks.date_add > STR_TO_DATE('" . $date2 . " 00:00:00', '%Y-%m-%d %H:%i:%s')
     $sql = "select SQL_CALC_FOUND_ROWS *, date_format(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '" . _str($timezone_shift) . "'), '%d.%m.%Y %H:%i') as dt, timediff(NOW(), tbl_clicks.date_add) as td from tbl_clicks 
 		where 1 
 		{$filter_str}
@@ -138,8 +138,8 @@ function get_clicks_rows($params, $start = 0, $limit = 0, $campaign_params, $cli
     } else {
         $select = '';
     }
-    
-    if($timezone_shift == '+00:00') {
+
+    if ($timezone_shift == '+00:00') {
         $time_add_fld = 'date_add';
     } else {
         $time_add_fld = "CONVERT_TZ(t1.`date_add`, '+00:00', '" . _str($timezone_shift) . "')";
@@ -152,7 +152,7 @@ function get_clicks_rows($params, $start = 0, $limit = 0, $campaign_params, $cli
 			1 as `cnt`,
 			t1.id,
 			t1.source_name,
-			UNIX_TIMESTAMP(".$time_add_fld.") as `time_add`,
+			UNIX_TIMESTAMP(" . $time_add_fld . ") as `time_add`,
 			t1.rule_id,
 			t1.out_id,
 			t1.parent_id,
@@ -165,27 +165,27 @@ function get_clicks_rows($params, $start = 0, $limit = 0, $campaign_params, $cli
 			t1.is_parent,
 			t1.is_connected " . $select . "
 			FROM `tbl_clicks` t1
-			WHERE ".$time_add_fld." BETWEEN STR_TO_DATE('" . $params['from'] . " 00:00:00', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('" . $params['to'] . " 23:59:59', '%Y-%m-%d %H:%i:%s')" . $where . (empty($params['where']) ? '' : " and " . $params['where'] ) . "
+			WHERE " . $time_add_fld . " BETWEEN STR_TO_DATE('" . $params['from'] . " 00:00:00', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('" . $params['to'] . " 23:59:59', '%Y-%m-%d %H:%i:%s')" . $where . (empty($params['where']) ? '' : " and " . $params['where'] ) . "
 			ORDER BY t1.id ASC
 			LIMIT $start, $limit";
 
     //echo $q;
     /*
-	  if($_SERVER['REMOTE_ADDR'] == '178.121.200.233') {
-              dmp($params);
-            echo $q . '<br /><br />';
-	  }
-          */
+      if($_SERVER['REMOTE_ADDR'] == '178.121.200.233') {
+      dmp($params);
+      echo $q . '<br /><br />';
+      }
+     */
     $rs = db_query($q);
 
     $q = "SELECT FOUND_ROWS() as `cnt`";
     $total = ap(mysql_fetch_assoc(db_query($q)), 'cnt');
-  
-  /*  
-    if($_SERVER['REMOTE_ADDR'] == '178.121.200.233') {
-      	echo $total . '<br /><br />';
-      } 
-*/
+
+    /*
+      if($_SERVER['REMOTE_ADDR'] == '178.121.200.233') {
+      echo $total . '<br /><br />';
+      }
+     */
     while ($r = mysql_fetch_assoc($rs)) {
         $rows[$r['id']] = $r;
 
@@ -351,7 +351,7 @@ function get_clicks_report_grouped2($params) {
 
         // Получаем порцию данных
         list($total, $rows, $campaign_params, $click_params) = get_clicks_rows($params, $start, $limit, $campaign_params, $click_params);
-        
+
         // Режим обработки для Landing Page
         // группируем всю информацию с подчинённых переходов на родительские
         if ($params['mode'] == 'lp' or $params['mode'] == '') {
@@ -364,7 +364,7 @@ function get_clicks_report_grouped2($params) {
                     // не будем считать более одного исходящего с лэндинга
                     $out_calc = isset($parent_clicks[$r['parent_id']]) ? 0 : 1;
                     $parent_clicks[$r['parent_id']] = 1;
-                    
+
                     // исходящие
                     $rows[$r['parent_id']]['out'] += $out_calc;
                 }
@@ -543,8 +543,9 @@ function get_clicks_report_grouped2($params) {
 
 
 
+
                     
-				// Подчиненные связи будут формироваться не по parent_id перехода,
+// Подчиненные связи будут формироваться не по parent_id перехода,
                 // а через другие параметры этого перехода (например через источники, с которых пришли)
                 // Лэндинг 1
                 // ├ Источник 1
@@ -569,17 +570,17 @@ function get_clicks_report_grouped2($params) {
                             stat_inc($data[$k]['sub'][$k1][$timekey], $r, $k1, $r['name']);
                         }
                     } else {
-                    	// Будем считать исходящий только если у этого родителя его ещё нет
-                    	$r['cnt'] = isset($parent_clicks[$r['parent_id']]) ? 0 : 1;
-                    	$parent_clicks[$r['parent_id']] = 1;
-                    	
-                    	// Отмечаем исходящий для лэндинга
-	                    if ($r['cnt']) {
-	                    	$parent_row = parent_row($r['parent_id']);
-                    		$k0 = param_key($parent_row, $params['group_by']);
-	                    	
-	                        $data[$k0]['out'] += 1;
-	                    }
+                        // Будем считать исходящий только если у этого родителя его ещё нет
+                        $r['cnt'] = isset($parent_clicks[$r['parent_id']]) ? 0 : 1;
+                        $parent_clicks[$r['parent_id']] = 1;
+
+                        // Отмечаем исходящий для лэндинга
+                        if ($r['cnt']) {
+                            $parent_row = parent_row($r['parent_id']);
+                            $k0 = param_key($parent_row, $params['group_by']);
+
+                            $data[$k0]['out'] += 1;
+                        }
 
                         continue;
                     }
@@ -646,7 +647,7 @@ function get_clicks_report_grouped2($params) {
 
                 $parent_clicks = array(); // массив для единичного зачёта дочерних кликов (иначе у нас LP CTR больше 100% может быть)
                 // Вся статистика, без разбиения по времени
-                
+
                 foreach ($rows as $r) {
                     $k = param_key($r, $params['group_by']);
                     $name = param_val($r, $params['group_by']);
@@ -659,11 +660,11 @@ function get_clicks_report_grouped2($params) {
                     stat_inc($data[$k], $r, $k, $name);
                 }
                 /*
-                if($_SERVER['REMOTE_ADDR'] == '178.121.200.233') {
-                   // echo $total . '<br /><br />';
-                    dmp($rows);
-                } */
-                
+                  if($_SERVER['REMOTE_ADDR'] == '178.121.200.233') {
+                  // echo $total . '<br /><br />';
+                  dmp($rows);
+                  } */
+
                 // Статистика по дням
             } else {
                 foreach ($rows as $r) {
@@ -714,12 +715,12 @@ function get_clicks_report_grouped2($params) {
             }
         }
         /*
-        if($_SERVER['REMOTE_ADDR'] == '178.121.255.182') {
-                    	dmp($data);
-                    	dmp($data2);
-                    	//echo $k .' - '. $name . '<br />';
-                    }
-		*/
+          if($_SERVER['REMOTE_ADDR'] == '178.121.255.182') {
+          dmp($data);
+          dmp($data2);
+          //echo $k .' - '. $name . '<br />';
+          }
+         */
         // Убираем из популярных "не определено", отфильрованные значения и если 100%
 
         foreach ($data as $k => $r) {
@@ -748,7 +749,7 @@ function get_clicks_report_grouped2($params) {
     } else {
         // Убираем строчки с конверсиями
         $data = conv_filter($data, $params['conv']);
-        
+
         // "Один источник" - если группировка по источнику и он у нас один, то берём его именованные параметры
         if ($params['group_by'] == 'source_name' and count($data) == 1) { //
             global $one_source;
@@ -1094,6 +1095,7 @@ function type_subpanel() {
 // Литералы для группировок
 $group_types = array(
     'out_id' => array('Оффер', 'Без оффера', 'Офферы'),
+    'rule_id' => array('Ссылка', 'Без ссылки', 'Ссылки'),
     'source_name' => array('Источник', 'Не определён', 'Источники'),
     'campaign_name' => array('Кампания', 'Не определена', 'Кампании'),
     'ads_name' => array('Объявление', 'Не определено', 'Объявления'),
@@ -1527,6 +1529,7 @@ function stat_inc_total($cur_date, $row) {
 
 function param_val($row, $type, $source_name = '') {
     global $group_types, $source_config;
+    static $outs = array();
     static $links = array();
 
     $name = '';
@@ -1559,11 +1562,17 @@ function param_val($row, $type, $source_name = '') {
                 $name = is_array($row) ? ($row['campaign_name'] . '-' . $row['ads_name']) : $row;
             }
         } elseif ($type == 'out_id') {
-
+            if (isset($outs[$v])) {
+                $name = $outs[$v];
+            } else {
+                $name = current(get_out_description($v));
+                $outs[$v] = $name;
+            }
+        } elseif ($type == 'rule_id') {
             if (isset($links[$v])) {
                 $name = $links[$v];
             } else {
-                $name = current(get_out_description($v));
+                $name = get_rule_description($v);
                 $links[$v] = $name;
             }
         } else {
