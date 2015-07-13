@@ -78,7 +78,7 @@
 	// Process clicks
 	
 	$arr_files=array();
-	$process_at_once=60;
+	$process_at_once = (60 * 24 * 10);
 	$iCnt=0;
 	if ($handle = opendir(_CACHE_PATH . '/clicks/')) {
 	    while (false !== ($entry = readdir($handle))) {
@@ -98,10 +98,11 @@
 		        	)
 		        	{
 			        	$arr_files[]=$entry;
+			        	/*
 		        		if (($iCnt++) > $process_at_once)
 		        		{
 		        			break;
-		        		}			        	
+		        		}*/			        	
 		        	}
 		        }
 	        }
@@ -110,7 +111,11 @@
 	}
 	
 	if (count ($arr_files)==0){exit();}
-
+	
+	asort($arr_files);
+	
+	$arr_files = array_slice($arr_files, 0, $process_at_once); 
+	
     if (extension_loaded('xmlreader')) 
     {
         // Init WURFL library for mobile device detection
@@ -130,7 +135,10 @@
         $wurflManager = $wurflManagerFactory->create();
     }
 
+	//dmp($arr_files);
+
 	foreach ($arr_files as $cur_file) {
+		echo $cur_file . ' : ';
 		$name_parts = explode('_', $cur_file);
 		if(count($name_parts) > 2 && !empty($tracklist[$name_parts[2]]['timeshift'])) {
 			$slave_timeshift = $tracklist[$name_parts[2]]['timeshift'];
@@ -143,12 +151,17 @@
 		$handle = fopen($file_name, "r");
 	    while (($buffer = fgets($handle, 4096)) !== false) 
 	    {
+	    	
+	    	echo $buffer . '<br >';
+	    	
+	    	
 		    $arr_click=array();
 	        $arr_click=explode ("\t", rtrim($buffer, "\n"));
 	        save_click_info ($arr_click, $slave_timeshift);
 	    }
 	    fclose($handle);
 		rename ($file_name, _CACHE_PATH."/clicks/{$cur_file}*");
+		echo '<br />';
 	}
 
 	exit();
@@ -482,7 +495,8 @@
 				campaign_param4='"._str($click_param4)."', 
 				campaign_param5='"._str($click_param5)."'
 				{$sql_click_params}";
-		echo $sql;
+		//echo $sql . '<br />';
+		echo $click_subid . ' ';
 		mysql_query($sql); // or die($sql . '<br >' . mysql_error());
 	}
 ?>

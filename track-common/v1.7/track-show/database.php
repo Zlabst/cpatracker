@@ -315,14 +315,14 @@
     `status` INT NOT NULL
     );";
     
-    $arr_sql[]='CREATE TABLE IF NOT EXISTS `tbl_notifications` (
+    $arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_notifications` (
 	  `id` int(11) NOT NULL AUTO_INCREMENT,
 	  `date` datetime NOT NULL,
 	  `title` varchar(255) CHARACTER SET utf8 NOT NULL,
 	  `text` text CHARACTER SET utf8 NOT NULL,
 	  `status` tinyint(1) NOT NULL DEFAULT '0',
 	  PRIMARY KEY (`id`)
-	) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;';
+	) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
     
     $arr_sql[]="UPDATE `tbl_offers` SET `offer_tracking_url` = REPLACE(`offer_tracking_url`, '%SUBID%', '[SUBID]')";
     

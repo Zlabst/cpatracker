@@ -29,8 +29,12 @@ if (_ENABLE_DEBUG && isset($_GET['debug'])) {
 }
 
 // Set allowed for inclusion files list, security measure
-$page_sidebar_allowed = array('sidebar-left-links.inc.php', 'sidebar-left-reports.inc.php', 'sidebar-left-rules.inc.php', 'sidebar-left-support.inc.php');
-$page_content_allowed = array('reports.php', 'sales.php', 'stats-flow.php', 'links_page.inc.php', 'rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'import_page_postback.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'register.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php', 'landing_page.inc.php', 'reset_password.inc.php', 'lost_password.inc.php');
+$page_sidebar_allowed = array('sidebar-left-links.inc.php', 'sidebar-left-reports.inc.php', 'sidebar-left-rules.inc.php', 'sidebar-left-support.inc.php', 'sidebar-left-install.inc.php');
+$page_content_allowed = array('reports.php', 'sales.php', 'stats-flow.php', 'links_page.inc.php', 'rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'import_page_postback.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php', 'landing_page.inc.php', 'reset_password.inc.php', 'lost_password.inc.php');
+
+// Страницы, на которые можно войти без авторизации
+$open_pages = array('login', 'lostpassword', 'resetpassword', 'install');
+
 
 // Показывать выбор часового пояса в шапке
 $timezone_select = false;
@@ -197,23 +201,36 @@ if ($settings[0] == true) {
     $_DB_HOST = $arr_settings['dbserver'];
 } else {
     switch ($settings[1]) {
-        case 'cache_not_writable':
-            $cache_folder = $settings[2];
-            $bHideLeftSidebar = true;
-            $bHideTopMenu = true;
-            $bHideBottomMenu = true;
-            $page_content = "system-message-cache.php";
-            include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
-            exit();
-            break;
+        /*
+          case 'cache_not_writable':
+          $cache_folder = $settings[2];
+          $bHideLeftSidebar = true;
+          $bHideTopMenu = true;
+          $bHideBottomMenu = true;
+          $page_content = "system-message-cache.php";
+          include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
+          exit();
+          break;
+         */
 
         case 'first_run':
-            $bHideLeftSidebar = true;
-            $bHideTopMenu = true;
-            $bHideBottomMenu = true;
+        default:
+            $page_sidebar = "sidebar-left-install.inc.php";
             $page_content = "system-first-run.php";
+
             include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
             exit();
+
+
+            /*
+              $bHideLeftSidebar = true;
+              $bHideTopMenu = true;
+              $bHideBottomMenu = true;
+              $page_content = "system-first-run.php";
+              include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
+              exit();
+             * 
+             */
             break;
     }
     exit();
@@ -397,21 +414,20 @@ if ($_REQUEST['ajax_act'] == 'sync_slaves') {
     exit();
 }
 
-// Страницы, на которые можно войти без авторизации
-$open_pages = array('login', 'lostpassword', 'resetpassword');
-
 // Authentification
 if (!in_array($_REQUEST['page'], $open_pages)) {
     $auth_info = is_auth();
+    //dmp($auth_info);
+    //die();
 
     if ($auth_info[0] == false) {
         switch ($auth_info[1]) {
             case 'register_new':
                 if ($_REQUEST['page'] != 'register') {
                     header('Location: ' . _HTML_ROOT_PATH . "/?page=register");
+                    exit;
                 }
                 break;
-
             default:
                 header('Location: ' . _HTML_ROOT_PATH . "/?page=login");
                 break;
@@ -419,8 +435,12 @@ if (!in_array($_REQUEST['page'], $open_pages)) {
     }
 }
 
+list($user_ntf_cnt, $user_ntf_unread_cnt, $user_ntf_arr) = user_notifications(-1, 0, 0);
+
 // Check if crontab is installed
 $result = check_crontab_markers();
+$global_ntf_cnt = 0;
+
 if ($result['error']) {
     if ($result['crontab_clicks']) {
         $global_notifications[] = 'CRONTAB_CLICKS_NOT_INSTALLED';
@@ -431,9 +451,9 @@ if ($result['error']) {
     if ($result['api_connect']) {
         $global_notifications[] = 'API_CONNECT_ERROR';
     }
-}
-
-list($user_ntf_cnt, $user_ntf_unread_cnt, $user_ntf_arr) = user_notifications(-1, 0, 0);
+    
+    $global_ntf_cnt = count($global_notifications);
+} 
 
 if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
     switch ($_REQUEST['ajax_act']) {
@@ -441,7 +461,7 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             $id = rq('id', 2);
             change_status('tbl_notifications', $id, 1);
             list($user_ntf_cnt, $user_ntf_unread_cnt, $user_ntf_arr) = user_notifications(-1, 0);
-            $global_ntf_cnt = count($global_notifications);
+            
             $out = array(
                 'cnt' => $user_ntf_cnt + $global_ntf_cnt,
                 'unread_cnt' => $user_ntf_unread_cnt,
@@ -1210,12 +1230,12 @@ switch ($_REQUEST['page']) {
                 break;
 
             default:
-                $bHideLeftSidebar = true;
-                $bHideTopMenu = true;
-                $bHideBottomMenu = true;
-                $page_content = "register.php";
+                $page_sidebar = "sidebar-left-install.inc.php";
+                $page_content = "system-first-run.php";
+
                 include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
-                exit();
+                exit;
+
                 break;
         }
         break;

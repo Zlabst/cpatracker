@@ -18,7 +18,7 @@ if($page_content == 'stats-flow.php') {
 	$bHideLeftSidebar = true;
 }
 
-$is_authorized = !in_array($_REQUEST['page'], $open_pages);
+$is_authorized = (!in_array($_REQUEST['page'], $open_pages) and $settings[0] and $auth_info[1] != 'register_new');
 ?>
 <!-- CPA Tracker, http://www.cpatracker.ru -->
 <!DOCTYPE html>

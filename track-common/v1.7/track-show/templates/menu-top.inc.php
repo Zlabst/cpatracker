@@ -130,7 +130,8 @@ if (count($arr_timezone_settings) == 0) {
             <!-- Nav dropdown -->
             <ul class="nav navbar-nav navbar-right navbar-link pull-right">
                 <?php
-                $notifications_count = $user_ntf_unread_cnt;
+                global $user_ntf_unread_cnt, $global_ntf_cnt;
+                $notifications_count = $user_ntf_unread_cnt + $global_ntf_cnt;
                 if ($notifications_count > 0) {
                     echo '<li>
                             <a class="notification" href="?page=notifications" title="' . declination($notifications_count, array(' сообщение', ' сообщения', ' сообщений')) . '">
