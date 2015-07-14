@@ -649,7 +649,7 @@ if (count($arr_offers['data']) > 0) {
 <div class="pagination">
     <div class="btn-toolbar" role="toolbar">
         <div class="pagination-left">
-            <a class="hover-underline" href="/docs/topic2" target="_blank"><i class="icon icon-info"></i>Как работать с офферами</a>
+            <a class="hover-underline" href="http://cpatracker.ru/docs/topic2" target="_blank"><i class="icon icon-info"></i>Как работать с офферами</a>
         </div>
     </div>
 </div>
