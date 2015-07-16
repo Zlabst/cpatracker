@@ -252,9 +252,15 @@ switch ($_REQUEST['type']) {
 <link href="<?php echo _HTML_LIB_PATH; ?>/daterangepicker/daterangepicker-bs3.css" rel="stylesheet"/>
 <script src="<?php echo _HTML_LIB_PATH; ?>/daterangepicker/moment.min.js"></script>
 <script src="<?php echo _HTML_LIB_PATH; ?>/daterangepicker/daterangepicker.js"></script>
-<link href="<?php echo _HTML_LIB_PATH; ?>/datepicker/css/datepicker.css" rel="stylesheet"/>
-<script type="text/javascript" src="<?php echo _HTML_LIB_PATH; ?>/datepicker/js/bootstrap-datepicker.js"></script>
 
+<? if($part == 'month') { ?>
+	<script type="text/javascript" src="<?php echo _HTML_LIB_PATH; ?>/datepicker/js/bootstrap-datepicker_old.js"></script>
+	<link href="<?php echo _HTML_LIB_PATH; ?>/datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet"/>
+<? } else { ?>
+<link href="<?php echo _HTML_LIB_PATH; ?>/datepicker/css/bootstrap-datepicker3.min.css" rel="stylesheet"/>
+<script type="text/javascript" src="<?php echo _HTML_LIB_PATH; ?>/datepicker/js/bootstrap-datepicker.js"></script>
+<script type="text/javascript" src="<?php echo _HTML_LIB_PATH; ?>/datepicker/locales/bootstrap-datepicker.ru.min.js"></script>
+<? } ?>
 <script>
     $('#dpMonthsF').datepicker();
     $('#dpMonthsT').datepicker();
@@ -263,7 +269,7 @@ switch ($_REQUEST['type']) {
 $from = empty($_POST['from']) ? date('d.m.Y', time() - 3600 * 24 * 6) : date('d.m.Y', strtotime($_POST['from']));
 $to = empty($_POST['to']) ? date('d.m.Y') : date('d.m.Y', strtotime($_POST['to']));
 ?>
-    
+    	/*
         $('#per_day_range').daterangepicker(
         {
             startDate: '<?php echo _e($from) ?>',
@@ -274,7 +280,7 @@ $to = empty($_POST['to']) ? date('d.m.Y') : date('d.m.Y', strtotime($_POST['to']
                 cancelLabel: "<i class='fa fa-times' style='color:gray'></i>",
                 fromLabel: "От",
                 toLabel: "До",
-                customRangeLabel: 'Свой интервал',
+                customRangeLabel: 'Свой интервал<i class="cpa cpa-angle-right pull-right"></i>',
                 daysOfWeek: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
             },
             ranges: {
@@ -284,7 +290,6 @@ $to = empty($_POST['to']) ? date('d.m.Y') : date('d.m.Y', strtotime($_POST['to']
                 'Последние 30 дней': [moment().subtract('days', 29), moment()],
                 'Текущий месяц': [moment().startOf('month'), moment().endOf('month')],
                 'Прошлый месяц': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')]
-                
             }
         },
         function(start, end) {
@@ -307,7 +312,7 @@ $to = empty($_POST['to']) ? date('d.m.Y') : date('d.m.Y', strtotime($_POST['to']
             //console.log($('#range_form').serialize());
             $('#range_form').submit();
         }
-    );
+    );*/
     
         // Многомерная сортировка
         srt_data = function(a, b, i, asc) {

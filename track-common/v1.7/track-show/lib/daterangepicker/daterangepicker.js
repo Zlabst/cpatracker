@@ -85,11 +85,13 @@
             }
         }
 
+	/*
+		'<div class="calendar left"></div>' +
+                '<div class="calendar right"></div>' +*/
         var DRPTemplate = '<div class="daterangepicker dropdown-menu">' +
-                '<div class="calendar left"></div>' +
-                '<div class="calendar right"></div>' +
+                
                 '<div class="ranges">' +
-                  '<div class="range_inputs">' +
+                  '<div class="range_inputs" style="display: none;">' +
                     '<div class="daterangepicker_start_input" style="float: left">' +
                       '<label for="daterangepicker_start">' + this.locale.fromLabel + '</label>' +
                       '<input class="input-mini" type="text" name="daterangepicker_start" value="" disabled="disabled" />' +
@@ -167,9 +169,9 @@
 
                 var list = '<ul>';
                 for (var range in this.ranges) {
-                    list += '<li>' + range + '</li>';
+                    list += '<li><a class="dropdown-link" href="#">' + range + '</a></li>';
                 }
-                list += '<li>' + this.locale.customRangeLabel + '</li>';
+                list += '<li class="dropdown-footer"><a class="dropdown-link" data-toggle="range-popover" data-popover-content="#date-range" data-original-title="" title="" onclick="return false;">' + this.locale.customRangeLabel + '</a></li>';
                 list += '</ul>';
                 this.container.find('.ranges').prepend(list);
             }
@@ -424,9 +426,15 @@
 
         enterRange: function (e) {
             var label = e.target.innerHTML;
+            
+            console.log(this.ranges);
+            console.log(label);
+            console.log(this.locale.customRangeLabel);
+            
             if (label == this.locale.customRangeLabel) {
                 this.updateView();
             } else {
+            	
                 var dates = this.ranges[label];
                 this.container.find('input[name=daterangepicker_start]').val(dates[0].format(this.format));
                 this.container.find('input[name=daterangepicker_end]').val(dates[1].format(this.format));

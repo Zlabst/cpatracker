@@ -177,7 +177,7 @@ foreach ($arr_sparkline as $i => $val) {
                                     {
                                         type: 'bar',
                                         zeroAxis: false, 
-                                        barColor:'#AAA', 
+                                        barColor:'#779cb6', 
                                         disableTooltips:true, 
                                         width:'40px'
                                     }

@@ -7,40 +7,36 @@ if (!$include_flag) {
 
 <div class="page-heading">
     <div class="header-content">
-
         <!--Header-->
         <div class="header-report">
             <div class="dropdown date-select">
                 <a href="#fakelink" class="dropdown-toggle" role="button">
                     <h2><?php echo $var['report_name']; ?>
                         <?php echo tpx('block_range_' . $var['timestep'], $var); ?>
-                        <!--<span class="amid">за</span>
-                        <span class="date">19.01.2015</span>
-                        <span class="amid">—</span>
-                        <span class="date">19.01.2015</span>
-                        <i class="cpa cpa-angle-down"></i>-->
                     </h2>
                 </a>
+    			<?php if($var['report_params']['part'] != 'month') { ?>
                 <ul class="dropdown-menu dropdown-menu-right" role="menu">
                     <li>
-                        <a class="dropdown-link" href="#">Сегодня</a>
+                        <a class="dropdown-link" href="<?=report_lnk($var['report_params'], array('from' => date('Y-m-d'), 'to' => date('Y-m-d')))?>" onclick="go(this)">Сегодня</a>
                     </li>
                     <li>
-                        <a class="dropdown-link" href="#">Вчера</a>
+                        <a class="dropdown-link" href="<?=report_lnk($var['report_params'], array('from' => date('Y-m-d', time() - 86400), 'to' => date('Y-m-d', time() - 86400)))?>" onclick="go(this)">Вчера</a>
                     </li>
                     <li>
-                        <a class="dropdown-link" href="#">Последняя неделя</a>
+                        <a class="dropdown-link" href="<?=report_lnk($var['report_params'], array('from' => date('Y-m-d', time() - (86400 * 7)), 'to' => date('Y-m-d', time() - 86400)))?>" onclick="go(this)">Последняя неделя</a>
                     </li>
                     <li>
-                        <a class="dropdown-link" href="#">Последний месяц</a>
+                        <a class="dropdown-link" href="<?=report_lnk($var['report_params'], array('from' => date('Y-m-d', time() - (86400 * 30)), 'to' => date('Y-m-d', time() - 86400)))?>" onclick="go(this)">Последний месяц</a>
                     </li>
                     <li>
-                        <a class="dropdown-link" href="#">Последний квартал</a>
+                        <a class="dropdown-link" href="<?=report_lnk($var['report_params'], array('from' => date('Y-m-d', time() - (86400 * 90)), 'to' => date('Y-m-d', time() - 86400)))?>" onclick="go(this)">Последний квартал</a>
                     </li>
                     <li class="dropdown-footer">
-                        <a title="" data-original-title="" href="#fakelink" class="dropdown-link" data-popover-content="#date-range" data-toggle="range-popover">Свой интервал<i class="cpa cpa-angle-right pull-right"></i></a>
+                        <a title="" data-original-title="" href="#" onclick="return false;" class="dropdown-link" data-popover-content="#date-range" data-toggle="range-popover">Свой интервал<i class="cpa cpa-angle-right pull-right"></i></a>
                     </li>
                 </ul>
+               	<? } ?>
 
             </div>
         </div>
@@ -53,10 +49,25 @@ if (!$include_flag) {
                     <span class="input-group-addon">до</span>
                     <input class="form-control" name="end" type="text">
                 </div>
-                <a href="#fakelink" class="btn btn-default btn-block"><span>Показать выбранные</span></a>			
+                <a href="#" class="btn btn-default btn-block" onclick="return mod_date(this)"><span>Показать выбранные</span></a>			
             </div>
         </div>
-
+		<script>
+			function go(obj) {
+				window.location = $(obj).attr('href');
+			}
+			function format_date(d) {
+				 tmp = d.split('.');
+				 return tmp[2] + '-' + tmp[1] + '-' + tmp[0];
+			}
+			function mod_date(obj) {
+				href = $(obj).attr('href');
+				href = modify_link(href, 'from', format_date($(obj).parent().find('input[name=start]').val()))
+				href = modify_link(href, 'to', format_date($(obj).parent().find('input[name=end]').val()))
+				$(obj).attr('href', href)
+				return true;
+			}
+		</script>
         <!--Breadcrumbs-->
         <?php echo tpx('report_breadcrumbs'); ?>
 
