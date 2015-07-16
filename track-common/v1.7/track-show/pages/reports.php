@@ -252,15 +252,10 @@ switch ($_REQUEST['type']) {
 <link href="<?php echo _HTML_LIB_PATH; ?>/daterangepicker/daterangepicker-bs3.css" rel="stylesheet"/>
 <script src="<?php echo _HTML_LIB_PATH; ?>/daterangepicker/moment.min.js"></script>
 <script src="<?php echo _HTML_LIB_PATH; ?>/daterangepicker/daterangepicker.js"></script>
-
-<? if($part == 'month') { ?>
-	<script type="text/javascript" src="<?php echo _HTML_LIB_PATH; ?>/datepicker/js/bootstrap-datepicker_old.js"></script>
-	<link href="<?php echo _HTML_LIB_PATH; ?>/datepicker/css/bootstrap-datepicker.min.css" rel="stylesheet"/>
-<? } else { ?>
 <link href="<?php echo _HTML_LIB_PATH; ?>/datepicker/css/bootstrap-datepicker3.min.css" rel="stylesheet"/>
 <script type="text/javascript" src="<?php echo _HTML_LIB_PATH; ?>/datepicker/js/bootstrap-datepicker.js"></script>
 <script type="text/javascript" src="<?php echo _HTML_LIB_PATH; ?>/datepicker/locales/bootstrap-datepicker.ru.min.js"></script>
-<? } ?>
+
 <script>
     $('#dpMonthsF').datepicker();
     $('#dpMonthsT').datepicker();
