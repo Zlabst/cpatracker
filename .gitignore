@@ -7,3 +7,5 @@ track/cache/settings.php
 track-common/plugins/*
 track-common/v1.61/
 /nbproject
+track/cache/log
+track/cache/wurfl-cache

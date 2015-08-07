@@ -222,6 +222,112 @@ mysql_select_db($_DB_NAME);
 mysql_query('SET NAMES utf8');
 //mysql_query('SET TIME_ZONE=\'+04:00\'');
 
+// Mass import offers from XLSX file
+if ($_REQUEST['ajax_upload_offers']!='')
+{
+    // Check CSRF key
+    $arr_request_headers=getallheaders();
+    if ($arr_request_headers['Authorization']!=CSRF_KEY){exit();}
+
+    require_once (_HTML_LIB_PATH.'/uploader/uploader.php');
+    $upload_dir = sys_get_temp_dir();
+    $valid_extensions = array('xlsx');
+
+    $Upload = new FileUpload('ajax_upload_offers');
+    
+    $Upload->newFileName = 'offers.xlsx';
+    $result = $Upload->handleUpload($upload_dir, $valid_extensions);
+
+    if (!$result) 
+    {
+        echo json_encode(array('success' => false, 'msg' => $Upload->getErrorMsg()));   
+    } 
+    else 
+    {
+        require_once (_HTML_LIB_PATH.'/excel-reader/excel_reader.php');
+        require_once (_HTML_LIB_PATH.'/excel-reader/SpreadsheetReader.php');
+        
+        $reader = new SpreadsheetReader($upload_dir.'/'.$Upload->getFileName());
+        $i=0;
+        foreach ($reader as $xls_row)
+        {
+            // Skip row with column names
+            if ($i++==0){continue;}
+
+            $category_id=0;
+
+            // Category is set
+            if (isset($xls_row[3]))
+            {
+                $category_name=trim(str_replace(array("\r\n", "\r", "\n", "\t"), '', $xls_row[3]));
+                if ($category_name!='')
+                {
+                    // Check if we already have this category
+                    $sql="select id, status from tbl_links_categories_list where category_caption='"._str($category_name)."'";
+                    $result=mysql_query($sql);
+                    $row=mysql_fetch_assoc($result);
+                    if ($row['id']>0)
+                    {
+                        $category_id=$row['id'];
+                        if ($row['status']!=0)
+                        {
+                            // Make this category visible
+                            $sql="update tbl_links_categories_list set status=0 where id='"._str($category_id)."'";
+                            mysql_query($sql);
+                        }
+                    }
+                    else
+                    {
+                        // Add new category
+                        $sql = "insert into tbl_links_categories_list (category_caption, category_type, status) values ('" . _str($category_name) . "', '', 0)";
+                        mysql_query($sql);
+                        $category_id = mysql_insert_id();
+                    }
+                }
+            }
+
+            // Add offer
+            $offer_id=edit_offer($category_id, $xls_row[0], $xls_row[1]);
+
+            if (isset($xls_row[2]) && trim($xls_row[2])!='')
+            {
+                // Add link for this offer
+                $rule_name=trim(str_replace(array("\r\n", "\r", "\n", "\t"), '', $xls_row[2]));
+                $out_id=$offer_id;
+
+                // ********************
+                // Check if we already have rule with this name
+                $sql = "select id from tbl_rules where link_name='" . mysql_real_escape_string($rule_name) . "' and status=0";
+                $rs = mysql_query($sql);
+                $row = mysql_fetch_assoc($rs);
+
+                if ($row['id'] > 0) {
+                    ;
+                } else {
+                    $sql = "insert into tbl_rules (link_name, date_add) values ('" . mysql_real_escape_string($rule_name) . "', NOW())";
+                    mysql_query($sql);
+                    $rule_id = mysql_insert_id();
+
+                    $sql = "insert into tbl_rules_items (rule_id, parent_id, type, value) values ('" . mysql_real_escape_string($rule_id) . "', '0', 'geo_country', 'default')";
+                    mysql_query($sql);
+                    $parent_id = mysql_insert_id();
+
+                    $sql = "insert into tbl_rules_items (rule_id, parent_id, type, value) values ('" . mysql_real_escape_string($rule_id) . "', '" . mysql_real_escape_string($parent_id) . "', 'redirect', '" . mysql_real_escape_string($out_id) . "')";
+                    mysql_query($sql);
+
+                    // Remove rule from tracker cache
+                    cache_remove_rule($rule_name);
+                }
+
+                cache_rules_update();
+                // ********************                
+            }
+        }
+    }
+
+    exit();
+}
+
 if ($_REQUEST['ajax_act'] == 'a_load_flow') {
     $filter = '';
     if ($_REQUEST['filter_by'] != '') {

@@ -2309,9 +2309,51 @@ function edit_offer($category_id, $link_name, $link_url) {
     $link_name = trim(str_replace(array("\r\n", "\r", "\n", "\t"), '', $link_name));
     $link_url = trim(str_replace(array("\r\n", "\r", "\n", "\t"), '', $link_url));
 
-    if (trim($link_url) != '') {
+    if (trim($link_url) != '') 
+    {
         if (!(strpos($link_url, 'http://') === 0 || strpos($link_url, 'https://') === 0)) {
             $link_url = "http://{$link_url}";
+        }
+
+        if ($category_id>0) 
+        {
+            if ($link_name!='')
+            {
+                // Check if we already have this offer in selected category
+                $sql="select id from tbl_offers where offer_name='"._str($link_name)."' and offer_tracking_url='"._str($link_url)."' and status=0";
+                $result=mysql_query($sql);
+                $row=mysql_fetch_assoc($result);
+                if ($row['id']>0)
+                {
+                    $offer_id=$row['id'];
+                    // Offer found, check category
+                    $sql="select id from tbl_links_categories where offer_id='"._str($offer_id)."' and category_id='"._str($category_id)."'";
+                    $result=mysql_query($sql);
+                    $row=mysql_fetch_assoc($result);
+                    if ($row['id']>0)
+                    {
+                        // Offer found, don't add
+                        return $offer_id;       
+                    }                    
+                }
+            }
+        }
+        else
+        {
+            if ($link_name!='')
+            {
+                // Check if we already have this offer without category
+                $sql="select id from tbl_offers where offer_name='"._str($link_name)."' and offer_tracking_url='"._str($link_url)."' and status=0";
+                $result=mysql_query($sql);
+                $row=mysql_fetch_assoc($result);
+                if ($row['id']>0)
+                {
+                    $offer_id=$row['id'];
+
+                    // Offer found, don't add
+                    return $offer_id;                    
+                }
+            }
         }
 
         // Add link
@@ -2326,7 +2368,7 @@ function edit_offer($category_id, $link_name, $link_url) {
             db_query($sql);
         }
 
-        if ($category_id != '') {
+        if ($category_id>0) {
             // Add link to selected category
             $sql = "insert into tbl_links_categories (category_id, offer_id) values ('" . mysql_real_escape_string($category_id) . "', '" . mysql_real_escape_string($link_id) . "')";
             db_query($sql);
@@ -2334,6 +2376,7 @@ function edit_offer($category_id, $link_name, $link_url) {
     }
 
     cache_links_update();
+    return $link_id;
 }
 
 /**
