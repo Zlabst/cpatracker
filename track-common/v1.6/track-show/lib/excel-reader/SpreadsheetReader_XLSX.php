@@ -209,7 +209,7 @@
 
 			$this -> TempDir = isset($Options['TempDir']) && is_writable($Options['TempDir']) ?
 				$Options['TempDir'] :
-				sys_get_temp_dir();
+				_CACHE_PATH;
 
 			$this -> TempDir = rtrim($this -> TempDir, DIRECTORY_SEPARATOR);
 			$this -> TempDir = $this -> TempDir.DIRECTORY_SEPARATOR.uniqid().DIRECTORY_SEPARATOR;

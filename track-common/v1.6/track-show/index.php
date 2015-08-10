@@ -230,7 +230,7 @@ if ($_REQUEST['ajax_upload_offers']!='')
     if ($arr_request_headers['Authorization']!=CSRF_KEY){exit();}
 
     require_once (_HTML_LIB_PATH.'/uploader/uploader.php');
-    $upload_dir = sys_get_temp_dir();
+    $upload_dir = ini_get('upload_tmp_dir') ? ini_get('upload_tmp_dir') : sys_get_temp_dir();
     $valid_extensions = array('xlsx');
 
     $Upload = new FileUpload('ajax_upload_offers');
