@@ -1,4 +1,17 @@
 <?php if (!$include_flag){exit();} ?>
+<script>
+$( document ).ready(function() {
+	var uploader = new ss.SimpleUpload({
+	      button: 'btn_mass_import_offers', // HTML element used as upload button
+	      url: '<?php echo _HTML_ROOT_PATH;?>/index.php', // URL of server-side upload handler
+	      name: 'ajax_upload_offers', // Parameter name of the uploaded file
+		  customHeaders: {'Authorization': '<?php echo CSRF_KEY;?>'},
+		  onComplete: function(filename, response) {
+		  		location.reload(true);
+          }		  
+	});
+});
+</script>
 <?php
 $category_id=$_REQUEST['category_id'];
 $category_name='{empty}';
@@ -265,7 +278,9 @@ else
 		  </div>
 
 	  <button type="submit" class="btn btn-default">Добавить</button>
+	  	<button id='btn_mass_import_offers' title="Загрузить из файла" class='btn btn-link' style='margin-left:10px;'><i class="fa fa-upload"></i> Excel</button>
 	</form>
+
 </div>
 
 <?php

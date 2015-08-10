@@ -13,3 +13,4 @@
 <![endif]-->
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="<?php echo _HTML_LIB_PATH;?>/bootstrap/js/bootstrap.min.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/uploader/uploader.min.js"></script>
