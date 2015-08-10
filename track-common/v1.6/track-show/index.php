@@ -227,28 +227,26 @@ if ($_REQUEST['ajax_upload_offers']!='')
 {
     // Check CSRF key
     $arr_request_headers=getallheaders();
-    if ($arr_request_headers['Authorization']!=CSRF_KEY){exit();}
-
-    require_once (_HTML_LIB_PATH.'/uploader/uploader.php');
+    if ($arr_request_headers['Authorization']!=CSRF_KEY){echo "Wrong access key"; exit();}
+    
+    require_once (_TRACK_SHOW_COMMON_PATH.'/lib/uploader/uploader.php');
     $upload_dir = ini_get('upload_tmp_dir') ? ini_get('upload_tmp_dir') : sys_get_temp_dir();
     $valid_extensions = array('xlsx');
-
     $Upload = new FileUpload('ajax_upload_offers');
-    
     $Upload->newFileName = 'offers.xlsx';
     $result = $Upload->handleUpload($upload_dir, $valid_extensions);
-
     if (!$result) 
     {
         echo json_encode(array('success' => false, 'msg' => $Upload->getErrorMsg()));   
     } 
     else 
     {
-        require_once (_HTML_LIB_PATH.'/excel-reader/excel_reader.php');
-        require_once (_HTML_LIB_PATH.'/excel-reader/SpreadsheetReader.php');
+        require_once (_TRACK_SHOW_COMMON_PATH.'/lib/excel-reader/excel_reader.php');
+        require_once (_TRACK_SHOW_COMMON_PATH.'/lib/excel-reader/SpreadsheetReader.php');
         
         $reader = new SpreadsheetReader($upload_dir.'/'.$Upload->getFileName());
         $i=0;
+        
         foreach ($reader as $xls_row)
         {
             // Skip row with column names

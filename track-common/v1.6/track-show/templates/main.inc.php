@@ -8,6 +8,7 @@
 
     <body>
         <div id="wrap">
+        
             <?php include _TRACK_SHOW_COMMON_PATH."/templates/menu-top.inc.php"; ?>
             <div class="container">
                 <div class="row">
