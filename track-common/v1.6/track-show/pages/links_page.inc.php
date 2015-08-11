@@ -6,8 +6,13 @@ $( document ).ready(function() {
 	      url: '<?php echo _HTML_ROOT_PATH;?>/index.php', // URL of server-side upload handler
 	      name: 'ajax_upload_offers', // Parameter name of the uploaded file
 		  customHeaders: {'Authorization': '<?php echo CSRF_KEY;?>'},
+		  onSubmit: function(filename, extension) 
+		  {
+			$('#btn_mass_import_offers i').removeClass('fa-upload'); 
+		  	$('#btn_mass_import_offers i').addClass('fa-spinner fa-spin'); 
+		  },
 		  onComplete: function(filename, response) {
-		  		location.reload(true);
+			location.reload(true);
           }		  
 	});
 });
