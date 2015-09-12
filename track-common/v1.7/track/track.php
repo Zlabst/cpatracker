@@ -9,7 +9,7 @@ ob_start();
 
 require _TRACK_COMMON_PATH . '/functions.php';
 
-if (_SELF_STORAGE_ENGINE == 'redis') {
+if (defined('_SELF_STORAGE_ENGINE') && _SELF_STORAGE_ENGINE == 'redis') {
     $rds = new Redis();
     if (!$rds->connect(_REDIS_HOST, _REDIS_PORT)) {
         $rds = false;
@@ -19,7 +19,7 @@ if (_SELF_STORAGE_ENGINE == 'redis') {
 }
 
 // константа _SERVER_TYPE может быть определена в settings_path.php
-if (defined(_SERVER_TYPE)) {
+if (defined('_SERVER_TYPE')) {
     $_SERVER_TYPE = _SERVER_TYPE;
 } else {
     $settings_file = _TRACK_SETTINGS_PATH . '/settings.php';
@@ -134,7 +134,7 @@ if (count($arr_rules) == 0) {
 
             $requestingDevice = null;
 
-            if ((defined(_XMLREADER_INSTALLED) and _XMLREADER_INSTALLED) or extension_loaded('xmlreader')) {
+            if ((defined('_XMLREADER_INSTALLED') && _XMLREADER_INSTALLED) || extension_loaded('xmlreader')) {
                 // Init WURFL library for mobile device detection
                 $wurflDir = _TRACK_LIB_PATH . '/wurfl/WURFL';
                 $resourcesDir = _TRACK_LIB_PATH . '/wurfl/resources';
@@ -391,7 +391,7 @@ if ($rds) {
 
 if ($write_to_file) {
     // Save click information in file
-    if ((!defined(_CACHE_PATH_CLICKS_CREATED) or !_CACHE_PATH_CLICKS_CREATED) and !is_dir(_CACHE_PATH . '/clicks')) {
+    if ((!defined('_CACHE_PATH_CLICKS_CREATED') or !_CACHE_PATH_CLICKS_CREATED) and !is_dir(_CACHE_PATH . '/clicks')) {
         mkdir(_CACHE_PATH . '/clicks');
         chmod(_CACHE_PATH . '/clicks', 0777);
     }

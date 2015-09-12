@@ -20,6 +20,8 @@
     mysql_connect($_DB_HOST, $_DB_LOGIN, $_DB_PASSWORD) or die("Could not connect: " .mysql_error());
     mysql_select_db($_DB_NAME);
     mysql_query('SET NAMES utf8');
+    mysql_query("SET @@GLOBAL.sql_mode= ''");
+    mysql_query("SET @@SESSION.sql_mode= ''");    
 
     include _TRACK_LIB_PATH . "/class/common.php";
     include _TRACK_LIB_PATH . "/class/custom.php";
