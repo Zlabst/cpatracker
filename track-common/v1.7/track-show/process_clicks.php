@@ -1,41 +1,31 @@
 <?php
-    if (defined('_ENABLE_DEBUG') && _ENABLE_DEBUG)
-	{
-        error_reporting(E_ALL);
-        ini_set('display_errors', 1);
-		ini_set('display_startup_errors', true);
-    }
 
-    if (defined('_ENABLE_PROFILING') && _ENABLE_PROFILING)
-    {
-        require _TRACK_SHOW_COMMON_PATH . "/functions_profiling.php";
-        $_PROFILING_time_start=microtime(true);
-        $_PROFILING_clicks_processed=0;
-        $_PROFILING_files_processed=0;
-        $_PROFILING_arr_steps=array();
-    }
+    if(function_exists('set_time_limit')){set_time_limit(0);}
 
-	set_time_limit(0);
+    prepare_debug();
+
+    global $_PROFILING_clicks_processed;
+    global $_PROFILING_files_processed;
+    prepare_profiling();
+
+    enable_shutdown_tracking();
+
+    set_already_running_flag();
+
+
     require _TRACK_SHOW_COMMON_PATH . "/source_config.php";
 
-	$arr_files=array();
-    $link='';              // Mysqli connection
-	$wurflManager=''; 	   // WURFL global instance
-	$parser=''; 		   // UAParser global instance
-	$maxmind_gi=''; 	   // GeoIP global instance
-	$maxmind_giisp=''; 	   // GeoISP global instance
-    $GEOIP_REGION_NAME=''; // GeoIP predefined values
-
 	hide_crontab_notification();
-	connect_to_database();
 
 	download_clicks();
 	get_clicks_to_process();
 	mark_all_files_processing();
 
     load_geoip();
-	load_uaparser();
-	load_wurfl_manager();
+    load_uaparser();
+    load_wurfl_manager();
+
+    connect_to_database();
 
 	foreach ($arr_files as $cur_file) 
 	{
@@ -58,20 +48,124 @@
 
 	unload_geoip();
 
-    if (defined('_ENABLE_PROFILING') && _ENABLE_PROFILING)
-    {
-        $_PROFILING_execution_time=microtime(true)-$_PROFILING_time_start;
-        $profiling_path=_CACHE_PATH.'/profiling';
-        check_create_directory($profiling_path);
-        $profiling_data=serialize(
-                array('clicks_processed'=>$_PROFILING_clicks_processed,
-                      'files_processed'=>$_PROFILING_files_processed,
-                      'execution_time'=> $_PROFILING_execution_time));
-        file_put_contents($profiling_path.'/.'.date('Y-m-d'), $profiling_data."\n", FILE_APPEND);
-    }
+    define('PROCESS_CLICKS_SUCCESSFUL_TERMINATION', true);
 	exit();
 ?>
 <?php
+
+function prepare_debug()
+{
+    if (defined('_ENABLE_DEBUG') && _ENABLE_DEBUG)
+    {
+        error_reporting(E_ALL);
+        if(function_exists('ini_set'))
+        {
+            ini_set('display_errors', 1);
+            ini_set('display_startup_errors', true);
+        }
+    }
+}
+
+function prepare_profiling()
+{
+    if (defined('_ENABLE_PROFILING') && _ENABLE_PROFILING)
+    {
+        global $_PROFILING_time_start;
+        global $_PROFILING_clicks_processed;
+        global $_PROFILING_files_processed;
+        global $_PROFILING_arr_steps;
+
+        require_once(_TRACK_SHOW_COMMON_PATH . "/functions_profiling.php");
+        $_PROFILING_time_start=microtime(true);
+        $_PROFILING_clicks_processed=0;
+        $_PROFILING_files_processed=0;
+        $_PROFILING_arr_steps=array();
+    }
+}
+
+function enable_shutdown_tracking()
+{
+    register_shutdown_function('process_clicks_shutdown');
+}
+
+function process_clicks_shutdown()
+{
+    if (defined('_ENABLE_PROFILING') && _ENABLE_PROFILING)
+    {
+        global $_PROFILING_time_start;
+        global $_PROFILING_clicks_processed;
+        global $_PROFILING_files_processed;
+        global $_PROFILING_execution_time;
+        global $_PROFILING_arr_steps;
+
+        $arr_result=array();
+        $_PROFILING_execution_time=microtime(true)-$_PROFILING_time_start;
+        $profiling_path=_CACHE_PATH.'/profiling';
+        check_create_directory($profiling_path);
+        if (defined('PROCESS_CLICKS_SUCCESSFUL_TERMINATION') && PROCESS_CLICKS_SUCCESSFUL_TERMINATION)
+        {
+            $arr_result['status']='success';
+        }
+        else
+        {
+            $arr_result['status']='error';
+        }
+
+        if (is_array($_PROFILING_arr_steps) && count($_PROFILING_arr_steps)>0) {
+            $arr_result['steps'] = $_PROFILING_arr_steps;
+        }
+        $arr_result['date_add']=date('Y-m-d H:i:s');
+        $arr_result['clicks_processed']=$_PROFILING_clicks_processed;
+        $arr_result['files_processed']=$_PROFILING_files_processed;
+        $arr_result['execution_time']=$_PROFILING_execution_time;
+        $profiling_data=serialize($arr_result);
+
+        file_put_contents($profiling_path.'/.'.date('Y-m-d'), $profiling_data."\n", FILE_APPEND);
+    }
+
+    unset_already_running_flag();
+}
+
+function check_already_running_flag()
+{
+    $path=_CACHE_PATH.'/.process_clicks_running';
+    if (file_exists($path))
+    {
+        $last_run_time=file_get_contents($path);
+        if (time()-$last_run_time > 60*5)
+        {
+            // Script is running more than 5 minutes, anything except success
+            exit();
+        }
+        else
+        {
+            define('PROCESS_CLICKS_SUCCESSFUL_TERMINATION', true);
+            exit();
+        }
+    }
+}
+
+function set_already_running_flag()
+{
+    check_already_running_flag();
+
+    $path=_CACHE_PATH.'/.process_clicks_running';
+    file_put_contents($path, time(), LOCK_EX);
+    if (!file_exists($path))
+    {
+        // Were not able to create flag, exit with error
+        exit();
+    }
+}
+
+function unset_already_running_flag()
+{
+    $path=_CACHE_PATH.'/.process_clicks_running';
+    if (file_exists($path))
+    {
+        unlink($path);
+    }
+}
 
 function save_click_info ($arr_click_info, $timeshift = 0)
 {
@@ -119,7 +213,9 @@ function save_click_info ($arr_click_info, $timeshift = 0)
 	$OUT['user_agent']=$IN['user_agent'];
 
 	// 7. OS, OS version, Platform, Platform Info, Platform info extra, Browser, Browser version, Is mobile device, Is phone, Is tablet
-	list ($OUT['os'], $OUT['os_version'], $OUT['platform'], $OUT['platform_info'], $OUT['platform_info_extra'], $OUT['browser'], $OUT['browser_version'], $OUT['is_mobile_device'], $OUT['is_phone'], $OUT['is_tablet'])=get_os_browser_platform($IN['user_agent']);
+	list ($OUT['os'], $OUT['os_version'], $OUT['platform'], $OUT['platform_info'], $OUT['platform_info_extra'],
+          $OUT['browser'], $OUT['browser_version'], $OUT['is_mobile_device'], $OUT['is_phone'],
+          $OUT['is_tablet'])=get_os_browser_platform($IN['user_agent']);
 
 	// 8. Campaing and ads
 	list ($OUT['campaign'], $OUT['ads'])=parse_campaign_ads($IN['campaign_ads']);
@@ -173,15 +269,19 @@ function save_click_info ($arr_click_info, $timeshift = 0)
             $sql_prepared="update tbl_clicks set is_parent=1 where id= ?";
             $stmt = $link->prepare($sql_prepared);
             $stmt->bind_param('i', $OUT['parent_id']);
-            $stmt->execute();
+            $result=$stmt->execute();
+            if ($result===false)
+            {
+                // Were not able to run query, exiting with error
+                exit();
+            }
+
         }
         $stmt->close();
 	}
 
 	// 17. Save current click in DB
-	$i=1;
     $arr_prepared_visit_params=array();
-    $bind_visit_params=array();
 
     for ($i=1; $i<=count($OUT['visit_params'])/2; $i++){
         $arr_prepared_visit_params[]="`click_param_name{$i}`= ?, `click_param_value{$i}`= ?";
@@ -211,7 +311,13 @@ function save_click_info ($arr_click_info, $timeshift = 0)
     $ref    = new ReflectionClass('mysqli_stmt');
     $method = $ref->getMethod("bind_param");
     $method->invokeArgs($res, $arr_bind_values);
-    $res->execute();
+    $result=$res->execute();
+
+    if ($result===false)
+    {
+        // Were not able to run query, exiting with error
+        exit();
+    }
 }
 
 
@@ -230,7 +336,7 @@ function get_country_city_isp($ip)
 	$record = geoip_record_by_addr($maxmind_gi, $ip);
     $isp = geoip_org_by_addr($maxmind_giisp, $ip);
 
-	$country=(is_object($record))?$record->country_code:'';;
+	$country=(is_object($record))?$record->country_code:'';
 
 	// Resolve GeoIP extension conflict
 	if (function_exists('geoip_country_code_by_name') && ($country==''))
@@ -486,7 +592,7 @@ function api_get_files($url, $n = 0)
 				$fp = fopen($path, 'w');
 				if($fp && fwrite($fp, $data) && fclose($fp)) 
 				{
-					$url_params = $url['path'] . '/api.php?act=data_get_confirm&type=' . $type. '&key=' . $url['key'] . '&file=' . $f;;
+					$url_params = $url['path'] . '/api.php?act=data_get_confirm&type=' . $type. '&key=' . $url['key'] . '&file=' . $f;
 					file_get_contents($url_params);
 				}
 			}
@@ -518,7 +624,8 @@ function connect_to_database()
 	$_DB_HOST=$arr_settings['dbserver'];
 
     $link = new mysqli($_DB_HOST, $_DB_LOGIN, $_DB_PASSWORD, $_DB_NAME);
-    if ($link->connect_errno) {
+    if ($link->connect_errno)
+    {
         printf("Could not connect: %s\n", $link->connect_error);
         exit();
     }
@@ -532,7 +639,7 @@ function download_clicks()
 	global $tracklist;
 	foreach($tracklist as $n => $track) 
 	{
-		if($n == 0) continue; // не трогаем первый трекер, это мастер
+		if($n == 0) continue; // First tracker is master, don't touch
 
 		if(substr($track['path'], 0, 4) == 'http') 
 		{
@@ -588,10 +695,17 @@ function get_clicks_to_process()
 	    closedir($handle);
 	}
 
-	// Sort files
-	asort($arr_files);
 
-	if (count ($arr_files)==0){exit();}
+    if (is_array($arr_files) && count($arr_files)>0)
+    {
+        // Sort files
+        asort($arr_files);
+    }
+    else
+    {
+        define('PROCESS_CLICKS_SUCCESSFUL_TERMINATION', true);
+        exit();
+    }
 }
 
 function mark_all_files_processing()

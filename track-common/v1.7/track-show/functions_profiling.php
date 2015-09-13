@@ -1,6 +1,9 @@
 <?php
 function _profiling_start_step($step_id)
 {
+    // Run this to start profiling for a code block.
+    // Don't forget to use _profiling_end_step as end of block
+    // Results will be saved in /cache/profiling if _ENABLE_PROFILING is true
     global $_PROFILING_arr_steps;
     if (empty($_PROFILING_arr_steps[$step_id]))
     {

@@ -1873,18 +1873,22 @@ function db_query($q, $die_on_error = false) {
     }
 }
 
-function to_log($name, $data) {
-    $log_dir = _CACHE_PATH . '/log';
-    if (!is_dir($log_dir)) {
-        mkdir($log_dir);
-        chmod($log_dir, 0777);
-    }
+function to_log($name, $data)
+{
+    if (defined('_ENABLE_ERROR_LOGS') && _ENABLE_ERROR_LOGS)
+    {
+        $log_dir = _CACHE_PATH . '/log';
+        if (!is_dir($log_dir)) {
+            mkdir($log_dir);
+            chmod($log_dir, 0777);
+        }
 
-    $fp = fopen($log_dir . '/.' . $name . '.log', 'a');
-    if (is_array($data))
-        $data = print_r($data, true);
-    fwrite($fp, date('Y-m-d H:i:s') . "\n" . $data . "\n\n");
-    fclose($fp);
+        $fp = fopen($log_dir . '/.' . $name . '.log', 'a');
+        if (is_array($data))
+            $data = print_r($data, true);
+        fwrite($fp, date('Y-m-d H:i:s') . "\n" . $data . "\n\n");
+        fclose($fp);
+    }
 }
 
 function delete_offer($ids, $del = 1) {

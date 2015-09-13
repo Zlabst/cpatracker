@@ -10,7 +10,7 @@
 function get_geodata($ip) {
     require (_TRACK_LIB_PATH . "/maxmind/geoipregionvars.php"); // названия регионов
 
-    if (_PHP5_GEOIP_ENABLED or function_exists('geoip_record_by_name')) {
+    if ((defined ('_PHP5_GEOIP_ENABLED') && _PHP5_GEOIP_ENABLED) || function_exists('geoip_record_by_name')) {
         $geoinfo = geoip_record_by_name($ip);
         $ispname = geoip_isp_by_name($ip);
 
@@ -381,21 +381,25 @@ function ip_in_range($ip, $ip_start, $ip_end = '') {
 /**
  * Лог ошибок
  */
-function track_error($error) {
+function track_error($error)
+{
     if ($error == '')
         return false;
 
-    $log_dir = _CACHE_PATH . '/log';
-    if (!is_dir($log_dir)) {
-        mkdir($log_dir);
-        chmod($log_dir, 0777);
-    }
+    if (defined('_ENABLE_ERROR_LOGS') && _ENABLE_ERROR_LOGS)
+    {
+        $log_dir = _CACHE_PATH . '/log';
+        if (!is_dir($log_dir)) {
+            mkdir($log_dir);
+            chmod($log_dir, 0777);
+        }
 
-    $path = $log_dir . '/.' . date('Y-m-d') . '.txt';
-    $fp = fopen($path, 'a');
-    fwrite($fp, date("Y-m-d H:i:s") . ' ' . $error . "\n");
-    fclose($fp);
-    chmod($path, 0777);
+        $path = $log_dir . '/.' . date('Y-m-d') . '.txt';
+        $fp = fopen($path, 'a');
+        fwrite($fp, date("Y-m-d H:i:s") . ' ' . $error . "\n");
+        fclose($fp);
+        chmod($path, 0777);
+    }
 
     exit($error);
 }
