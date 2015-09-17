@@ -73,6 +73,7 @@
       `click_param_value15` text character set utf8 NOT NULL,
       PRIMARY KEY  (`id`),
       UNIQUE KEY `subid` (`subid`),
+      KEY `date_add` (`date_add`),
       KEY `date_add_day` (`date_add_day`),
       KEY `date_add_hour` (`date_add_hour`),
       KEY `user_os` (`user_os`),

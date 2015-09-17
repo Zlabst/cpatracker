@@ -1,7 +1,97 @@
-<?php if (!$include_flag) {
-    exit();
-} ?>
-<script src="<?php echo _HTML_TEMPLATE_PATH; ?>/js/report_toolbar.js"></script>
+<?php
+if (!$include_flag) {exit();}
+
+include _TRACK_SHOW_COMMON_PATH.'/lib/mustache/Autoloader.php';
+Mustache_Autoloader::register(_TRACK_SHOW_COMMON_PATH.'/lib/mustache');
+
+$mTemplate = new Mustache_Engine(array(
+    'loader' => new Mustache_Loader_FilesystemLoader(_TRACK_SHOW_COMMON_PATH . '/templates/views'),
+));
+
+$arr_report_data=prepare_report($_REQUEST);
+echo $mTemplate->render('report-page', $arr_report_data);
+?>
+<script>
+    function refresh_report(param_name, param_value)
+    {
+        switch (param_name)
+        {
+            case 'custom_range':
+                var obj=$(param_value).parent();
+                var date_start=$('input[name="start"]', $(obj)).val();
+                date_start=date_start.split('.');
+                date_start=date_start[2] + '-' + date_start[1] + '-' + date_start[0];
+
+                var date_end=$('input[name="end"]', $(obj)).val();
+                date_end=date_end.split('.');
+                date_end=date_end[2] + '-' + date_end[1] + '-' + date_end[0];
+
+                if ($('#current_report_params input[name="date_start"]').length)
+                {
+                    $('#current_report_params input[name="date_start"]').val(date_start);
+                }
+                else
+                {
+                    $('#current_report_params').append('<input type="hidden" name="date_start" value="'+date_start+'" />');
+                }
+
+                if ($('#current_report_params input[name="date_end"]').length)
+                {
+                    $('#current_report_params input[name="date_end"]').val(date_end);
+                }
+                else
+                {
+                    $('#current_report_params').append('<input type="hidden" name="date_end" value="'+date_end+'" />');
+                }
+
+                // Remove report_period field, dates are already set
+                $('#current_report_params input[name="report_period"]').remove();
+            break;
+
+            default:
+                var param_found=false;
+                $('#current_report_params input[type="hidden"]').each(function() {
+                    if ($(this).attr('name')==param_name)
+                    {
+                        param_found=true;
+                        $(this).val(param_value);
+                    }
+                });
+                if (!param_found)
+                {
+                    $('#current_report_params').append('<input type="hidden" name="'+param_name+'" value="'+param_value+'" />');
+                }
+
+                // Remove date_start and date_end fields, we have custom period
+                if (param_name=='report_period')
+                {
+                    $('#current_report_params input[name="date_start"]').remove();
+                    $('#current_report_params input[name="date_end"]').remove();
+                }
+            break;
+        }
+        $("#current_report_params").submit();
+        return false;
+    }
+</script>
+
+<?php
+
+
+switch($IN['report_type'])
+{
+    case 'clicks':
+        // Clicks report
+    break;
+
+    case 'sales':
+        // Sales report
+    break;
+}
+?>
+
+
+
 <?php
 // Create dates array for reports
 $date1 = date('Y-m-d', strtotime('-6 days', strtotime(date('Y-m-d'))));
@@ -60,17 +150,14 @@ if ($part == 'all') {
 }
 
 // ---------------------------------------
-
-switch ($_REQUEST['type']) {
+// [!] [!] [!!!]
+switch ($_REQUEST['type'].'x')
+{
     case 'basic':
-
-        // Параметры отчёта
         $params = report_options();
 
-        //$params['where'] = "`is_connected` = '0'"; // только лэндинги
-        //$params['mode'] = 'lp';
-
-        if ($params['mode'] == 'popular') {
+        if ($params['mode'] == 'popular')
+        {
             $params['mode'] = 'popular';
             $assign['report_name'] = 'Популярные параметры <span class="amid">за</span> ';
             $assign['report_params'] = $params;
@@ -82,21 +169,14 @@ switch ($_REQUEST['type']) {
             $assign['arr_report_data'] = $report['data'];
             $assign['arr_dates'] = $report['dates'];
             $assign['toolbar'] = tpx('report_groups', $assign);
-            
 
             // Заголовок отчета
             echo tpx('report_name', $assign);
 
-            // Фильтры конвертации
-            //echo tpx('report_conv', $assign);
-            // Фильтры
-            // 
-            //echo tpx('report_groups', $assign);
-
             // Таблица отчета
             echo tpx('report_table', $assign);
-        } elseif ($params['mode'] == 'lp' or $params['mode'] == 'lp_offers') {
-
+        } elseif ($params['mode'] == 'lp' or $params['mode'] == 'lp_offers')
+        {
             $group_types['out_id'][0] = 'Целевая страница';
             $params['mode'] = 'lp_offers';
 
@@ -124,33 +204,9 @@ switch ($_REQUEST['type']) {
                 // Таблица отчета
                 echo tpx('report_table', $assign);
             }
-            /*
-              if(!empty($report['data'])) {
-
-
-
-              // Таблица отчета
-              echo tpx('report_table', $assign);
-
-              // Целевые страницы с подчинненными офферами
-              if($part == 'all') {
-              $params['mode'] = 'lp_offers';
-              $assign['report_params'] = $params;
-              $report = get_clicks_report_grouped2($params);
-              $assign['arr_report_data'] = $report['data'];
-
-              if(!empty($report['data'])) {
-              echo '<div class="col-sm-9"><h3>Целевые страницы</h3></div>';
-              // Таблица отчета
-              echo tpx('report_table', $assign);
-              }
-              } else {
-
-              }
-
-              }
-             */
-        } else {
+        }
+        else
+        {
             $report = get_clicks_report_grouped2($params);
 
             // Собираем переменные в шаблон
@@ -163,15 +219,9 @@ switch ($_REQUEST['type']) {
             $assign['arr_report_data'] = $report['data'];
             $assign['arr_dates'] = $report['dates'];
             $assign['toolbar'] = tpx('report_groups', $assign);
-            
-            //click_params
+
             // Заголовок отчета
             echo tpx('report_name', $assign);
-
-            // Фильтры
-            //echo tpx('report_conv', $assign);
-            // Фильтры
-            //echo tpx('report_groups', $assign);
 
             // Таблица отчета
             echo tpx('report_table', $assign);
@@ -185,8 +235,8 @@ switch ($_REQUEST['type']) {
             $report_lp = get_clicks_report_grouped2($params);
             $assign['arr_report_data'] = $report_lp['data'];
 
-            if (!empty($report_lp['data'])) {
-
+            if (!empty($report_lp['data']))
+            {
                 echo '<div class="page-heading"><div class="header-content"><div class="header-report"><a ><h2>Целевые страницы</h2></a></div></div></div>';
 
                 // Таблица отчета
@@ -195,8 +245,6 @@ switch ($_REQUEST['type']) {
 
             // Возвращаем режим на место, иначе кнопки внизу будут вести на этот тип отчёта
             $params['mode'] = $assign['report_params']['mode'] = '';
-
-            //}
         }
 
         break;
@@ -221,6 +269,7 @@ switch ($_REQUEST['type']) {
         $toF = date('d.m.Y', strtotime($to));
         $value_date_range = "$fromF - $toF";
 
+        /*
         echo '<form method="post"  name="datachangeform" id="range_form">
                 <div class="pull-left"><h3>' . $report_name . '</h3></div>
                 <div id="per_day_range" class="pull-left" style="">
@@ -230,7 +279,7 @@ switch ($_REQUEST['type']) {
                 </div>
                 <div class="pull-right" style="margin-top:18px;"><div class="btn-group">' . join('', type_subpanel()) . '</div></div>
               </form>';
-
+*/
         include _TRACK_SHOW_COMMON_PATH . "/pages/report_all.inc.php";
         break;
 
@@ -242,7 +291,9 @@ switch ($_REQUEST['type']) {
         include _TRACK_SHOW_COMMON_PATH . "/pages/targetreport.php";
         break;
 }
+
 ?>
+
 
 <link href="<?php echo _HTML_LIB_PATH; ?>/datatables/css/jquery.dataTables.css" rel="stylesheet">
 <link href="<?php echo _HTML_LIB_PATH; ?>/datatables/css/dt_bootstrap.css" rel="stylesheet">
@@ -264,51 +315,7 @@ switch ($_REQUEST['type']) {
 $from = empty($_POST['from']) ? date('d.m.Y', time() - 3600 * 24 * 6) : date('d.m.Y', strtotime($_POST['from']));
 $to = empty($_POST['to']) ? date('d.m.Y') : date('d.m.Y', strtotime($_POST['to']));
 ?>
-    	/*
-        $('#per_day_range').daterangepicker(
-        {
-            startDate: '<?php echo _e($from) ?>',
-            endDate: '<?php echo _e($to) ?>',
-            format: 'DD.MM.YYYY',
-            locale: {
-                applyLabel: "Выбрать",
-                cancelLabel: "<i class='fa fa-times' style='color:gray'></i>",
-                fromLabel: "От",
-                toLabel: "До",
-                customRangeLabel: 'Свой интервал<i class="cpa cpa-angle-right pull-right"></i>',
-                daysOfWeek: ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
-            },
-            ranges: {
-                'Сегодня': [moment(), moment()],
-                'Вчера': [moment().subtract('days', 1), moment().subtract('days', 1)],
-                'Последние 7 дней': [moment().subtract('days', 6), moment()],
-                'Последние 30 дней': [moment().subtract('days', 29), moment()],
-                'Текущий месяц': [moment().startOf('month'), moment().endOf('month')],
-                'Прошлый месяц': [moment().subtract('month', 1).startOf('month'), moment().subtract('month', 1).endOf('month')]
-            }
-        },
-        function(start, end) {
-            $('#cur_day_range').html('<span class="date">' + start.format('DD.MM.YYYY') + '</span> <span class="amid">—</span> <span class="date">' + end.format('DD.MM.YYYY') + '</span> <i class="cpa cpa-angle-down"></i>');
-            $('#sStart').val(start.format('YYYY-MM-DD'));
-            $('#sEnd').val(end.format('YYYY-MM-DD'));
-	        
-            hashes = window.location.href.split('&');
-            for(var i = 0; i < hashes.length; i++) {
-                hash = hashes[i].split('=');
-                if(hash[0] == 'from') {
-                    hashes[i] = 'from=' + start.format('YYYY-MM-DD');
-                }
-                if(hash[0] == 'to') {
-                    hashes[i] = 'to=' + end.format('YYYY-MM-DD');
-                }
-            }
-            history.pushState(null, null, hashes.join('&'));
-			
-            //console.log($('#range_form').serialize());
-            $('#range_form').submit();
-        }
-    );*/
-    
+
         // Многомерная сортировка
         srt_data = function(a, b, i, asc) {
             asc_work = (i == 3 || i == 0) ? 1 : asc; // порядок лэндинга и оффера одинаковый всегда
@@ -373,14 +380,14 @@ $to = empty($_POST['to']) ? date('d.m.Y') : date('d.m.Y', strtotime($_POST['to']
 <?php
 echo tpx('report_toolbar');
 
+/*
 echo '<script>';
-
 echo "update_cols('" . $col . "', 0);";
-
 if ($part == 'all') {
     echo "update_cols('currency_" . $currency . "', 1);";
 }
 echo '</script>';
+*/
 ?>
 <input type="hidden" id="usd_selected" value="1">
 <input type="hidden" id="type_selected" value="cnt">

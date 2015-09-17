@@ -1245,25 +1245,29 @@ switch ($_REQUEST['page']) {
         $page_top_menu = "top_menu.php";
         $sidebar_inc = "left-sidebar.php";
 
-        switch ($_REQUEST['act']) {
+        switch ($_REQUEST['act'])
+        {
             case 'reports':
                 $timezone_select = true; // показываем выбор часового пояса в шапке
-                switch ($_REQUEST['type']) {
+                switch ($_REQUEST['type'])
+                {
                     case 'sales':
                         $page_content = 'sales.php';
-                        break;
+                    break;
+
                     case 'salesreport':
                         $page_content = 'salesreport.php';
-                        break;
+                    break;
+
                     default:
                         $page_content = "reports.php";
-                        break;
+                    break;
                 }
 
                 $page_sidebar = 'sidebar-left-reports.inc.php';
                 include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
                 exit();
-                break;
+            break;
 
             case 'register_admin':
                 $page_top_menu = "top_menu_empty.php";
@@ -1301,7 +1305,14 @@ switch ($_REQUEST['page']) {
                     }
                 }
 
+                // Get clicks for list of clicks
                 list($more, $arr_data) = get_visitors_flow_data($filter, 0, 0, 20, $_REQUEST['date']);
+
+                if ($search!='')
+                {
+                    // Disable more button if search was performed
+                    $more=false;
+                }
 
                 $page_sidebar = "sidebar-left-reports.inc.php";
                 $page_content = "stats-flow.php";

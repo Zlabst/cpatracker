@@ -1,0 +1,57 @@
+<div role="toolbar" class="btn-toolbar">
+    <div class="btn-group">
+        {{#toolbar-buttons-main}}
+            <a href="#" onclick="return refresh_report('{{name}}', '{{value}}');" class="btn btn-default {{is_active}}">{{caption}}</a>
+        {{/toolbar-buttons-main}}
+    </div>
+
+    <div class="btn-group no-margin">
+        <div class="dropdown">
+            <a class="btn btn-default dropdown-toggle" href="#fakelink" data-toggle="dropdown" role="button" aria-expanded="false">
+                <span>Гео</span>
+                <i class="cpa cpa-angle-down"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-full" role="menu">
+                {{#toolbar-buttons-geo}}
+                    <li><a href="#" onclick="return refresh_report('{{name}}', '{{value}}');" class="dropdown-link">{{caption}}</a></li>
+                {{/toolbar-buttons-geo}}
+                <li class="divider"></li>
+                {{#toolbar-buttons-isp}}
+                    <li><a href="#" onclick="return refresh_report('{{name}}', '{{value}}');" class="dropdown-link">{{caption}}</a></li>
+                {{/toolbar-buttons-isp}}
+            </ul>
+        </div>
+    </div>
+
+    <div class="btn-group no-margin">
+        <div class="dropdown">
+            <a class="btn btn-default dropdown-toggle" href="#fakelink" data-toggle="dropdown" role="button" aria-expanded="false">
+                <span>Устройство</span>
+                <i class="cpa cpa-angle-down"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-full" role="menu">
+                {{#toolbar-buttons-device}}
+                <li><a href="#" onclick="return refresh_report('{{name}}', '{{value}}');" class="dropdown-link">{{caption}}</a></li>
+                {{/toolbar-buttons-device}}
+            </ul>
+        </div>
+    </div>
+
+    <div class="btn-group no-margin">
+        <div class="dropdown">
+            <a class="btn btn-default dropdown-toggle" href="#fakelink" data-toggle="dropdown" role="button" aria-expanded="false">
+                <span>Другие параметры</span>
+                <i class="cpa cpa-angle-down"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-full" role="menu">
+                {{#toolbar-buttons-link-param}}
+                <li><a href="#" onclick="return refresh_report('{{name}}', '{{value}}');" class="dropdown-link">{{caption}}</a></li>
+                {{/toolbar-buttons-link-param}}
+                <li class="divider"></li>
+                {{#toolbar-buttons-visit-param}}
+                <li><a href="#" onclick="return refresh_report('{{name}}', '{{value}}');" class="dropdown-link">{{caption}}</a></li>
+                {{/toolbar-buttons-visit-param}}
+            </ul>
+        </div>
+    </div>
+</div>

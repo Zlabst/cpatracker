@@ -167,7 +167,7 @@ if (count($arr_timezone_settings) == 0) {
             global $timezone_select;
             if($timezone_select) { ?>
             <!-- Nav dropdown -->
-            <ul class="nav navbar-nav navbar-left navbar-link with-value">
+            <ul class="nav navbar-nav navbar-left navbar-link with-value pull-right">
                 <li class="dropdown">
                     <a href="#fakelink"  class="dropdown-toggle dropdown-link" data-toggle="dropdown" role="button" aria-expanded="false">
                         <i class="icon icon-abs icon-clock"></i>

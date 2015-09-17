@@ -1421,6 +1421,18 @@ function delete_timezone($id) {
     }
 }
 
+function timezone_shift_invert($tz)
+{
+    if (substr($tz, 0, 1)=='+')
+    {
+        return str_replace('+', '-', $tz);
+    }
+    else
+    {
+        return str_replace('-', '+', $tz);
+    }
+}
+
 function get_rules_offers() {
     $arr_offers = array();
 

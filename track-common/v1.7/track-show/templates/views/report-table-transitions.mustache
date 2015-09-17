@@ -1,0 +1,39 @@
+<div class="table-report-box">
+    <table class="table table-striped table-transitions">
+        <thead>
+        <tr>
+            {{#table-columns}}
+                <th class="{{is_sorted}} {{class}}" onclick="return refresh_report('sort_by', '{{name}}');">{{caption}}</th>
+            {{/table-columns}}
+        </tr>
+        </thead>
+        <tbody>
+        {{#table_rows}}
+            <tr>
+                {{#values}}
+                    <td {{nowrap}} class="{{class}}"><a href="">{{value}}</a></td>
+                {{/values}}
+            </tr>
+        {{/table_rows}}
+        </tbody>
+        {{^hide-table-footer}}
+        <tfoot>
+        <tr>
+            <td>Итого</td>
+            <td>{{clicks_total}}</td>
+            <td class="col_s">{{sales_total}}</td>
+            <td class="col_l">{{leads_total}}</td>
+            <td class="col_a">{{actions_total}}</td>
+            <td class="col_s">{{sales_conversion_total}}</td>
+            <td class="col_l">{{leads_conversion_total}}</td>
+            <td class="col_a">{{actions_conversion_total}}</td>
+            <td>{{cost_total}}</td>
+            <td class="col_s col_a">{{profit_total}}</td>
+            <td class="col_s">{{epc_total}}</td>
+            <td class="col_s col_a">{{roi_total}}</td>
+            <td class="col_l">{{cpl_total}}</td>
+        </tr>
+        </tfoot>
+        {{/hide-table-footer}}
+    </table>
+</div>

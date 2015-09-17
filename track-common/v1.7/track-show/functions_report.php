@@ -1,5 +1,440 @@
 <?php
 
+function prepare_report($request_parameters)
+{
+    $IN=array();
+
+    // Set default values
+    $allowed_report_in_params=array(
+        'report_type'=>'clicks',      // clicks, sales
+        'range_type'=>'all',          // all, hourly, daily, monthly
+        'main_column'=>'offer_name',  // link_name, category, country, ...
+        'filter_actions_type'=>'all', // all, has_actions, no_actions
+        'filter_actions'=>'all',      // all, sales_only, leads_only
+        'sort_by'=>'clicks_count',    // main_column, clicks_count, actions_count, conversion_rate, costs, profit, roi, date_column
+        'sort_order'=>'DESC',
+        'timezone_offset'=>get_current_timezone_shift(),
+        'date_start'=>get_current_day('-7 days'),
+        'date_end'=>get_current_day(),
+        'report_period'=>'custom'); // today, yesterday, lastweek, lastmonth, lastquarter, custom
+
+    foreach (array_keys($allowed_report_in_params) as $cur)
+    {
+        if (isset($request_parameters[$cur]) && $request_parameters[$cur]!='')
+        {
+            $IN[$cur]=$request_parameters[$cur];
+        }
+        else
+        {
+            // Set default value
+            $IN[$cur]=$allowed_report_in_params[$cur];
+        }
+    }
+
+    // Fill report range
+    switch ($IN['report_period'])
+    {
+        case 'today':
+            $IN['date_start']=get_current_day();
+            $IN['date_end']=get_current_day();
+            break;
+        case 'yesterday':
+            $IN['date_start']=get_current_day('-1 days');
+            $IN['date_end']=get_current_day('-1 days');
+            break;
+        case 'lastweek':
+            $IN['date_start']=get_current_day('-1 week');
+            $IN['date_end']=get_current_day();
+            break;
+        case 'lastmonth':
+            $IN['date_start']=get_current_day('-1 months');
+            $IN['date_end']=get_current_day();
+            break;
+        case 'lastquarter':
+            $IN['date_start']=get_current_day('-3 months');
+            $IN['date_end']=get_current_day();
+            break;
+        case 'custom':
+            break;
+    }
+
+    $sql_select=array();
+    $sql_join=array();
+    $sql_where=array();
+    $sql_group=array();
+    $sql_order=array();
+
+    $arr_allowed_main_columns=array('offer_name'=>'Оффер', 'offer_category'=>'Категория', 'os_and_version'=>'ОС',
+        'campaign_ads'=>'Кампания', 'link_name'=>'Ссылка', 'date_add_day'=>'День',
+        'date_add_hour'=>'Час', 'user_ip'=>'IP', 'user_agent'=>'User agent',
+        'user_os'=>'ОС', 'user_os_version'=>'Версия ОС', 'user_platform'=>'Платформа',
+        'user_platform_info'=>'Платформа 2', 'user_platform_info_extra'=>'Платформа 3',
+        'user_browser'=>'Браузер', 'user_browser_version'=>'Версия браузера',
+        'country'=>'Страна', 'state'=>'Область', 'city'=>'Город', 'region'=>'Регион',
+        'isp'=>'Провайдер', 'rule_id'=>'ID ссылки', 'out_id'=>'ID оффера',
+        'source_name'=>'Источник', 'campaign_name'=>'Кампания', 'ads_name'=>'Объявление',
+        'referer'=>'Источник', 'campaign_param1'=>'Параметр ссылки #1',
+        'campaign_param2'=>'Параметр ссылки #2', 'campaign_param3'=>'Параметр ссылки #3',
+        'campaign_param4'=>'Параметр ссылки #4', 'campaign_param5'=>'Параметр ссылки #5',
+        'click_param_name1'=>'Параметр перехода #1', 'click_param_name2'=>'Параметр перехода #2',
+        'click_param_name3'=>'Параметр перехода #3', 'click_param_name4'=>'Параметр перехода #4',
+        'click_param_name5'=>'Параметр перехода #5', 'click_param_name6'=>'Параметр перехода #6',
+        'click_param_name7'=>'Параметр перехода #7', 'click_param_name8'=>'Параметр перехода #8',
+        'click_param_name9'=>'Параметр перехода #9', 'click_param_name10'=>'Параметр перехода #10',
+        'click_param_name11'=>'Параметр перехода #11', 'click_param_name12'=>'Параметр перехода #12',
+        'click_param_name13'=>'Параметр перехода #13', 'click_param_name14'=>'Параметр перехода #14',
+        'click_param_name15'=>'Параметр перехода #15');
+
+    $main_column_names=array();
+
+// Process main column
+    switch($IN['main_column'])
+    {
+        case 'offer_name':
+            $sql_select[]='tbl_offers.offer_name as c1';
+            $sql_select[]='tbl_clicks.out_id as c1_id';
+            $sql_join[]='LEFT JOIN tbl_offers on tbl_offers.id=tbl_clicks.out_id';
+            $sql_group[]='tbl_clicks.out_id';
+            break;
+
+        case 'offer_category':
+            $sql_select[]='tbl_links_categories_list.category_caption as c1';
+            $sql_select[]='tbl_links_categories.category_id as c1_id';
+            $sql_join[]='LEFT JOIN tbl_links_categories on tbl_links_categories.offer_id=tbl_clicks.out_id';
+            $sql_join[]='LEFT JOIN tbl_links_categories_list on tbl_links_categories_list.id=tbl_links_categories.category_id';
+            $sql_group[]='tbl_links_categories.category_id';
+            break;
+
+        case 'os_and_version':
+            $sql_select[]='CONCAT(tbl_clicks.user_os, " ", tbl_clicks.user_os_version) as c1';
+            $sql_group[]='tbl_clicks.user_os';
+            $sql_group[]='tbl_clicks.user_os_version';
+            break;
+
+        case 'campaign_ads':
+            $sql_select[]='CONCAT(tbl_clicks.campaign_name, "-", tbl_clicks.ads_name) as c1';
+            $sql_group[]='tbl_clicks.campaign_name';
+            $sql_group[]='tbl_clicks.ads_name';
+            break;
+
+        case 'link_name':
+            $sql_select[]='tbl_rules.link_name as c1';
+            $sql_select[]='tbl_clicks.rule_id as c1_id';
+            $sql_join[]='LEFT JOIN tbl_rules on tbl_rules.id=tbl_clicks.rule_id';
+            $sql_group[]='tbl_clicks.rule_id';
+            break;
+
+        default:
+            if (in_array($IN['main_column'], array_keys($arr_allowed_main_columns)))
+            {
+                $sql_select[]='tbl_clicks.'.$IN['main_column'].' as c1';
+                $sql_group[]='tbl_clicks.'.$IN['main_column'];
+            }
+            break;
+    }
+
+// Apply additional params to SELECT
+    switch ($IN['range_type'])
+    {
+        case 'all':
+            $sql_select[]='COUNT(tbl_clicks.id) as cnt';
+            $sql_select[]='SUM(tbl_clicks.is_lead) as leads_count';
+            $sql_select[]='SUM(tbl_clicks.is_sale) as sales_count';
+            $sql_select[]='SUM(tbl_clicks.is_lead)+SUM(tbl_clicks.is_sale) as actions_count';
+            $sql_select[]='(SUM(tbl_clicks.is_lead)+SUM(tbl_clicks.is_sale))/COUNT(tbl_clicks.id)*100 as actions_conversion_rate';
+            $sql_select[]='SUM(tbl_clicks.click_price) as cost';
+            $sql_select[]='SUM(tbl_clicks.conversion_price_main) as profit';
+            break;
+
+        case 'hourly': case 'daily': case 'monthly':
+        $sql_select[]='COUNT(tbl_clicks.id) as cnt';
+        $t=array(
+            'hourly'=>array('f'=>'HOUR', 'param'=>'hour_add'),
+            'daily'=>array('f'=>'DATE', 'param'=>'day_add'),
+            'monthly'=>array('f'=>'MONTH', 'param'=>'month_add')
+        );
+
+        if (in_array($IN['timezone_offset'], array('+00:00', '-00:00', '00:00')))
+        {
+            $sql_select[]=$t[$IN['range_type']]['f'].'(tbl_clicks.date_add) as '.$t[$IN['range_type']]['param'];
+            $sql_group[]=$t[$IN['range_type']]['param'];
+        }
+        else
+        {
+            $sql_select[]=$t[$IN['range_type']]['f']."(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '"._str($IN['timezone_offset'])."')) as ".$t[$IN['range_type']]['param'];
+            $sql_group[]=$t[$IN['range_type']]['param'];
+        }
+        break;
+
+    }
+
+
+    $sort_order=($IN['sort_order']=='ASC')?'ASC':'DESC';
+    switch ($IN['sort_by'])
+    {
+        case 'clicks_count':
+            $sql_order[]='cnt '.$sort_order;
+            break;
+
+        case 'main_column':
+            $sql_order[]='c1 '.$sort_order;
+            break;
+
+        case 'leads_count': case 'sales_count': case 'actions_count':
+        case 'actions_conversion_rate': case 'cost': case 'profit':
+        $sql_order[]=$IN['sort_by'].' '.$sort_order;
+        break;
+    }
+
+// Apply timezone offset
+    if (in_array ($IN['timezone_offset'], array('+00:00', '-00:00', '00:00')))
+    {
+        // Same timezones in DB and report
+        $sql_date_start="'"._str($IN['date_start'])." 00:00:00'";
+        $sql_date_end="'"._str($IN['date_end'])." 23:59:59'";
+    }
+    else
+    {
+        $timezone_offset_inverted=timezone_shift_invert($IN['timezone_offset']);
+        $sql_date_start="CONVERT_TZ('"._str($IN['date_start'])." 00:00:00', '+00:00', '"._str($timezone_offset_inverted)."')";
+        $sql_date_end="CONVERT_TZ('"._str($IN['date_end'])." 23:59:59', '+00:00', '"._str($timezone_offset_inverted)."')";
+    }
+
+    $sql_where[]="tbl_clicks.date_add BETWEEN {$sql_date_start} AND {$sql_date_end}";
+
+    $sql='SELECT
+'.implode (', ', $sql_select).'
+FROM
+	tbl_clicks
+	'.implode (' ', $sql_join).'
+WHERE
+    1=1 AND
+	'.implode (' AND ', $sql_where).'
+GROUP BY
+'.implode (',', $sql_group).'
+ORDER BY '.implode (', ', $sql_order);
+
+    $result=mysql_query($sql);
+
+    $arr_report_data=array();
+    $arr_report_totals=array();
+
+    $arr_data=array();
+    while($row=mysql_fetch_assoc($result))
+    {
+        $arr_data[]=$row;
+    }
+
+
+    switch ($IN['range_type'])
+    {
+        case 'all':
+            $rowNumber=0;
+            foreach ($arr_data as $row)
+            {
+                /*
+                <td nowrap="" class="report-header">{{main_column_value}}</td>
+                <td>{{clicks_count}}</td>
+                <td class="col_s">{{sales_count}}</td>
+                <td class="col_l">{{leads_count}}</td>
+                <td class="col_a">{{actions_count}}</td>
+                <td class="col_s">{{sales_conversion}}</td>
+                <td class="col_l">{{leads_conversion}}</td>
+                <td class="col_a">{{actions_conversion}}</td>
+                <td>{{cost}}</td>
+                <td class="col_s col_a">{{profit}}</td>
+                <td class="col_s">{{epc}}</td>
+                <td class="col_s col_a">{{roi}}</td>
+                <td class="col_l">{{cpl}}</td>
+            */
+
+                $arr_report_data['table_rows'][$rowNumber]['values'][]=array('value' => $row['c1'],
+                                                    'class' =>'report-header', 'nowrap' => 'nowrap');
+
+                $arr_report_data['table_rows'][$rowNumber]['values'][]=array('value' => $row['cnt']);
+
+                $arr_report_data['table_rows'][$rowNumber]['values'][]=array('value' => $row['sales_count'],
+                    'class' =>'col_s');
+
+                $arr_report_data['table_rows'][$rowNumber]['values'][]=array('value' => $row['leads_count'],
+                    'class' =>'col_l');
+
+                $arr_report_data['table_rows'][$rowNumber]['values'][]=array('value' => $row['actions_count'],
+                    'class' =>'col_a');
+
+                $arr_report_data['table_rows'][$rowNumber]['values'][]=array('value' => round($row['actions_conversion_rate'], 3).'%', 'class' =>'col_a');
+
+                $arr_report_data['table_rows'][$rowNumber]['values'][]=array('value' => round($row['cost'], 2));
+                $arr_report_data['table_rows'][$rowNumber]['values'][]=array('value' => round($row['profit'], 2));
+
+                $arr_report_data['table_rows'][$rowNumber]['values'][]=array('value' => $row['roi']);
+
+                $rowNumber++;
+
+                $arr_report_totals['clicks_count']+=$row['cnt'];
+                $arr_report_totals['sales_count']+=$row['sales_count'];
+                $arr_report_totals['leads_count']+=$row['leads_count'];
+                $arr_report_totals['actions_count']+=$row['actions_count'];
+                $arr_report_totals['cost']+=$row['cost'];
+                $arr_report_totals['profit']+=$row['profit'];
+            }
+        break;
+
+        case 'hourly':
+            $arr_data_columns=array();
+            foreach ($arr_data as $row)
+            {
+                $main_column_value=($row['c1']!='')?$row['c1']:'{empty}';
+                $arr_data_columns[$main_column_value][$row['hour_add']]=$row['cnt'];
+            }
+
+            $rowNumber=0;
+            foreach ($arr_data_columns as $main_column_value=>$value)
+            {
+                // First column
+                $arr_report_data['table_rows'][$rowNumber]['values'][0]=array('value'=>$main_column_value, 'class'=>'', 'nowrap'=>'nowrap');
+                for($columnNumber=0; $columnNumber<24; $columnNumber++)
+                {
+                    $arr_report_data['table_rows'][$rowNumber]['values'][$columnNumber+1]=array(
+                        'value'=>$arr_data_columns[$main_column_value][$columnNumber],
+                        'class'=>''
+                    );
+                }
+                $rowNumber++;
+            }
+        break;
+    }
+
+    $arr_report_data['clicks_total']=$arr_report_totals['clicks_count'];
+    $arr_report_data['sales_total']=$arr_report_totals['sales_count'];
+    $arr_report_data['leads_total']=$arr_report_totals['leads_count'];
+    $arr_report_data['actions_total']=$arr_report_totals['actions_count'];
+    $arr_report_data['sales_conversion_total']=round($arr_report_data['sales_total']/$arr_report_data['clicks_total']*100, 3).'%';
+    $arr_report_data['cost_total']=$arr_report_totals['cost'];
+    $arr_report_data['profit_total']=$arr_report_totals['profit'];
+
+// Fill report params, hidden
+    foreach ($IN as $key=>$value)
+    {
+        if ($allowed_report_in_params[$key]==$value)
+        {
+            // Skip parameters set to default values
+            continue;
+        }
+
+        if ($IN['report_period']!='custom' && (($key=='date_start') || ($key=='date_end')))
+        {
+            // Report period is set, no need to send date_start and date_end with next request
+            continue;
+        }
+
+        $arr_report_data['report_params'][]=array('name'=>$key, 'value'=>$value);
+    }
+
+// Fill report header values
+    $arr_report_data['date_from']=date('d.m.Y', strtotime($IN['date_start']));
+    $arr_report_data['date_to']=date('d.m.Y', strtotime($IN['date_end']));
+
+// ==== DATA IS LOADED ===
+    switch ($IN['range_type'])
+    {
+        case 'all':
+            // Fill table columns
+            $arr_table_columns=array(
+                $arr_allowed_main_columns[$IN['main_column']].'|main_column',
+                'Переходы|clicks_count',
+                'Продажи|sales_count|col_s',
+                'Лиды|leads_count|col_l',
+                'Действия|actions_count|col_a',
+                'Конверсия|sales_conversion_rate|col_s',
+                'Конверсия|leads_conversion_rate|col_l',
+                'Конверсия|actions_conversion_rate|col_a',
+                'Затраты|cost',
+                'Прибыль|profit|col_s col_a',
+                'EPC|epc|col_s',
+                'ROI|roi|col_s col_a',
+                'CPL|cpl|col_l');
+        break;
+
+        case 'hourly':
+            $arr_table_columns=array();
+            $arr_table_columns[]=$arr_allowed_main_columns[$IN['main_column']].'|main_column';
+            for ($i=0; $i<24; $i++)
+            {
+                $arr_table_columns[]=sprintf("%02d", $i);
+            }
+        break;
+    }
+
+    foreach ($arr_table_columns as $cur)
+    {
+        list ($caption, $name, $class)=explode ('|', $cur);
+        $is_sorted=($name==$IN['sort_by'])?'sorting_desc':'sorting';
+        $arr_report_data['table-columns'][]=array('caption'=>$caption, 'name'=>$name, 'class'=>$class,
+            'is_sorted'=>$is_sorted);
+    }
+
+    // Fill toolbar buttons
+    $arr_toolbar_buttons['main']=array('Оффер|main_column=offer_name',
+        'Источник|main_column=source_name',
+        'Кампания|main_column=campaign_name',
+        'Объявление|main_column=campaign_ads',
+        'Площадка|main_column=referer',
+        'Ссылка|main_column=link_name'
+    );
+
+    $arr_toolbar_buttons['geo']=array('Страна|main_column=country',
+        'Регион|main_column=region',
+        'Город|main_column=city',
+        'IP адрес|main_column=user_ip'
+    );
+
+    $arr_toolbar_buttons['isp']=array('Провайдер|main_column=isp');
+
+    $arr_toolbar_buttons['device']=array('ОС|main_column=user_os', 'Платформа|main_column=user_platform', 'Браузер|main_column=user_browser');
+    $arr_toolbar_buttons['link-param']=array('Параметр ссылки #1|main_column=link_param1',
+        'Параметр ссылки #2|main_column=link_param2',
+        'Параметр ссылки #3|main_column=link_param3',
+        'Параметр ссылки #4|main_column=link_param4',
+        'Параметр ссылки #5|main_column=link_param5');
+
+    $arr_toolbar_buttons['visit-param']=array('Параметр перехода #1|main_column=click_param1',
+        'Параметр перехода #2|main_column=click_param2',
+        'Параметр перехода #3|main_column=click_param3',
+        'Параметр перехода #4|main_column=click_param4',
+        'Параметр перехода #4|main_column=click_param4',
+        'Параметр перехода #5|main_column=click_param5',
+        'Параметр перехода #6|main_column=click_param6',
+        'Параметр перехода #7|main_column=click_param7',
+        'Параметр перехода #8|main_column=click_param8',
+        'Параметр перехода #9|main_column=click_param9',
+        'Параметр перехода #10|main_column=click_param10',
+        'Параметр перехода #11|main_column=click_param11',
+        'Параметр перехода #12|main_column=click_param12',
+        'Параметр перехода #13|main_column=click_param13',
+        'Параметр перехода #14|main_column=click_param14',
+        'Параметр перехода #15|main_column=click_param15');
+
+    $arr_toolbar_buttons['date-selector']=array('Сегодня|report_period=today',
+        'Вчера|report_period=yesterday',
+        'Последняя неделя|report_period=lastweek',
+        'Последний месяц|report_period=lastmonth',
+        'Последний квартал|report_period=lastquarter');
+
+    foreach ($arr_toolbar_buttons as $key=>$toolbar_group)
+    {
+        foreach ($toolbar_group as $cur)
+        {
+            list ($caption, $data)=explode ('|', $cur);
+            list ($name, $value)=explode ('=', $data);
+            $is_active=($value==$IN['main_column'])?'active':'';
+            $arr_report_data['toolbar-buttons-'.$key][]=array('caption'=>$caption, 'name'=>$name,
+                'value'=>$value, 'is_active'=>$is_active);
+        }
+    }
+    return $arr_report_data;
+}
+
 function load_from_cache($params) {
     $out = array();
 
@@ -97,7 +532,8 @@ function get_visitors_flow_data($filter = '', $start = 0, $start_s = 0, $limit =
     $filter_str = '';
     if ($filter != '') {
 
-        switch ($filter['filter_by']) {
+        switch ($filter['filter_by'])
+        {
             case 'hour':
                 if (empty($filter['source_name'])) {
                     $where = "(`source_name` = '' OR `source_name` = 'source' OR `source_name` = 'SOURCE' OR `source_name` = '{empty}')";
@@ -126,48 +562,61 @@ function get_visitors_flow_data($filter = '', $start = 0, $start_s = 0, $limit =
             //sprintf('%02d', $i)
 
             default:
-                $filter_str .= " and " . mysql_real_escape_string($filter['filter_by']) . "='" . mysql_real_escape_string($filter['filter_value']) . "'";
-                break;
+                if ($filter['filter_by']=='source_name' && $filter['filter_value']=='{empty}')
+                {
+                    $filter_str .= " and " . mysql_real_escape_string($filter['filter_by']) . "='source'";
+                }
+                else
+                {
+                    $filter_str .= " and " . mysql_real_escape_string($filter['filter_by']) . "='" . mysql_real_escape_string($filter['filter_value']) . "'";
+                }
+
+            break;
         }
     }
 
-    if (_CLICKS_SPOT_SIZE > 0) {
-        // Определяемся с наборами спотов
-        // Если указана дата
-        if ($date) {
-            $spot_ids = clicks_spot_get($date, $date);
+    $convert_tz_condition="CONVERT_TZ(t1.date_add, '+00:00', '" . _str($timezone_shift) . "')";
+    if ($timezone_shift=='+00:00'){$convert_tz_condition='t1.date_add';}
+    if (substr($timezone_shift, 0, 1)=='+'){$timezone_shift_inverted=str_replace('+','-',$timezone_shift);}
+    if (substr($timezone_shift, 0, 1)=='-'){$timezone_shift_inverted=str_replace('-','+',$timezone_shift);}
 
-            // Если поиск по SubID
-        } elseif (!empty($subid)) {
-            $tmp = subidtotime($subid);
-            $spot_ids = clicks_spot_get($tmp, $tmp);
-
-            // Поиск по всем спотам. Жуть полная, а что делать?
-        } else {
-            $spot_ids = clicks_spot_get('all');
+    if ($date!='')
+    {
+        if (in_array($timezone_shift_inverted, array('+00:00', '-00:00', '00:00')))
+        {
+            $date_str='AND t1.date_add BETWEEN '.
+                "'"._str($date)." 00:00:00'".
+                " AND ".
+                "'"._str($date)." 23:59:59'";
+        }
+        else
+        {
+            $date_str='AND t1.date_add BETWEEN '.
+                "CONVERT_TZ('"._str($date)." 00:00:00', '+00:00', '"._str($timezone_shift_inverted)."')".
+                " AND ".
+                "CONVERT_TZ('"._str($date)." 23:59:59', '+00:00', '"._str($timezone_shift_inverted)."')";
         }
 
-        //dmp($spot_ids);
-
-        if (empty($spot_ids)) {
-            return array(0, array());
-        }
-
-        $clicks_table = "tbl_clicks_s" . $spot_ids[$start_s];
-    } else {
-        $clicks_table = 'tbl_clicks';
+    }else
+    {
+        $date_str='';
     }
 
-    $q = "select *, date_format(CONVERT_TZ(t1.date_add, '+00:00', '" . _str($timezone_shift) . "'), '%d.%m.%Y %H:%i') as dt, timediff(NOW(), t1.date_add) as td 
-        from `" . $clicks_table . "` t1
-        where 1
+    $q = "SELECT
+                *,
+                DATE_FORMAT(".$convert_tz_condition.", '%d.%m.%Y %H:%i') as dt,
+                timediff(NOW(), t1.date_add) as td
+        FROM
+            `tbl_clicks` t1
+        WHERE 1
         {$filter_str}
-        " . ($date ? "and CONVERT_TZ(t1.date_add, '+00:00', '" . _str($timezone_shift) . "') between STR_TO_DATE('" . $date . " 00:00:00', '%Y-%m-%d %H:%i:%s') and STR_TO_DATE('" . $date . " 23:59:59', '%Y-%m-%d %H:%i:%s')" : '' ) . "
-        order by date_add desc limit $start, $limit";
-
-    //echo $q . '<br >';
+        {$date_str}
+        ORDER BY
+            date_add DESC
+        LIMIT $start, $limit";
 
     $rs = db_query($q);
+
     $arr_data = array();
 
     while ($row = mysql_fetch_assoc($rs)) {
@@ -216,14 +665,15 @@ function sdate($d, $today = true) {
     }
 }
 
-function get_clicks_rows($params, $start = 0, $start_s = 0, $limit = 0, $campaign_params, $click_params) {
+function get_clicks_rows($params, $start = 0, $start_s = 0, $limit = 0, $campaign_params, $click_params)
+{
 
     $more = 0; // Записей больше нет, этот запрос крайний
 
     $spot_ids = array(); // Споты, в которых будем искать данные
     // Вставка для Turbo режима
-    if (_CLICKS_SPOT_SIZE > 0) {
-
+    if (_CLICKS_SPOT_SIZE > 0)
+    {
         $spot_ids = clicks_spot_get($params['from'], $params['to']);
 
         if (empty($spot_ids)) {
@@ -231,12 +681,15 @@ function get_clicks_rows($params, $start = 0, $start_s = 0, $limit = 0, $campaig
         }
 
         $clicks_table = "tbl_clicks_s" . $spot_ids[$start_s];
-    } else {
+    }
+    else
+    {
         $clicks_table = "tbl_clicks";
     }
 
     // Применяем фильтры
-    if (!empty($params['filter'][0]) and is_array($params['filter'][0])) {
+    if (!empty($params['filter'][0]) and is_array($params['filter'][0]))
+    {
         $tmp = array();
         foreach ($params['filter'][0] as $k => $v) {
             if ($k == 'referer') {
@@ -285,7 +738,8 @@ function get_clicks_rows($params, $start = 0, $start_s = 0, $limit = 0, $campaig
         $params['to'] .= ' 23:59:59';
     }
 
-    if (empty($params['cache'])) { // Кэш мы считаем без смещения по часовому поясу
+    if (empty($params['cache']))
+    { // Кэш мы считаем без смещения по часовому поясу
         $timezone_shift = get_current_timezone_shift(); // Смещение часового пояса
         $where .= " and CONVERT_TZ(t1.`date_add`, '+00:00', '" . _str($timezone_shift) . "') BETWEEN STR_TO_DATE('" . $params['from'] . "', '%Y-%m-%d %H:%i:%s') AND STR_TO_DATE('" . $params['to'] . "', '%Y-%m-%d %H:%i:%s')";
         $time_add = "UNIX_TIMESTAMP(CONVERT_TZ(t1.`date_add`, '+00:00', '" . _str($timezone_shift) . "')) as `time_add`,";
@@ -316,15 +770,6 @@ function get_clicks_rows($params, $start = 0, $start_s = 0, $limit = 0, $campaig
             WHERE 1 " . $where . (empty($params['where']) ? '' : " and " . $params['where'] ) . "
             ORDER BY t1.id ASC
             LIMIT $start, $limit";
-
-    if ($_GET['debug']) {
-        echo $q . '<br />';
-    }
-    //echo $q . '<br />';
-    /*
-      if($_SERVER['REMOTE_ADDR'] == '37.44.76.80') {
-      echo $q . '<br />';
-      } */
 
     if ($rs = db_query($q) and mysql_num_rows($rs) > 0) {
         while ($r = mysql_fetch_assoc($rs)) {
@@ -416,7 +861,8 @@ function php_date_default_timezone_set($GMT) {
  * mode - режим выборки и группировки: offers, landings, lp_offers
  * cache - разрешить использовать кэш, 1 - из кэша, 2 - для кэша (без часового пояса)
  */
-function get_clicks_report_grouped2($params) {
+function get_clicks_report_grouped2($params)
+{
     global $group_types;
 
     // Флаги существующих параметров
@@ -432,7 +878,7 @@ function get_clicks_report_grouped2($params) {
 
     // По временным промежуткам
     $date_formats = array(
-        'hour' => 'H', // Y-m-d
+        'hour' => 'H',
         'day' => 'Y-m-d',
         'month' => 'm.Y'
     );
@@ -450,7 +896,6 @@ function get_clicks_report_grouped2($params) {
 
     $timezone_backup = date_default_timezone_get();
 
-    //date_default_timezone_set("GMT");
     // Поправка на разницу времени PHP и Базы 
     $timezone_shift_sec += strtotime(mysql_now()) - time();
 
@@ -512,47 +957,25 @@ function get_clicks_report_grouped2($params) {
     $more = 1;
 
     // Используем кэш
-    if ($params['cache'] == 1) {
-        $load_live_data = 0; // будем ли мы подгружать живые данные
-
-        /*
-          if ($params['part'] == 'hour') {
-          if ($params['from'] == date('Y-m-d')) {
-
-          }
-          //$load_live_data = 0;
-          //dmp($params);
-
-          $data = load_from_cache($params);
-          //dmp($data);
-          //die();
-          } elseif ($params['part'] == 'day') {
-          //die('123');
-          //$load_live_data = 0;
-          $data = load_from_cache($params);
-
-          if ($_GET['debug']) {
-          dmp($data);
-          }
-          }
-         * 
-         */
+    if ($params['cache'] == 1)
+    {
         list($data, $click_params, $campaign_params) = load_from_cache($params);
-        if ($_GET['debug']) {
-            dmp($data);
-        }
-
         $load_live_data = 0;
-    } else {
+    }
+    else
+    {
         $load_live_data = 1;
     }
 
-    if ($load_live_data) {
-        while ($more) {
+    if ($load_live_data)
+    {
+        while ($more)
+        {
             $rows = array();
 
             // Получаем порцию данных
             list($more, $start, $start_s, $rows, $campaign_params, $click_params) = get_clicks_rows($params, $start, $start_s, $limit, $campaign_params, $click_params);
+
 
             // Режим обработки для Landing Page
             // группируем всю информацию с подчинённых переходов на родительские
@@ -872,9 +1295,6 @@ function get_clicks_report_grouped2($params) {
             } // Стандартный режим
         } // Цикличный сбор данных из БД
 
-        if ($_GET['debug']) {
-            dmp($data);
-        }
     }
 
     // ----------------------------------------
@@ -1055,8 +1475,6 @@ function get_clicks_report_grouped2($params) {
         }
     }
 
-    //dmp($click_params);
-    //dmp($campaign_params);
 
     return array(
         'data' => $data,
@@ -1124,12 +1542,14 @@ function params_order($a, $b) {
  * );
  */
 
-function get_clicks_report_element2($data, $emp = true, $sub = true, $cols = false) {
+function get_clicks_report_element2($data, $emp = true, $sub = true, $cols = false)
+{
     global $report_cols;
     $out = array();
 
     // Используем только пользовательские колонки, если они определены
-    if ($cols and is_array($cols)) {
+    if ($cols and is_array($cols))
+    {
         $data_cols = array();
         foreach ($cols as $type => $type_cols) {
             foreach ($type_cols as $col) {

@@ -1,0 +1,46 @@
+<form id="current_report_params" method="GET">
+    <input type="hidden" name="act" value="reports">
+    <input type="hidden" name="type" value="basic">
+    {{#report_params}}
+    <input type='hidden' name='{{name}}' value='{{value}}'>
+    {{/report_params}}
+</form>
+
+<div class="header-report">
+    <div class="dropdown date-select">
+        <a class="dropdown-toggle" href="">
+            <h2>Офферы <span class="amid">за</span></h2>
+            <div class="pull-right" id="per_day_range" style="margin-left:7px;">
+                <h2>
+                    <span id="cur_day_range">
+                        <span class="date">{{date_from}}</span>
+                        <span class="amid">—</span>
+                        <span class="date">{{date_to}}</span>
+                        <i class="cpa cpa-angle-down"></i>
+                    </span>
+                </h2>
+            </div>
+        </a>
+
+        <ul class="dropdown-menu dropdown-menu-right">
+            {{#toolbar-buttons-date-selector}}
+                <li><a class="dropdown-link" href="" onclick="return refresh_report('{{name}}', '{{value}}');">{{caption}}</a></li>
+            {{/toolbar-buttons-date-selector}}
+
+            <li class="dropdown-footer">
+                <a class="dropdown-link" data-original-title="" data-popover-content="#date-range" data-toggle="range-popover" href="">Свой интервал<i class="cpa cpa-angle-right pull-right"></i></a>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<div class="hidden" id="date-range">
+    <div class="popover-body">
+        <div class="input-daterange input-group datepicker" id="date-range-inner">
+            <input class="form-control" name="start" type="text">
+            <span class="input-group-addon">до</span>
+            <input class="form-control" name="end" type="text">
+        </div>
+        <a href="#" class="btn btn-default btn-block" onclick="return refresh_report('custom_range', this);"><span>Показать выбранные</span></a>
+    </div>
+</div>
