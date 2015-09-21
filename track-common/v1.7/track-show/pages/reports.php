@@ -8,7 +8,7 @@ $mTemplate = new Mustache_Engine(array(
     'loader' => new Mustache_Loader_FilesystemLoader(_TRACK_SHOW_COMMON_PATH . '/templates/views'),
 ));
 
-$arr_report_data=prepare_report($_REQUEST);
+$arr_report_data=prepare_report($_REQUEST+array('report_params'=>array('act'=>'reports')));
 echo $mTemplate->render('report-page', $arr_report_data);
 ?>
 <script>
@@ -26,31 +26,31 @@ echo $mTemplate->render('report-page', $arr_report_data);
                 date_end=date_end.split('.');
                 date_end=date_end[2] + '-' + date_end[1] + '-' + date_end[0];
 
-                if ($('#current_report_params input[name="date_start"]').length)
+                if ($('#report_params input[name="date_start"]').length)
                 {
-                    $('#current_report_params input[name="date_start"]').val(date_start);
+                    $('#report_params input[name="date_start"]').val(date_start);
                 }
                 else
                 {
-                    $('#current_report_params').append('<input type="hidden" name="date_start" value="'+date_start+'" />');
+                    $('#report_params').append('<input type="hidden" name="date_start" value="'+date_start+'" />');
                 }
 
-                if ($('#current_report_params input[name="date_end"]').length)
+                if ($('#report_params input[name="date_end"]').length)
                 {
-                    $('#current_report_params input[name="date_end"]').val(date_end);
+                    $('#report_params input[name="date_end"]').val(date_end);
                 }
                 else
                 {
-                    $('#current_report_params').append('<input type="hidden" name="date_end" value="'+date_end+'" />');
+                    $('#report_params').append('<input type="hidden" name="date_end" value="'+date_end+'" />');
                 }
 
                 // Remove report_period field, dates are already set
-                $('#current_report_params input[name="report_period"]').remove();
+                $('#report_params input[name="report_period"]').remove();
             break;
 
             default:
                 var param_found=false;
-                $('#current_report_params input[type="hidden"]').each(function() {
+                $('#report_params input[type="hidden"]').each(function() {
                     if ($(this).attr('name')==param_name)
                     {
                         param_found=true;
@@ -59,18 +59,18 @@ echo $mTemplate->render('report-page', $arr_report_data);
                 });
                 if (!param_found)
                 {
-                    $('#current_report_params').append('<input type="hidden" name="'+param_name+'" value="'+param_value+'" />');
+                    $('#report_params').append('<input type="hidden" name="'+param_name+'" value="'+param_value+'" />');
                 }
 
                 // Remove date_start and date_end fields, we have custom period
                 if (param_name=='report_period')
                 {
-                    $('#current_report_params input[name="date_start"]').remove();
-                    $('#current_report_params input[name="date_end"]').remove();
+                    $('#report_params input[name="date_start"]').remove();
+                    $('#report_params input[name="date_end"]').remove();
                 }
             break;
         }
-        $("#current_report_params").submit();
+        $("#report_params").submit();
         return false;
     }
 </script>

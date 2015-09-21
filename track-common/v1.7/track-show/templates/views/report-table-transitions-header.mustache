@@ -1,0 +1,27 @@
+<div class="page-heading">
+    <div class="header-content">
+        <div class="row">
+            <div class="col-md-4">
+                <a class="btn btn-link no-side-padding" href="#" onclick="return refresh_report('date', '{{date_prev}}');">
+                    <i class="cpa cpa-angle-left"></i>
+                    <span>{{date_prev_caption}}</span>
+                </a>
+            </div>
+
+            <div class="col-md-4 text-center">
+                <a class="current-date" href="#" id="datepicker-single" onclick="return false;">
+                    <h2><span>{{date_current_caption}}</span></h2>
+                </a>
+            </div>
+
+            <div class="col-md-4">
+                {{^hide_next_day}}
+                    <a class="btn btn-link no-side-padding pull-right" href="#" onclick="return refresh_report('date', '{{date_next}}');">
+                        <span>{{date_next_caption}}</span>
+                        <i class="cpa cpa-angle-right"></i>
+                    </a>
+                {{/hide_next_day}}
+            </div>
+        </div>
+    </div>
+</div>

@@ -199,20 +199,10 @@ if ($settings[0] == true) {
     $_DB_PASSWORD = $arr_settings['password'];
     $_DB_NAME = $arr_settings['dbname'];
     $_DB_HOST = $arr_settings['dbserver'];
-} else {
+}
+else
+{
     switch ($settings[1]) {
-        /*
-          case 'cache_not_writable':
-          $cache_folder = $settings[2];
-          $bHideLeftSidebar = true;
-          $bHideTopMenu = true;
-          $bHideBottomMenu = true;
-          $page_content = "system-message-cache.php";
-          include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
-          exit();
-          break;
-         */
-
         case 'first_run':
         default:
             $page_sidebar = "sidebar-left-install.inc.php";
@@ -220,18 +210,7 @@ if ($settings[0] == true) {
 
             include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
             exit();
-
-
-            /*
-              $bHideLeftSidebar = true;
-              $bHideTopMenu = true;
-              $bHideBottomMenu = true;
-              $page_content = "system-first-run.php";
-              include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
-              exit();
-             * 
-             */
-            break;
+        break;
     }
     exit();
 }
@@ -245,42 +224,38 @@ mysql_query('SET NAMES utf8');
 mysql_query("SET @@GLOBAL.sql_mode= ''");
 mysql_query("SET @@SESSION.sql_mode= ''");
 
-if ($_REQUEST['ajax_act'] == 'a_load_flow') {
+if ($_REQUEST['ajax_act'] == 'a_load_flow')
+{
     $filter = '';
-    if ($_REQUEST['filter_by'] != '') {
-        switch ($_REQUEST['filter_by']) {
+    if ($_REQUEST['filter_by'] != '')
+    {
+        switch ($_REQUEST['filter_by'])
+        {
             case 'hour':
                 $filter = array(
                     'filter_by' => $_REQUEST['filter_by'],
-                    'source_name' => $_REQUEST['source_name'],
-                    'date' => $_REQUEST['date'],
-                    'hour' => $_REQUEST['hour']
+                    'filter_value'=>array($_REQUEST['hour'], $_REQUEST['source_name'])
                 );
-                break;
+            break;
 
             default:
                 $filter = array(
                     'filter_by' => $_REQUEST['filter_by'],
                     'filter_value' => $_REQUEST['value']
                 );
-                break;
+            break;
         }
     }
 
     list($more, $arr_data, $start, $start_s) = get_visitors_flow_data($filter, rq('start', 2), rq('start_s', 2), 100, $_REQUEST['date']);
-
+print_r ($arr_data);
     $out = array(
-        'data' => tpx('stats-flow-rows', array('data' => $arr_data)),
+        'data' => $arr_data,
         'more' => $more,
         'start' => $start,
         'start_s' => $start_s,
     );
     echo json_encode($out);
-    /*
-      foreach ($arr_data as $row) {
-      include _TRACK_SHOW_COMMON_PATH . '/pages/stats-flow-row.php';
-      }
-     */
     exit();
 }
 
@@ -1277,42 +1252,8 @@ switch ($_REQUEST['page']) {
                 break;
 
             default:
+                // Stats-flow
                 $timezone_select = true; // показываем выбор часового пояса в шапке
-                $search = $_REQUEST['search'];
-                $filter = '';
-                if ($_REQUEST['filter_by'] != '') {
-                    switch ($_REQUEST['filter_by']) {
-                        case 'search':
-                            $filter = array(
-                                'filter_by' => $_REQUEST['filter_by'],
-                                'filter_value' => $_REQUEST['search'],
-                                'date' => $_REQUEST['date'],
-                            );
-                            break;
-
-                        case 'hour':
-                            $filter = array(
-                                'filter_by' => $_REQUEST['filter_by'],
-                                'source_name' => $_REQUEST['source_name'],
-                                'date' => $_REQUEST['date'],
-                                'hour' => $_REQUEST['hour']
-                            );
-                            break;
-
-                        default:
-                            $filter = array(filter_by => $_REQUEST['filter_by'], filter_value => $_REQUEST['value']);
-                            break;
-                    }
-                }
-
-                // Get clicks for list of clicks
-                list($more, $arr_data) = get_visitors_flow_data($filter, 0, 0, 20, $_REQUEST['date']);
-
-                if ($search!='')
-                {
-                    // Disable more button if search was performed
-                    $more=false;
-                }
 
                 $page_sidebar = "sidebar-left-reports.inc.php";
                 $page_content = "stats-flow.php";

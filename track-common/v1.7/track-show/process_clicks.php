@@ -1,5 +1,4 @@
 <?php
-
     if(function_exists('set_time_limit')){set_time_limit(0);}
 
     prepare_debug();
@@ -11,7 +10,6 @@
     enable_shutdown_tracking();
 
     set_already_running_flag();
-
 
     require _TRACK_SHOW_COMMON_PATH . "/source_config.php";
 
@@ -131,6 +129,7 @@ function check_already_running_flag()
     $path=_CACHE_PATH.'/.process_clicks_running';
     if (file_exists($path))
     {
+
         $last_run_time=file_get_contents($path);
         if (time()-$last_run_time > 60*5)
         {
@@ -237,6 +236,9 @@ function save_click_info ($arr_click_info, $timeshift = 0)
 	// 13. Referer
 	$OUT['referer']=$IN['referer'];
 
+    // 14. Keyword
+    $OUT['keyword']=parse_search_referer($IN['referer']);
+
 	// 14. Links params 1-5
 	$OUT['link_param1']=$IN['link_param1'];
 	$OUT['link_param2']=$IN['link_param2'];
@@ -297,7 +299,7 @@ function save_click_info ($arr_click_info, $timeshift = 0)
 
     $sql_prepared="INSERT IGNORE INTO tbl_clicks SET `date_add`= ?, `date_add_day`= ?, `date_add_hour`= ?, `user_ip`= ?, `user_agent`= ?, `user_os`= ?, `user_os_version`= ?, `user_platform`= ?, `user_platform_info`= ?, `user_platform_info_extra`= ?, `user_browser`= ?, `user_browser_version`= ?, `is_mobile_device`= ?, `is_phone`= ?, `is_tablet`= ?, `country`= ?, `state`= ?, `city`= ?, `region`= ?, `isp`= ?, `rule_id`= ?, `out_id`= ?, `subid`= ?, `is_connected`= ?, `is_unique`= ?, `parent_id`= ?, `subaccount`= ?, `source_name`= ?, `campaign_name`= ?, `ads_name`= ?, `referer`= ?, `search_string`= ?, `campaign_param1`= ?, `campaign_param2`= ?, `campaign_param3`= ?, `campaign_param4`= ?, `campaign_param5`= ?{$sql_prepared_visit_params}";
 
-    $arr_bind_values=array($OUT['date_time'], $OUT['day'], $OUT['hour'], $OUT['ip'], $OUT['user_agent'], $OUT['os'], $OUT['os_version'], $OUT['platform'], $OUT['platform_info'], $OUT['platform_info_extra'], $OUT['browser'], $OUT['browser_version'], $OUT['is_mobile_device'], $OUT['is_phone'], $OUT['is_tablet'], $OUT['country'], $OUT['state'], $OUT['city'], $OUT['region'], $OUT['isp'], $OUT['link_id'], $OUT['offer_id'], $OUT['subid'], $OUT['is_connected'], $OUT['is_unique'], $OUT['parent_id'], $OUT['subaccount'], $OUT['source'], $OUT['campaign'], $OUT['ads'], $OUT['referer'], '', $OUT['link_param1'], $OUT['link_param2'], $OUT['link_param3'], $OUT['link_param4'], $OUT['link_param5']);
+    $arr_bind_values=array($OUT['date_time'], $OUT['day'], $OUT['hour'], $OUT['ip'], $OUT['user_agent'], $OUT['os'], $OUT['os_version'], $OUT['platform'], $OUT['platform_info'], $OUT['platform_info_extra'], $OUT['browser'], $OUT['browser_version'], $OUT['is_mobile_device'], $OUT['is_phone'], $OUT['is_tablet'], $OUT['country'], $OUT['state'], $OUT['city'], $OUT['region'], $OUT['isp'], $OUT['link_id'], $OUT['offer_id'], $OUT['subid'], $OUT['is_connected'], $OUT['is_unique'], $OUT['parent_id'], $OUT['subaccount'], $OUT['source'], $OUT['campaign'], $OUT['ads'], $OUT['referer'], $OUT['keyword'], $OUT['link_param1'], $OUT['link_param2'], $OUT['link_param3'], $OUT['link_param4'], $OUT['link_param5']);
 
     $arr_bind_values=array_merge(array('ssisssssssssiiissssssssiiisssssssssss'.str_repeat('s', count($bind_visit_params))), $arr_bind_values, $bind_visit_params);
 
@@ -500,7 +502,7 @@ function parse_visit_params($IN, &$parent_subid)
 							
 							$i++;
 							$result["click_param_name".$i] = 'text';
-							$result["click_param_value".$i] = parse_search_refer($referer);
+							$result["click_param_value".$i] = parse_search_referer($referer);
 						}
 					break;
 				}
@@ -793,4 +795,86 @@ function mark_file_processing_now($cur_file)
 function mark_file_processed($file_name, $cur_file)
 {
 	rename ($file_name, _CACHE_PATH."/clicks_processed/{$cur_file}");	    	
+}
+
+function parse_search_referer($refer, $tail = 1)
+{
+    // База данных поисковых систем
+    $search_engines = Array(
+        Array("name" => "Картинки.Mail", "pattern" => "go.mail.ru/search_images", "param" => "q"),
+        Array("name" => "Mail", "pattern" => "go.mail.ru", "param" => "q"),
+        Array("name" => "Google Images", "pattern" => "images.google.", "param" => "q"),
+        Array("name" => "Google", "pattern" => "google.", "param" => "q"),
+        Array("name" => "Google", "pattern" => "google.", "param" => "as_q"),
+        Array("name" => "Live Search", "pattern" => "search.live.com", "param" => "q"),
+        Array("name" => "RapidShare Search Engine", "pattern" => "rapidshare-search-engine", "param" => "s"),
+        Array("name" => "Rambler", "pattern" => "rambler.ru", "param" => "query"),
+        Array("name" => "Rambler", "pattern" => "rambler.ru", "param" => "words"),
+        Array("name" => "Yahoo!", "pattern" => "search.yahoo.com", "param" => "p"),
+        Array("name" => "Nigma", "pattern" => "nigma.ru/index.php", "param" => "s"),
+        Array("name" => "Nigma", "pattern" => "nigma.ru/index.php", "param" => "q"),
+        Array("name" => "MSN", "pattern" => "search.msn.com/results", "param" => "q"),
+        Array("name" => "Bing", "pattern" => "bing.com/search", "param" => "q"),
+        Array("name" => "Ask", "pattern" => "ask.com/web", "param" => "q"),
+        Array("name" => "QIP", "pattern" => "search.qip.ru/search", "param" => "query"),
+        Array("name" => "RapidAll", "pattern" => "rapidall.com/search.php", "param" => "query"),
+        Array("name" => "Яндекс.Картинки", "pattern" => "images.yandex.ru/", "param" => "text"),
+        Array("name" => "Яндекс.Mobile", "pattern" => "m.yandex.ru/search", "param" => "query"),
+        Array("name" => "Яндекс", "pattern" => "hghltd.yandex.net", "param" => "text"),
+        Array("name" => "Яндекс", "pattern" => "yandex.ru", "param" => "text"),
+        Array("name" => "Яндекс", "pattern" => "yandex.ua", "param" => "text"),
+        Array("name" => "Яндекс", "pattern" => "yandex.kz", "param" => "text"),
+        Array("name" => "Яндекс", "pattern" => "yandex.by", "param" => "text"),
+        Array("name" => "Avg", "pattern" => "search.avg.com", "param" => "q"),
+        Array("name" => "Ukr.net", "pattern" => "search.ukr.net", "param" => "search_query")
+    );
+
+    // Отрезать от ссылки "хвост"
+    $tmp = explode("?", $refer);
+    $chk_site = $tmp[0];  // Имя сайта
+
+    $arr_params=array();
+    parse_str(parse_url($refer, PHP_URL_QUERY), $arr_params);
+
+    $result_engine = "";
+    $result_title = $refer;
+    $signature_found = false;
+
+    foreach ($arr_params as $param_name=>$param_value)
+    {
+        foreach ($search_engines as $engine)
+        {
+            // Поиск по всем сигнатурам
+            if (strpos($chk_site, $engine['pattern']) !== false &&
+                $param_name == $engine['param'] && $param_value!='')
+            {
+                // Сигнатура найдена
+                $result_title = $param_value;
+                $result_engine = $engine['name'];
+                $signature_found = true;
+                break;
+            }
+        }
+        // Show first pattern occurence
+        if ($signature_found) {
+            break;
+        }
+    }
+
+    if ($result_engine != "") {
+        // Привести строку в текстовый вид
+        $str = trim(urldecode($result_title));
+
+        if ($str != "") {
+            $result = $str;
+        }
+        // Пустой поисковый запрос
+        else {
+            $result = "";
+        }
+    } else {
+        $result = "";
+    }
+
+    return ($result);
 }

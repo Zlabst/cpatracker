@@ -2,10 +2,13 @@
 if (!$include_flag)
     exit;
 
-if ($_REQUEST['act'] != 'reports') {
+if (isset($_REQUEST['act']) && $_REQUEST['act'] != 'reports')
+{
     $reports_lnk = '?act=reports&type=basic';
     $reports_lnk_lp = '?act=reports&type=basic&mode=lp';
-} else {
+}
+else
+{
     $params = report_options();
     $reports_lnk = report_lnk($params, array('filter_str' => array(), 'mode' => '', 'type' => 'basic', 'part' => 'all', 'col' => 'act', 'conv' => 'all', 'group_by' => 'out_id'));
     $reports_lnk_lp = report_lnk($params, array('filter_str' => array(), 'mode' => 'lp', 'type' => 'basic', 'part' => 'all', 'col' => 'act', 'conv' => 'all', 'group_by' => 'out_id'));

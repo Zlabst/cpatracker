@@ -1,0 +1,87 @@
+{{#flow_rows}}
+    <tr>
+        <td class="accordion-toggle" data-toggle="collapse-next">
+            <img src="{{country_icon}}" class="flag flag-us" alt="us" />
+        </td>
+        <td><i class="cpa cpa-{{os_icon}}"></i></td>
+        <td><i class="cpa cpa-{{tablet_icon}}"></i></td>
+        <td class="accordion-toggle" data-toggle="collapse-next">{{date_relative}}</td>
+        <td class="accordion-toggle" data-toggle="collapse-next">{{offer}}</td>
+        <td class="accordion-toggle inactive" data-toggle="collapse-next">{{source}}</td>
+        <td class="accordion-toggle" data-toggle="collapse-next">{{campaign}} {{ads}}</td>
+        <td class="accordion-toggle" data-toggle="collapse-next">{{referer}}</td>
+        <td class="text-right accordion-toggle" data-toggle="collapse-next">
+            <a class="a-default"><i class="cpa cpa-angle-down"></i></a>
+        </td>
+    </tr>
+    <!--hidden row-->
+    <tr>
+        <td colspan="9" class="no-padding">
+            <div class="collapse">
+                <div class="inner">
+                    <table class="table table-link-description">
+                        <thead>
+                        <tr>
+                            <th>Местоположение</th>
+                            <th>ОС</th>
+                            <th>Провайдер</th>
+                            <th>SubID</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        <!--row-->
+                        <tr>
+                            <td>{{location}}</td>
+                            <td>{{os}} </td>
+                            <td>{{isp}} </td>
+                            <td>{{subid}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="table table-link-description">
+                        <thead>
+                        <tr>
+                            <th>Реферер</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td style="word-break: break-all;">{{full_referer}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="table table-link-description">
+                        <thead>
+                        <tr>
+                            <th>Браузер</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>{{browser}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <table class="table table-link-description">
+                        <thead>
+                        <tr>
+                            <th>Параметры ссылки</th>
+                            <th>Параметры перехода</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <td>{{click_params}}</td>
+                            <td>{{link_params}}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div><!--inner-->
+            </div><!--collapse-->
+        </td>
+    </tr>
+{{/flow_rows}}

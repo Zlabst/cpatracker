@@ -77,25 +77,41 @@ foreach ($var['data'] as $row)
     }
 
     // Реферер
-    if ($row['source_name'] == 'yadirect' and !empty($row['click_param_value8'])) {
+    if ($row['source_name'] == 'yadirect' and !empty($row['click_param_value8']))
+    {
         $cur_referrer = $row['click_param_value8'];
         if (mb_strlen($cur_referrer, 'UTF-8') > 40) {
             $wrapped_referrer = mb_substr($cur_referrer, 0, 38, 'UTF-8') . '…';
         } else {
             $wrapped_referrer = $cur_referrer;
         }
-        $wrapped_referrer = '<span style="color: royalblue">' . _e($wrapped_referrer) . '</span>';
-    } else {
-        $cur_referrer = str_replace(array('http://www.', 'www.'), '', $row['referer']);
-        if (strpos($cur_referrer, 'http://') === 0) {
-            $cur_referrer = substr($cur_referrer, strlen('http://'));
+        $wrapped_referrer = '<span style="color: darkmagenta">' . _e($wrapped_referrer) . '</span>';
+    }
+    else
+    {
+        if ($row['search_string']!='')
+        {
+            $cur_referrer=$row['search_string'];
+            if (mb_strlen($cur_referrer, 'UTF-8') > 35) {
+                $wrapped_referrer = mb_substr($cur_referrer, 0, 29, 'UTF-8') . '…';
+            } else {
+                $wrapped_referrer = $cur_referrer;
+            }
+            $wrapped_referrer = '<span style="color: darkmagenta">' . _e($wrapped_referrer) . '</span>';
         }
-        if (mb_strlen($cur_referrer, 'UTF-8') > 35) {
-            $wrapped_referrer = mb_substr($cur_referrer, 0, 29, 'UTF-8') . '…';
-        } else {
-            $wrapped_referrer = $cur_referrer;
+        else
+        {
+            $cur_referrer = str_replace(array('http://www.', 'www.'), '', $row['referer']);
+            if (strpos($cur_referrer, 'http://') === 0) {
+                $cur_referrer = substr($cur_referrer, strlen('http://'));
+            }
+            if (mb_strlen($cur_referrer, 'UTF-8') > 35) {
+                $wrapped_referrer = mb_substr($cur_referrer, 0, 29, 'UTF-8') . '…';
+            } else {
+                $wrapped_referrer = $cur_referrer;
+            }
+            $wrapped_referrer = _e($wrapped_referrer);
         }
-        $wrapped_referrer = _e($wrapped_referrer);
     }
     ?>
 

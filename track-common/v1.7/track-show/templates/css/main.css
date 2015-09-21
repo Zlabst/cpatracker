@@ -30,6 +30,9 @@ This must be run when you have at least 2 sprites.
 
 .sprites(@spritesheet-sprites);
 */
+.bold{
+    font-weight: 600;
+}
 .style-guide {
   padding: 50px 100px;
 }
