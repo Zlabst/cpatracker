@@ -226,35 +226,23 @@ mysql_query("SET @@SESSION.sql_mode= ''");
 
 if ($_REQUEST['ajax_act'] == 'a_load_flow')
 {
-    $filter = '';
-    if ($_REQUEST['filter_by'] != '')
-    {
-        switch ($_REQUEST['filter_by'])
-        {
-            case 'hour':
-                $filter = array(
-                    'filter_by' => $_REQUEST['filter_by'],
-                    'filter_value'=>array($_REQUEST['hour'], $_REQUEST['source_name'])
-                );
-            break;
+    $filter_by=isset($_REQUEST['filter_by'])?$_REQUEST['filter_by']:'none';
+    $filter_value=isset($_REQUEST['filter_value'])?$_REQUEST['filter_value']:'';
 
-            default:
-                $filter = array(
-                    'filter_by' => $_REQUEST['filter_by'],
-                    'filter_value' => $_REQUEST['value']
-                );
-            break;
-        }
-    }
+    // 20 - first request limit, 100 - second and next request limit
+    $offset=isset($_REQUEST['offset'])?$_REQUEST['offset']+100:20;
 
-    list($more, $arr_data, $start, $start_s) = get_visitors_flow_data($filter, rq('start', 2), rq('start_s', 2), 100, $_REQUEST['date']);
-print_r ($arr_data);
+    $IN=array();
+    $IN['flow_report']=array('date'=>$_REQUEST['date'], 'filter_by'=>$filter_by, 'filter_value'=>$filter_value);
+
+    list($more, $arr_data, $offset) = get_visitors_flow_data($IN, 'flow_report', 100, $offset);
+
     $out = array(
-        'data' => $arr_data,
         'more' => $more,
-        'start' => $start,
-        'start_s' => $start_s,
+        'data' => $arr_data,
+        'offset' => $offset
     );
+
     echo json_encode($out);
     exit();
 }

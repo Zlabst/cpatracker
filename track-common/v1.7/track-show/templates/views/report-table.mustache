@@ -3,34 +3,34 @@
         <thead>
         <tr>
             {{#table-columns}}
-                <th class="{{is_sorted}} {{class}}" onclick="return refresh_report('sort_by', '{{name}}');">{{caption}}</th>
+            <th class="c-cell {{is_sorted}} {{class}}" style='visibility: hidden' onclick="return refresh_report('sort_by', '{{name}}');">{{caption}}</th>
             {{/table-columns}}
         </tr>
         </thead>
         <tbody>
         {{#table_rows}}
-            <tr>
-                {{#values}}
-                    <td {{nowrap}} class="{{class}}">{{value}}</td>
-                {{/values}}
-            </tr>
+        <tr>
+            {{#values}}
+            <td {{nowrap}} class="c-cell {{class}}" style='visibility: hidden'>{{value}}</td>
+            {{/values}}
+        </tr>
         {{/table_rows}}
         </tbody>
         <tfoot>
         <tr>
-            <td>Итого</td>
-            <td>{{clicks_total}}</td>
-            <td class="col_s">{{sales_total}}</td>
-            <td class="col_l">{{leads_total}}</td>
-            <td class="col_a">{{actions_total}}</td>
-            <td class="col_s">{{sales_conversion_total}}</td>
-            <td class="col_l">{{leads_conversion_total}}</td>
-            <td class="col_a">{{actions_conversion_total}}</td>
-            <td>{{cost_total}}</td>
-            <td class="col_s col_a">{{profit_total}}</td>
-            <td class="col_s">{{epc_total}}</td>
-            <td class="col_s col_a">{{roi_total}}</td>
-            <td class="col_l">{{cpl_total}}</td>
+            <td class="c-cell" style='visibility: hidden'>Итого</td>
+            <td class="c-cell" style='visibility: hidden'>{{clicks_total}}</td>
+            <td class="c-cell c-sale" style='visibility: hidden'>{{sales_total}}</td>
+            <td class="c-cell c-lead" style='visibility: hidden'>{{leads_total}}</td>
+            <td class="c-cell c-action" style='visibility: hidden'>{{actions_total}}</td>
+            <td class="c-cell c-sale" style='visibility: hidden'>{{sales_conversion_total}}</td>
+            <td class="c-cell c-lead" style='visibility: hidden'>{{leads_conversion_total}}</td>
+            <td class="c-cell c-action" style='visibility: hidden'>{{actions_conversion_total}}</td>
+            <td class="c-cell" style='visibility: hidden'>{{cost_total}}</td>
+            <td class="c-cell c-action c-sale" style='visibility: hidden'>{{profit_total}}</td>
+            <td class="c-cell c-sale" style='visibility: hidden'>{{epc_total}}</td>
+            <td class="c-cell c-action c-sale" style='visibility: hidden'>{{roi_total}}%</td>
+            <td class="c-cell c-lead" style='visibility: hidden'>{{cpl_total}}</td>
         </tr>
         </tfoot>
     </table>

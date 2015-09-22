@@ -8,7 +8,7 @@ $mTemplate = new Mustache_Engine(array(
     'loader' => new Mustache_Loader_FilesystemLoader(_TRACK_SHOW_COMMON_PATH . '/templates/views'),
 ));
 
-$arr_report_data=prepare_report($_REQUEST+array('report_params'=>array('act'=>'reports')));
+$arr_report_data=prepare_report('main-report', $_REQUEST+array('report_params'=>array('act'=>'reports')));
 echo $mTemplate->render('report-page', $arr_report_data);
 ?>
 <script>
@@ -90,9 +90,26 @@ switch($IN['report_type'])
 }
 ?>
 
+<script>
+$(document).ready(function()
+{
+    show_columns('report-main-report', '.c-action', '.c-sale, .c-lead', '.c-cell');
+});
 
+function show_columns(id, show_class, hide_class, visibility_class)
+{
+    if (typeof visibility_class !== 'undefined')
+    {
+        $(visibility_class, $('#'+id)).css('visibility', "");
+    }
+
+    $(hide_class, $('#'+id)).hide();
+    $(show_class, $('#'+id)).show();
+}
+</script>
 
 <?php
+// ************************* REMOVE BELOW ***********************************
 // Create dates array for reports
 $date1 = date('Y-m-d', strtotime('-6 days', strtotime(date('Y-m-d'))));
 $date2 = date('Y-m-d');
@@ -378,7 +395,7 @@ $to = empty($_POST['to']) ? date('d.m.Y') : date('d.m.Y', strtotime($_POST['to']
         };
 </script>
 <?php
-echo tpx('report_toolbar');
+// echo tpx('report_toolbar');
 
 /*
 echo '<script>';

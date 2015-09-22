@@ -174,18 +174,16 @@ $(document).ready(function() {
 		    return false;
 		});
 	}
-//	$('body').on('click', function (e) {
-//	    if (!$('li.dropdown.mega-dropdown').is(e.target) && $('li.dropdown.mega-dropdown').has(e.target).length === 0 && $('.open').has(e.target).length === 0) {
-//	        $('li.dropdown.mega-dropdown').removeClass('open');
-//	    }
-//	});
+
+
 	if ($("#datepicker-single").length > 0) {
 		$("#datepicker-single").datepicker({
 		   format: 'dd.mm.yyyy',
 		   language: 'ru',
 		}).on('changeDate', function(e){
-	        $(this).find('h2 span').text(e.format('dd MM yyyy'));
-	        window.location.href = modify_link(window.location.href, 'date', e.format('yyyy-mm-dd'));
+	        // $(this).find('h2 span').text(e.format('dd MM yyyy'));
+            // window.location.href = modify_link(window.location.href, 'date', e.format('yyyy-mm-dd'));
+            refresh_report('date', e.format('yyyy-mm-dd'));
 	    });
 	}
 	

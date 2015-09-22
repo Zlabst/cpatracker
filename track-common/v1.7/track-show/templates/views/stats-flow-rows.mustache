@@ -5,11 +5,13 @@
         </td>
         <td><i class="cpa cpa-{{os_icon}}"></i></td>
         <td><i class="cpa cpa-{{tablet_icon}}"></i></td>
-        <td class="accordion-toggle" data-toggle="collapse-next">{{date_relative}}</td>
+        <td class="accordion-toggle" data-toggle="collapse-next" nowrap="">{{date_relative}}</td>
         <td class="accordion-toggle" data-toggle="collapse-next">{{offer}}</td>
         <td class="accordion-toggle inactive" data-toggle="collapse-next">{{source}}</td>
         <td class="accordion-toggle" data-toggle="collapse-next">{{campaign}} {{ads}}</td>
-        <td class="accordion-toggle" data-toggle="collapse-next">{{referer}}</td>
+        <td class="accordion-toggle" data-toggle="collapse-next" style="word-break: break-all">
+            {{referer}}
+        </td>
         <td class="text-right accordion-toggle" data-toggle="collapse-next">
             <a class="a-default"><i class="cpa cpa-angle-down"></i></a>
         </td>
@@ -22,9 +24,10 @@
                     <table class="table table-link-description">
                         <thead>
                         <tr>
+                            <th>Дата</th>
                             <th>Местоположение</th>
-                            <th>ОС</th>
                             <th>Провайдер</th>
+                            <th>IP адрес</th>
                             <th>SubID</th>
                         </tr>
                         </thead>
@@ -32,9 +35,10 @@
                         <tbody>
                         <!--row-->
                         <tr>
-                            <td>{{location}}</td>
-                            <td>{{os}} </td>
+                            <td>{{date}}</td>
+                            <td>{{location}} </td>
                             <td>{{isp}} </td>
+                            <td>{{ip}}</td>
                             <td>{{subid}}</td>
                         </tr>
                         </tbody>
@@ -43,12 +47,18 @@
                     <table class="table table-link-description">
                         <thead>
                         <tr>
-                            <th>Реферер</th>
+                            <th>ОС</th>
+                            <th>Устройство</th>
+                            <th>Браузер</th>
+                            <th>User-agent</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr>
-                            <td style="word-break: break-all;">{{full_referer}}</td>
+                            <td>{{os}}</td>
+                            <td>{{device}}</td>
+                            <td>{{browser}}</td>
+                            <td style="word-break: break-all;">{{user_agent}}</td>
                         </tr>
                         </tbody>
                     </table>
@@ -56,12 +66,14 @@
                     <table class="table table-link-description">
                         <thead>
                         <tr>
-                            <th>Браузер</th>
+                            <th>Площадка</th>
+                            <th>Ключевое слово</th>
                         </tr>
                         </thead>
                         <tbody>
                         <tr>
-                            <td>{{browser}}</td>
+                            <td style="word-break: break-all;">{{full_referer}}</td>
+                            <td>{{keyword}}</td>
                         </tr>
                         </tbody>
                     </table>

@@ -4,11 +4,16 @@ if (!$include_flag) {
 }
 ?>
 <link href="<?php echo _HTML_LIB_PATH; ?>/select2/select2.css" rel="stylesheet"/>
+
+
 <script src="<?php echo _HTML_LIB_PATH; ?>/select2/select2.js"></script>
 
-<link href="<?php echo _HTML_LIB_PATH; ?>/daterangepicker/daterangepicker-bs3.css" rel="stylesheet"/>
-<script src="<?php echo _HTML_LIB_PATH; ?>/daterangepicker/moment.min.js"></script>
-<script src="<?php echo _HTML_LIB_PATH; ?>/daterangepicker/daterangepicker.js"></script>
+<!-- Include Required Prerequisites -->
+<script type="text/javascript" src="//cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+
+<!-- Include Date Range Picker -->
+<script type="text/javascript" src="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.js"></script>
+<link rel="stylesheet" type="text/css" href="//cdn.jsdelivr.net/bootstrap.daterangepicker/2/daterangepicker.css" />
 
 <div class="page-heading">
     <div class="header-content">
@@ -71,11 +76,110 @@ if (!$include_flag) {
 
     $(document).ready(function() 
     {
-        $(".select2").select2();
+        // $(".select2").select2();
 
-        $('input[name="date_range"]').daterangepicker({format: 'DD.MM.YYYY', locale: {applyLabel: "Выбрать", cancelLabel: "<i class='fa fa-times' style='color:gray'></i>", fromLabel: "От", toLabel: "До", customRangeLabel:'Свой интервал', daysOfWeek:['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб']
-            }});
+        $('input[name="date_range"]').daterangepicker(
+            {
+                "autoApply": true,
+                locale: {
+                    format: 'DD.MM.YYYY',
+                    "firstDay": 1,
+                    "daysOfWeek": [
+                        "Вс",
+                        "Пн",
+                        "Вт",
+                        "Ср",
+                        "Чт",
+                        "Пт",
+                        "Сб"
+                    ],
+                    "monthNames": [
+                        "Январь",
+                        "Февраль",
+                        "Март",
+                        "Апрель",
+                        "Май",
+                        "Июнь",
+                        "Июль",
+                        "Август",
+                        "Сентябрь",
+                        "Октябрь",
+                        "Ноябрь",
+                        "Декабрь"
+                    ],
+                },
 
+            }
+        );
+
+/*
+        $('#demo').daterangepicker({
+            "autoApply": true,
+            "ranges": {
+                "Сегодня": [
+                    "2015-09-21T22:44:24.818Z",
+                    "2015-09-21T22:44:24.818Z"
+                ],
+                "Вчера": [
+                    "2015-09-20T22:44:24.819Z",
+                    "2015-09-20T22:44:24.819Z"
+                ],
+                "За последние 7 дней": [
+                    "2015-09-15T22:44:24.819Z",
+                    "2015-09-21T22:44:24.819Z"
+                ],
+                "Last 30 Days": [
+                    "2015-08-23T22:44:24.819Z",
+                    "2015-09-21T22:44:24.819Z"
+                ],
+                "This Month": [
+                    "2015-08-31T21:00:00.000Z",
+                    "2015-09-30T20:59:59.999Z"
+                ],
+                "Last Month": [
+                    "2015-07-31T21:00:00.000Z",
+                    "2015-08-31T20:59:59.999Z"
+                ]
+            },
+            "locale": {
+                "format": "MM/DD/YYYY",
+                "separator": " - ",
+                "applyLabel": "Apply",
+                "cancelLabel": "Cancel",
+                "fromLabel": "From",
+                "toLabel": "To",
+                "customRangeLabel": "Custom",
+                "daysOfWeek": [
+                    "Su",
+                    "Mo",
+                    "Tu",
+                    "We",
+                    "Th",
+                    "Fr",
+                    "Sa"
+                ],
+                "monthNames": [
+                    "January",
+                    "February",
+                    "March",
+                    "April",
+                    "May",
+                    "June",
+                    "July",
+                    "August",
+                    "September",
+                    "October",
+                    "November",
+                    "December"
+                ],
+                "firstDay": 1
+            },
+            "startDate": "09/16/2015",
+            "endDate": "09/22/2015"
+        }, function(start, end, label) {
+            console.log("New date range selected: ' + start.format('YYYY-MM-DD') + ' to ' + end.format('YYYY-MM-DD') + ' (predefined range: ' + label + ')");
+        });
+        /*
         $('input[name="date_range"]', $('#add_costs')).focus (function (e) {
             $('input[name="date_range"]', $('#add_costs')).css('background-color', 'white'); 
         });        
@@ -83,10 +187,22 @@ if (!$include_flag) {
         $('input[name="costs_value"]', $('#add_costs')).focus (function (e) {
             $('input[name="costs_value"]', $('#add_costs')).css('background-color', 'white'); 
         });
+        */
 
     });
 </script>
 
+
+<div class="form-group" id="sale_amount">
+    <label>Период</label>
+    <div class="row">
+        <div class="col-xs-6">
+            <div class="input-group">
+                <input type="text" class="form-control" name="date_range" required="">
+            </div><!-- /input-group -->
+        </div><!-- /.col-lg-6 -->
+    </div><!-- /.row -->
+</div>
 
 <form role="form" method="post" id="add_costs" onsubmit="return add_costs();">
     <input type='hidden' name='ajax_act' value='add_costs'>

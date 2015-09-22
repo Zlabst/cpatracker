@@ -3,22 +3,13 @@ if (!$include_flag) {
     exit();
 }
 
-/*
-if (defined('_ENABLE_DEBUG') && _ENABLE_DEBUG)
-{
-    error_reporting(E_ALL);
-    if(function_exists('ini_set'))
-    {
-        ini_set('display_errors', 1);
-        ini_set('display_startup_errors', true);
-    }
-}
-*/
+// CSS
+echo '<link rel="stylesheet" href="'._HTML_LIB_PATH.'/bootstrap/plugins/datepicker/css/bootstrap-datepicker3.min.css" >';
 
-echo '<link rel="stylesheet" href="'._HTML_LIB_PATH.'/bootstrap/plugins/bootstrap-datepicker-1.4.0-dist/css/bootstrap-datepicker3.min.css" >';
-echo '<script src="'._HTML_TEMPLATE_PATH.'/js/report_toolbar.js"></script>';
-echo '<script src="'._HTML_LIB_PATH.'/bootstrap/plugins/bootstrap-datepicker-1.4.0-dist/js/bootstrap-datepicker.min.js"></script>';
-echo '<script src="'._HTML_LIB_PATH.'/bootstrap/plugins/bootstrap-datepicker-1.4.0-dist/locales/bootstrap-datepicker.ru.min.js"></script>';
+// JS
+echo '<script src="'._HTML_LIB_PATH.'/bootstrap/plugins/datepicker/js/bootstrap-datepicker.min.js"></script>';
+echo '<script src="'._HTML_LIB_PATH.'/bootstrap/plugins/datepicker/locales/bootstrap-datepicker.ru.min.js"></script>';
+echo '<script src="'._HTML_LIB_PATH.'/mustache/mustache.js"></script>';
 
 include _TRACK_SHOW_COMMON_PATH.'/lib/mustache/Autoloader.php';
 Mustache_Autoloader::register(_TRACK_SHOW_COMMON_PATH.'/lib/mustache');
@@ -59,7 +50,7 @@ foreach ($allowed_report_in_params as $report=>$data)
 }
 
 // Get hourly report data
-$arr_report_data=prepare_report($IN['hourly_report'] + array('range_type'=>'hourly',
+$arr_report_data=prepare_report('main-report', $IN['hourly_report'] + array('range_type'=>'hourly',
                                                              'date_start'=>$IN['flow_report']['date'],
                                                              'date_end'=>$IN['flow_report']['date']));
 // Don't use parameters from hourly report
@@ -82,13 +73,11 @@ $arr_template_data=array('hide-table-footer'=>true,
     'date_next'=>$date_next,
     'csrf'=>CSRF_KEY);
 
+
 // Render template
 echo $mTemplate->render('stats-flow-page', $arr_report_data+$arr_template_data+$arr_flow_data);
-
-// ***************************************
-
-$hour = rq('hour', 2);
 ?>
+
 <script type="text/javascript">
     function refresh_report(param_name, param_value)
     {
@@ -112,32 +101,34 @@ $hour = rq('hour', 2);
         $("#report_params").submit();
         return false;
     }
-<?php
-/*
-?>
+
     function load_flow(obj)
     {
         $.post(
-            'index.php?ajax_act=a_load_flow', {
-                start: $('#start').val() ,
-                start_s: $('#start_s').val() ,
-                date: '<?php echo _str($report_date) ?>',
-                hour: '<?php echo _str($hour) ?>',
-                filter_by: '<?php echo _str($_REQUEST['filter_by']) ?>',
-                filter_value: '<?php echo _str($_REQUEST['filter_value']) ?>'
-            }
-        ).done(
-            function(data) {
-                response = eval('(' + data + ')');
-                $('#start').val(response.start);
-                $('#start_s').val(response.start_s);
-                if(!response.more) $(obj).hide();
-                $('#stats-flow tbody').first().append(response.data);
+            'index.php?ajax_act=a_load_flow',
+            $("#report_params").serialize()
+        ).done
+        (
+            function(response)
+            {
+                var data=jQuery.parseJSON(response);
+                $.get('<?php echo _HTML_TEMPLATE_PATH.'/views/stats-flow-rows.mustache';?>', function(template)
+                {
+                    var rendered = Mustache.render(template, data['data']);
+                    $('#stats-flow tbody').first().append(rendered);
+                });
+
+                if ($('#report_params input[name="offset"]').length)
+                {
+                    $('#report_params input[name="offset"]').val(data['offset']);
+                }
+                else
+                {
+                    $('#report_params').append('<input type="hidden" name="'+'offset'+'" value="'+data['offset']+'" />');
+                }
+                if(!data['more']){$(obj).hide();}
             }
         );
         return false;
     }
-<?php
-*/
-?>
 </script>
