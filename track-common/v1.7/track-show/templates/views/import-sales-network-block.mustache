@@ -1,0 +1,30 @@
+<div class="row">
+    <div class="col-md-12">
+        <div class="partner-description">
+            <h4>CPA сеть {{name}}
+                <a href="http://{{display-url}}" onclick="return openURL('{{registration-url}}')">{{display-url}}</a></h4>
+            <p>{{network-description}}</p>
+        </div>
+        <div class="partner-links">
+            <div id="links">
+                {{#links}}
+                <p>{{description}}</p>
+                <form class="form-horizontal" data-placement="top">
+                    <div class="form-group">
+                        <div class="col-sm-12">
+                            <div class="input-group">
+                                <span class="input-group-btn">
+                                    <a class="btn btn-default btn-input clpbrd-copy" data-clipboard-target="net-link-{{id}}" role="button">
+                                        <i class="icon icon-folders"></i>
+                                    </a>
+                                </span>
+                                <input type="text" class="form-control" name="linkCreate" id="net-link-{{id}}" value="{{url}}">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                {{/links}}
+            </div>
+        </div>
+    </div>
+</div>

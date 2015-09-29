@@ -1,0 +1,97 @@
+<div class="page-heading">
+    <div class="header-content">
+        <h2>Добавление продаж</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-5" id="column-left">
+        {{>import-sales-manual}}
+    </div>
+
+    <div class="col-md-6 col-md-offset-1">
+        {{>import-sales-networks}}
+    </div>
+</div>
+
+<script>
+    $(document).ready(function()
+    {
+        $('[data-network]').click(function()
+        {
+            $('.link-columns a').removeClass('active');
+            $(this).addClass('active');
+            $.post('index.php',
+                    {
+                        ajax_act: 'get_network_info',
+                        network: $(this).data('network'),
+                        csrfkey: '{{CSRF_KEY}}'
+                    },
+                    function(data)
+                    {
+                        $.get('{{_HTML_TEMPLATE_PATH}}/views/import-sales-network-block.mustache', function(template) {
+                            var html = Mustache.render(template, data);
+                            $('#column-left').html(html);
+
+                            $('a.clpbrd-copy').each(function(i)
+                            {
+                                var clip = new ZeroClipboard($(this), {
+                                    moviePath: "{{_HTML_LIB_PATH}}/clipboard/ZeroClipboard.swf"
+                                });
+
+                                clip.on('mouseout', function(client, args) {
+                                    $('.btn-rule-copy').removeClass('zeroclipboard-is-hover');
+                                });
+                            });
+                        });
+                    },
+                    'json'
+            );
+            return false;
+        });
+
+        $('#is_lead').change(function() {
+            show_urls($('#is_lead').is(':checked'), $('#is_sale').is(':checked'));
+        });
+        $('#is_sale').change(function() {
+            show_urls($('#is_lead').is(':checked'), $('#is_sale').is(':checked'));
+        });
+
+        $('#custom-master-start').click(function()
+        {
+            $('.link-columns a').removeClass('active');
+            $('#search-row').hide();
+            $('#net-row2').hide();
+            $('#result-row').hide();
+            $('#master-form').show();
+            return false;
+        });
+
+        var checkbox_change = function()
+        {
+            var cur_url = base_custom;
+
+            $('#master-form input[type=checkbox]').each(function(i) {
+                if ($(this).is(':checked')) {
+                    cur_url = cur_url + '&' + $(this).attr('id') + '=' + $('#' + $(this).attr('id') + '_val').val();
+                }
+                $('#custom-link-val').val(cur_url);
+            });
+        };
+
+        $('#master-form input[type=checkbox]').change(checkbox_change);
+
+        $('#master-form input[type=text]').change(function() {
+            var cur_url = base_custom;
+            $('#master-form input[type=checkbox]').each(function(i) {
+                if ($(this).is(':checked')) {
+                    cur_url = cur_url + '&' + $(this).attr('id') + '=' + $('#' + $(this).attr('id') + '_val').val();
+                }
+                $('#custom-link-val').val(cur_url);
+            });
+
+        });
+
+        checkbox_change();
+    });
+</script>

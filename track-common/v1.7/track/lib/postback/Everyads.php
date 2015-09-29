@@ -3,7 +3,10 @@
 class Everyads {
 
     public $net = 'Everyads';
-    private $common;
+    private $display_url = 'www.everyads.com';
+    private $registration_url = 'http://www.cpatracker.ru/networks/everyads';
+    private $network_description = 'Рекламная сеть с оплатой за установку. У Вас есть собственное приложение, сайт или сообщество которое посещают с мобильных устройств? С нами вы сможете эффективно монетизировать свои ресурсы. Наши клиенты: eBay, Aviasales, MachineZone, Natural Motion, GetTaxi, Tap4Fun, Kabam, Pacific Interactive, Momondo, Alawar и многие другие';
+
     private $params = array(
         'profit' => 'payout',
         'subid' => 'aff_sub',
@@ -28,14 +31,15 @@ class Everyads {
         'i13' => 'affiliate_ref',
         'i14' => 'offer_ref',
     );
-    private $reg_url = 'http://www.cpatracker.ru/networks/everyads';
-    private $net_text = 'Рекламная сеть с оплатой за установку. У Вас есть собственное приложение, сайт или сообщество которое посещают с мобильных устройств? С нами вы сможете эффективно монетизировать свои ресурсы. Наши клиенты: eBay, Aviasales, MachineZone, Natural Motion, GetTaxi, Tap4Fun, Kabam, Pacific Interactive, Momondo, Alawar и многие другие';
 
+    private $common;
     function __construct() {
         $this->common = new common($this->params);
     }
 
-    function get_links() {
+    function get_network_info()
+    {
+        $postback_links=array();
         $protocol = isset($_SERVER["HTTPS"]) ? (($_SERVER["HTTPS"] === "on" || $_SERVER["HTTPS"] === 1 || $_SERVER["SERVER_PORT"] === $pv_sslport) ? "https://" : "http://") : (($_SERVER["SERVER_PORT"] === $pv_sslport) ? "https://" : "http://");
         $cur_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
         $url = substr($cur_url, 0, strlen($cur_url) - 21);
@@ -44,19 +48,18 @@ class Everyads {
             $url .= '&' . $name . '={' . $value . '}';
         }
 
-        $code = $this->common->get_code();
-        $url .= '&ak=' . $code;
+        $url .= '&ak=' . $this->common->get_code();
 
-        $return = array(
-            'id' => 0,
-            'url' => $url,
-            'description' => 'Вставьте эту ссылку в поле PostBack ссылки в настройках оффера Everyads.'
-        );
+        $postback_links[]=array('id'=>'main',
+            'url'=>$url,
+            'description'=>'Для автоматического импорта продаж добавьте ссылку в поле PostBack в настройках оффера:');
 
         return array(
-            0 => $return,
-            'reg_url' => $this->reg_url,
-            'net_text' => $this->net_text
+            'links'=>$postback_links,
+            'name' => $this->network_name,
+            'display-url' => $this->display_url,
+            'registration-url' => $this->registration_url,
+            'network-description' => $this->network_description
         );
     }
 

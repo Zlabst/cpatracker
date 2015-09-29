@@ -93,7 +93,27 @@ switch($IN['report_type'])
 <script>
 $(document).ready(function()
 {
-    show_columns('report-main-report', '.c-action', '.c-sale, .c-lead', '.c-cell');
+    result='';
+    tmp = [];
+    location.search.substr(1).split("&").forEach(function (item)
+    {
+        tmp = item.split("=");
+        if (tmp[0] === 'filter_actions') result = decodeURIComponent(tmp[1]);
+    });
+    switch (result)
+    {
+        case 'sales':
+            show_columns('report-main-report', '.c-sale', '.c-action, .c-lead', '.c-cell');
+        break;
+
+        case 'leads':
+            show_columns('report-main-report', '.c-lead', '.c-action, .c-sale', '.c-cell');
+        break;
+
+        default:
+            show_columns('report-main-report', '.c-action', '.c-sale, .c-lead', '.c-cell');
+        break;
+    }
 });
 
 function show_columns(id, show_class, hide_class, visibility_class)
@@ -394,18 +414,6 @@ $to = empty($_POST['to']) ? date('d.m.Y') : date('d.m.Y', strtotime($_POST['to']
             }
         };
 </script>
-<?php
-// echo tpx('report_toolbar');
-
-/*
-echo '<script>';
-echo "update_cols('" . $col . "', 0);";
-if ($part == 'all') {
-    echo "update_cols('currency_" . $currency . "', 1);";
-}
-echo '</script>';
-*/
-?>
 <input type="hidden" id="usd_selected" value="1">
 <input type="hidden" id="type_selected" value="cnt">
 <input type="hidden" id="sales_selected" value="1">

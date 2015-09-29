@@ -2,8 +2,11 @@
 
 class Himba {
 
-    public $net = 'Himba';
-    private $common;
+    public $network_name = 'Himba';
+    private $display_url = 'www.himba.ru';
+    private $registration_url = 'http://www.cpatracker.ru/networks/himba';
+    private $network_description = 'Партнерская сеть, фокусирующаяся на банковских услугах, страховании, кредитовании и образовательных офферах. Чаще всего рекламодатели платят за заполнение анкет, выдачу кредитных карт, оформление страховок или заявок на получение образовательных услуг. Подавляющее большинство трафика принимается со всей территории РФ, но есть офферы, которые принимают посетителей из Москвы и области или отдельных регионов.';
+
     private $params = array(
         'profit' => 'amount',
         'subid' => 'sub_id',
@@ -14,40 +17,41 @@ class Himba {
         'i2' => 'offer_id',
         'i3' => 'adv_sub',
     );
-    private $reg_url = 'http://www.cpatracker.ru/networks/himba';
-    private $net_text = 'Партнерская сеть, фокусирующаяся на банковских услугах, страховании, кредитовании и образовательных офферах. Чаще всего рекламодатели платят за заполнение анкет, выдачу кредитных карт, оформление страховок или заявок на получение образовательных услуг. Подавляющее большинство трафика принимается со всей территории РФ, но есть офферы, которые принимают посетителей из Москвы и области или отдельных регионов.';
 
+    private $common;
     function __construct() {
         $this->common = new common($this->params);
     }
 
-    function get_links() {
-        $url = tracklink() . '/p.php?n=' . $this->net;
+    function get_network_info()
+    {
+        $postback_links=array();
+        $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
             $url .= '&' . $name . '={' . $value . '}';
         }
 
-        $code = $this->common->get_code();
-        $url .= '&ak=' . $code;
+        $url .= '&ak=' . $this->common->get_code();
 
-        $return = array(
-            'id' => 0,
-            'url' => $url,
-            'description' => 'Вставьте эту ссылку в поле PostBack ссылки в настройках оффера Himba.'
-        );
+        $postback_links[]=array('id'=>'main',
+            'url'=>$url,
+            'description'=>'Для автоматического импорта продаж добавьте ссылку в поле PostBack в настройках оффера:');
 
         return array(
-            0 => $return,
-            'reg_url' => $this->reg_url,
-            'net_text' => $this->net_text
+            'links'=>$postback_links,
+            'name' => $this->network_name,
+            'display-url' => $this->display_url,
+            'registration-url' => $this->registration_url,
+            'network-description' => $this->network_description
         );
     }
 
-    function process_conversion($data_all) {
-        $this->common->log($this->net, $data_all['post'], $data_all['get']);
+    function process_conversion($data_all)
+    {
+        $this->common->log($this->network_name, $data_all['post'], $data_all['get']);
         $data = $this->common->request($data_all);
-        $data['network'] = $this->net;
+        $data['network'] = $this->network_name;
         unset($data['net']);
         $data['date_add'] = date('Y-m-d H:i:s');
 

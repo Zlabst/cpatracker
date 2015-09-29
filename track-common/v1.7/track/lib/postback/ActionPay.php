@@ -2,8 +2,10 @@
 
 class ActionPay {
 
-    public $net = 'ActionPay';
-    private $common;
+    public $network_name = 'ActionPay';
+    private $display_url = 'www.actionpay.ru';
+    private $registration_url = 'http://www.cpatracker.ru/networks/actionpay';
+    private $network_description = 'Одна из старейших партнерских сетей рунета. Быстрые выплаты, удобный интерфейс пользователя, отзывчивый саппорт. Основные тематики: магазины одежды, банки и кредиты, инфопродукты, онлайн-игры. Офферы из России, Украины, Казахстана и Молдовы, есть предложения для зарубежного трафика. Прекрасная сеть для долгосрочного сотрудничества.';
     private $params = array(
         'subid' => 'subaccount',
         'profit' => 'payment',
@@ -15,16 +17,17 @@ class ActionPay {
         'i8' => 'source',
         't9' => 'uniqueid'
     );
-    private $reg_url = 'http://www.cpatracker.ru/networks/actionpay';
-    private $net_text = 'Одна из старейших партнерских сетей рунета. Быстрые выплаты, удобный интерфейс пользователя, отзывчивый саппорт. Основные тематики: магазины одежды, банки и кредиты, инфопродукты, онлайн-игры. Офферы из России, Украины, Казахстана и Молдовы, есть предложения для зарубежного трафика. Прекрасная сеть для долгосрочного сотрудничества.';
+    private $common;
 
     function __construct() {
         $this->common = new common($this->params);
     }
 
-    function get_links() {
-        $url = tracklink() . '/p.php?n=' . $this->net;
+    function get_network_info()
+    {
+        $postback_links=array();
 
+        $url = tracklink() . '/p.php?n=' . $this->network_name;
         foreach ($this->params as $name => $value) {
             $url .= '&' . $name . '={' . $value . '}';
         }
@@ -32,40 +35,37 @@ class ActionPay {
         $code = $this->common->get_code();
         $url .= '&ak=' . $code;
 
-        $return = array();
 
-        array_push($return, array(
-            'id' => 0,
-            'description' => 'Вставьте эту ссылку в поле "Постбэк - Создание"',
-            'url' => $url . '&status=created'
-        ));
-        array_push($return, array(
-            'id' => 1,
-            'description' => 'Вставьте эту ссылку в поле "Постбэк - Принятие"',
-            'url' => $url . '&status=approved'
-        ));
-        array_push($return, array(
-            'id' => 2,
-            'description' => 'Вставьте эту ссылку в поле "Постбэк - Отклонение"',
-            'url' => $url . '&status=declined'
-        ));
+        $postback_links[]=array('id'=>'create',
+            'url'=>$url . '&status=created',
+            'description'=>'Вставьте эту ссылку в поле «Постбэк - Создание»');
 
+        $postback_links[]=array('id'=>'approve',
+            'url'=>$url . '&status=approved',
+            'description'=>'Вставьте эту ссылку в поле «Постбэк - Принятие»');
 
-        $return = $return + array('reg_url' => $this->reg_url, 'net_text' => $this->net_text);
+        $postback_links[]=array('id'=>'decline',
+            'url'=>$url . '&status=declined',
+            'description'=>'Вставьте эту ссылку в поле «Постбэк - Отклонение»');
 
-
-        return $return;
+        return array(
+            'links'=>$postback_links,
+            'name' => $this->network_name,
+            'display-url' => $this->display_url,
+            'registration-url' => $this->registration_url,
+            'network-description' => $this->network_description
+        );
     }
 
-    function process_conversion($data_all = array()) {
-        $this->common->log($this->net, $data_all['post'], $data_all['get']);
+    function process_conversion($data_all = array())
+    {
+        $this->common->log($this->network_name, $data_all['post'], $data_all['get']);
         $data = $this->common->request($data_all);
-        $data['network'] = $this->net;
+        $data['network'] = $this->network_name;
         if (!isset($data['date_add'])) {
             $data['date_add'] = date('Y-m-d H:i:s');
         }
         unset($data['net']);
-
 
         switch ($data['status']) {
             case 'approved':
@@ -83,7 +83,7 @@ class ActionPay {
             default:
                 $data['txt_status'] = 'Unknown';
                 $data['status'] = 0;
-                break;
+            break;
         }
 
         $this->common->process_conversion($data);

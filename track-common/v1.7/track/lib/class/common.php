@@ -14,7 +14,8 @@ class common {
         }
     }
 
-    function process_conversion($data) {
+    function process_conversion($data)
+    {
         $cnt = count($this->params);
         $i = 0;
         $is_lead = (isset($data['is_lead'])) ? 1 : 0;
@@ -22,24 +23,27 @@ class common {
         unset($data['is_lead']);
         unset($data['is_sale']);
 
-        switch ($data['txt_param20']) {
+        switch (strtoupper($data['txt_param20']))
+        {
             case 'UAH':
-            case 'uah':
                 $data['profit'] = convert_to_usd('uah', $data['profit']);
-                break;
+            break;
+
             case 'USD':
-            case 'usd':
                 $data['profit'] = convert_to_usd('usd', $data['profit']);
-                break;
+            break;
+
             default:
                 $data['profit'] = convert_to_usd('rub', $data['profit']);
-                break;
+            break;
         }
 
-        // Специальная обработка "статусного постбэка" от сети CTR. В этом случае приходит только статус, связанный с остальными данными через order_id (i3) и нужно поменять статус соостветствующей конвертации.
-        // https://uniquedesign.teamworkpm.net/tasks/3679474
+        // Специальная обработка "статусного постбэка" от сети CTR.
+        // В этом случае приходит только статус, связанный с остальными данными через order_id (i3)
+        // и нужно поменять статус соостветствующей конвертации.
 
-        $ctr_order = false; // флаг, о том, что некоторые операции (замену логов) выполнять не нужно, так как это не полный запрос, а только статус
+        $ctr_order = false; // флаг, о том, что некоторые операции (замену логов) выполнять не нужно,
+                            // так как это не полный запрос, а только статус
         if ($data['network'] == 'CTR' and !empty($data['status'])) {
             $q = 'SELECT * FROM `tbl_conversions` WHERE (`i3` = "' . mysql_real_escape_string($data['i3']) . '" AND `network` = "CTR") LIMIT 1';
             if ($rs = db_query($q) and mysql_num_rows($rs) > 0) {
@@ -54,19 +58,11 @@ class common {
             }
             $ctr_order = true;
         }
-        dmp($data);
 
-        if (isset($data['subid']) && $data['subid'] != '') {
 
-            if (_CLICKS_SPOT_SIZE > 0) {
-                $tmp = subidtotime($data['subid']);
-                $spot_ids = clicks_spot_get($tmp, $tmp);
-                $table = 'tbl_clicks_s' . current($spot_ids);
-            } else {
-                $table = 'tbl_clicks';
-            }
-
-            //strtotime(
+        if (isset($data['subid']) && $data['subid'] != '')
+        {
+            $table = 'tbl_clicks';
 
             $subid = $data['subid']; // мы скоро обнулим массив data, а subid нам ещё понадобится
             $status = $data['status'];
@@ -204,7 +200,6 @@ class common {
     }
 
     /*
-     * https://uniquedesign.teamworkpm.net/tasks/4128742
      * Если данные есть и в GET и в POST - формируем общий массив по следующему правилу:
       1. Сохраняем данные из GET
       2. Заменяем/добавляем данные из POST, если это не приведет к удалению ключей

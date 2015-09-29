@@ -2,8 +2,11 @@
 
 class Cpagetti {
 
-    public $net = 'Cpagetti';
-    private $common;
+    public $network_name = 'Cpagetti';
+    private $display_url = 'www.cpagetti.com';
+    private $registration_url = 'https://www.cpatracker.ru/networks/cpagetti';
+    private $network_description = 'Товарная партнерская сеть с оплатой за подтвержденную заявку, актуальные предложения по самым популярным тематикам на широкую аудиторию. Всегда адекватная техническая поддержка, быстрый обзвон рекламодателями и конкурентные выплаты.';
+
     private $params = array(
         'date' => 'time',
         't1' => 'ip',
@@ -15,62 +18,62 @@ class Cpagetti {
         'i11' => 'layer',
         't5' => 'sub2',
     );
-    private $reg_url = 'https://www.cpatracker.ru/networks/cpagetti';
-    private $net_text = 'Товарная партнерская сеть с оплатой за подтвержденную заявку, актуальные предложения по самым популярным тематикам на широкую аудиторию. Всегда адекватная техническая поддержка, быстрый обзвон рекламодателями и конкурентные выплаты.';
 
+    private $common;
     function __construct() {
         $this->common = new common($this->params);
     }
 
-    function get_links() {
-        $url = tracklink() . '/p.php?n=' . $this->net;
+    function get_network_info()
+    {
+        $postback_links=array();
+        $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
             $url .= '&' . $name . '={' . $value . '}';
         }
 
-        $code = $this->common->get_code();
-        $url .= '&ak=' . $code;
+        $url .= '&ak=' . $this->common->get_code();
 
-        $return = array('reg_url' => $this->reg_url, 'net_text' => $this->net_text);
-
-        $return = array(
-            'id' => 0,
-            'url' => $url,
-            'description' => 'Вставьте эту ссылку в поле PostBack ссылки в настройках оффера Cpagetti.'
-        );
+        $postback_links[]=array('id'=>'main',
+            'url'=>$url,
+            'description'=>'Для автоматического импорта продаж добавьте ссылку в поле PostBack в настройках оффера:');
 
         return array(
-            0 => $return,
-            'reg_url' => $this->reg_url,
-            'net_text' => $this->net_text
+            'links'=>$postback_links,
+            'name' => $this->network_name,
+            'display-url' => $this->display_url,
+            'registration-url' => $this->registration_url,
+            'network-description' => $this->network_description
         );
     }
 
-    function process_conversion($data_all) {
-        $this->common->log($this->net, $data_all['post'], $data_all['get']);
+    function process_conversion($data_all)
+    {
+        $this->common->log($this->network_name, $data_all['post'], $data_all['get']);
         $data = $this->common->request($data_all);
-        $data['network'] = $this->net;
+        $data['network'] = $this->network_name;
         $data['txt_param20'] = 'rub';
         $data['type'] = 'sale';
         unset($data['net']);
-        //wait, accept, decline, invalid
-        switch ($data['txt_status']) {
+
+        switch ($data['txt_status'])
+        {
             case 'accept':
                 $data['txt_status'] = 'Approved';
                 $data['status'] = 1;
-                break;
-            case 'decline':
-            case 'invalid':
+            break;
+
+            case 'decline': case 'invalid':
                 $data['txt_status'] = 'Declined';
                 $data['status'] = 2;
-                break;
+            break;
+
             default:
                 $data['txt_status'] = 'Unknown';
                 $data['status'] = 0;
-                break;
+            break;
         }
         $this->common->process_conversion($data);
     }
-
 }

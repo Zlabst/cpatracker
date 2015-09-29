@@ -215,17 +215,39 @@ function prepare_report($report_name, $request_parameters)
 
     $result=mysql_query($sql);
 
+    $arr_allowed_actions=array('all'=>'actions_count', 'sales'=>'sales_count', 'leads'=>'leads_count');
     $arr_data=array();
     while($row=mysql_fetch_assoc($result))
     {
         switch ($IN['filter_conversions'])
         {
             case 'has_actions':
-                if ($row['actions_count']==0){continue 2;}
+                if (isset($arr_allowed_actions[$IN['filter_actions']]))
+                {
+                    if ($row[$arr_allowed_actions[$IN['filter_actions']]]==0)
+                    {
+                        continue 2;
+                    }
+                }
+                else
+                {
+                    if ($row[$arr_allowed_actions['all']]==0)
+                    {
+                        continue 2;
+                    }
+                }
             break;
 
             case 'no_actions':
-                if ($row['actions_count']!=0){continue 2;}
+                if (isset($arr_allowed_actions[$IN['filter_actions']]))
+                {
+                    if ($row[$arr_allowed_actions[$IN['filter_actions']]]!=0){continue 2;}
+                }
+                else
+                {
+                    if ($row[$arr_allowed_actions['all']]!=0){continue 2;}
+                }
+
             break;
         }
         $arr_data[]=$row;
@@ -387,15 +409,28 @@ function prepare_report($report_name, $request_parameters)
 
     // Fill report table toolbar values
     $arr_filter_conversions_buttons=array('Все переходы|all', 'Только действия|has_actions', 'Без конверсий|no_actions');
-    foreach ($arr_filter_conversions_buttons as $cur){
+    foreach ($arr_filter_conversions_buttons as $cur)
+    {
         list ($caption, $value)=explode ('|', $cur);
 
         $active=($IN['filter_conversions']==$value)?'active':'';
 
         $arr_report_data['report-toolbar-filter-conversions'][]=array(
-            'caption'=>$caption, 'value'=>$value, 'active'=>$active);
+            'caption'=>$caption, 'value'=>$value, 'active'=>$active
+        );
     }
 
+    $arr_filter_actions_buttons=array('Все действия|all', 'Продажи|sales', 'Лиды|leads');
+    foreach ($arr_filter_actions_buttons as $cur)
+    {
+        list ($caption, $value)=explode ('|', $cur);
+
+        $active=($IN['filter_actions']==$value)?'active':'';
+
+        $arr_report_data['report-toolbar-filter-actions'][]=array(
+            'caption'=>$caption, 'value'=>$value, 'active'=>$active
+        );
+    }
 
     switch ($IN['range_type'])
     {

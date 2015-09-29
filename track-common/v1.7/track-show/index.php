@@ -30,7 +30,7 @@ if (_ENABLE_DEBUG && isset($_GET['debug'])) {
 
 // Set allowed for inclusion files list, security measure
 $page_sidebar_allowed = array('sidebar-left-links.inc.php', 'sidebar-left-reports.inc.php', 'sidebar-left-rules.inc.php', 'sidebar-left-support.inc.php', 'sidebar-left-install.inc.php');
-$page_content_allowed = array('reports.php', 'sales.php', 'stats-flow.php', 'links_page.inc.php', 'rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'import_page_postback.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php', 'landing_page.inc.php', 'reset_password.inc.php', 'lost_password.inc.php');
+$page_content_allowed = array('reports.php', 'sales.php', 'stats-flow.php', 'links_page.inc.php', 'rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php', 'landing_page.inc.php', 'reset_password.inc.php', 'lost_password.inc.php');
 
 // Страницы, на которые можно войти без авторизации
 $open_pages = array('login', 'lostpassword', 'resetpassword', 'install');
@@ -991,27 +991,26 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             exit();
             break;
 
-        case 'postback_info':
-            require(_TRACK_LIB_PATH . '/class/common.php');
-            $net = $_POST['net'];
+        case 'get_network_info':
+            $network_name = $_POST['network'];
             $result = array();
-            if (!is_file(_TRACK_LIB_PATH . '/postback/' . $net . '.php')) {
+
+            if (!ctype_alnum($network_name) || !is_file(_TRACK_LIB_PATH . '/postback/' . $network_name . '.php'))
+            {
                 $result['status'] = 'ERR';
                 echo json_encode($result);
                 exit;
             }
 
-            require(_TRACK_LIB_PATH . '/postback/' . $net . '.php');
+            require(_TRACK_LIB_PATH . '/class/common.php');
+            require(_TRACK_LIB_PATH . '/postback/' . $network_name . '.php');
             $result['status'] = 'OK';
-            $network = new $net();
-            $result['links'] = $network->get_links();
-            $result['reg_url'] = $result['links']['reg_url'];
-            $result['net_text'] = $result['links']['net_text'];
-            unset($result['links']['reg_url']);
-            unset($result['links']['net_text']);
+            $network = new $network_name();
+            $result=$network->get_network_info();
             echo json_encode($result);
+
             exit;
-            break;
+        break;
     }
 } // End CSRF check
 
@@ -1029,8 +1028,6 @@ switch ($page) {
         $arr_left_menu = array(
             'import' => array('link' => 'index.php?page=import', 'icon' => 'icon-shopping-cart', 'caption' => 'Добавление продаж'),
             'costs' => array('link' => 'index.php?page=costs', 'icon' => 'icon-credit-card', 'caption' => 'Добавление затрат'),
-            'postback' => array('link' => 'index.php?page=postback', 'icon' => 'icon-cogs', 'caption' => 'Интеграция с CPA сетями'),
-            //'pixel'    => array('link'=>'index.php?page=pixel', 'icon'=>'icon-cogs', 'caption'=>'Пиксель отслеживания'),
             'landing' => array('link' => 'index.php?page=landing', 'icon' => 'icon-cogs', 'caption' => 'Целевые страницы'),
         );
 
@@ -1086,37 +1083,31 @@ switch ($_REQUEST['page']) {
         $page_content = 'import_page.inc.php';
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
         exit();
-        break;
-
-    case 'postback':
-        $page_content = 'import_page_postback.inc.php';
-        include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
-        exit();
-        break;
+    break;
 
     case 'pixel':
         $page_content = 'pixel_page.inc.php';
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
         exit();
-        break;
+    break;
 
     case 'lostpassword':
         $page_content = 'lost_password.inc.php';
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
         exit();
-        break;
+    break;
 
     case 'resetpassword':
         $page_content = 'reset_password.inc.php';
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
         exit();
-        break;
+    break;
 
     case 'support':
         $page_content = 'support_page.inc.php';
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
         exit();
-        break;
+    break;
 
     case 'notifications':
         $page_sidebar = 'sidebar-left-support.inc.php';

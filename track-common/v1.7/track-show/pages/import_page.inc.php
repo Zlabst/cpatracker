@@ -1,109 +1,75 @@
 <?php
-if (!$include_flag) {
-    exit();
-}
-$mode = (isset($_POST['leadsType']) and $_POST['leadsType'] == 'lead') ? 'lead' : 'sale';
+if (!$include_flag) {exit();}
+
+include _TRACK_SHOW_COMMON_PATH.'/lib/mustache/Autoloader.php';
+Mustache_Autoloader::register(_TRACK_SHOW_COMMON_PATH.'/lib/mustache');
+
+$mTemplate = new Mustache_Engine(array(
+    'loader' => new Mustache_Loader_FilesystemLoader(_TRACK_SHOW_COMMON_PATH . '/templates/views'),
+));
+
+$arr_page_data=array('networks'=>load_networks_list(),
+                     'CSRF_KEY'=>CSRF_KEY,
+                     '_HTML_LIB_PATH'=>_HTML_LIB_PATH,
+                     '_HTML_TEMPLATE_PATH'=>_HTML_TEMPLATE_PATH);
+echo $mTemplate->render('import-sales-page', $arr_page_data);
 ?>
-<div class="page-heading">
-    <div class="header-content">
-	<h2>Добавление продаж</h2>
-    </div>
-</div>
+<link href="<?php echo _HTML_LIB_PATH; ?>/select2/select2.css" rel="stylesheet"/>
+<style>
+    .btn-default.zeroclipboard-is-hover {background-color:#cbe4f5 !important; border-bottom: 1px solid #95b4c9 !important; }
+    .btn-default.zeroclipboard-is-active { background-color:#cbe4f5 !important; box-shadow: 0 3px 5px rgba(0, 0, 0, 0.125) inset;}
+    .partner-description h4 {margin:0px;}
+    .partner-description h4 a{color:#15c; text-decoration:underline; font-weight: normal; font-size:16px; margin-left:20px; display:inline-block; }
+</style>
+
+<script src="<?php echo _HTML_LIB_PATH; ?>/mustache/mustache.js"></script>
+<script src="<?php echo _HTML_LIB_PATH; ?>/select2/select2.js"></script>
+<script src="<?php echo _HTML_LIB_PATH; ?>/clipboard/ZeroClipboard.min.js"></script>
 
 <script type="text/javascript">
     function check_import()
     {
-	if ($('#leadsType').val()=='sale' && ($('#amount_value').val()==0 || $('#amount_value').val()==''))
-	{
-	    return false;
-	}
+        if ($('#leadsType').val()=='sale' && ($('#amount_value').val()==0 || $('#amount_value').val()==''))
+        {
+            return false;
+        }
 
-	if ($('#subids').val()=='')
-	{
-	    return false;
-	}    
-	    
-	return true;
+        if ($('#subids').val()=='')
+        {
+            return false;
+        }
+
+        return true;
     }
 
     function change_currency(currency)
     {
-	var currency_name=''; var currency_code='';
-	switch (currency)
-	{		
-	    case 'rub': 
-		currency_name='руб.';
-		currency_code='rub';
-		break;		
-	    case 'usd': 
-		currency_name='долл.';
-		currency_code='usd';
-		break;
-	    case 'uah': 
-		currency_name='грн.';
-		currency_code='uah';
-		break;				
-	}
-	$('#currency_selected').html(currency_name+'&nbsp;&nbsp;<span class="caret"></span>');
-	$('#currency_code').val(currency_code);
-	return false;
+        var currency_name=''; var currency_code='';
+        switch (currency)
+        {
+            case 'rub':
+                currency_name='руб.';
+                currency_code='rub';
+            break;
+
+            case 'usd':
+                currency_name='долл.';
+                currency_code='usd';
+            break;
+
+            case 'uah':
+                currency_name='грн.';
+                currency_code='uah';
+            break;
+        }
+        $('#currency_selected').html(currency_name+'&nbsp;&nbsp;<span class="caret"></span>');
+        $('#currency_code').val(currency_code);
+        return false;
+    }
+
+    function openURL(url)
+    {
+        window.open(url);
+        return false;
     }
 </script>
-
-<form role="form" method='post' onSubmit='return check_import();'>
-    <div class="form-group">
-	<div class="btn-group" data-toggle="buttons">
-	    <label class="btn btn-default <?php if ($mode == 'sale') { ?>active<?php } ?>" onclick="$('#leadsType').val('sale'); $('#sale_amount').show(); $('#amount_value').attr('required', true);">
-		<input type="radio" name="options" id="option1"> Продажа
-	    </label>
-
-	    <label class="btn btn-default <?php if ($mode == 'lead') { ?>active<?php } ?>" onclick="$('#leadsType').val('lead'); $('#sale_amount').hide(); $('#amount_value').removeAttr('required');">
-		<input type="radio" name="options" id="option2"> Лид
-	    </label>
-	</div>
-    </div>
-
-    <div class="form-group" id='sale_amount'>
-	<label>Оплата за продажу</label>
-	<div class="row">
-	    <div class="col-xs-6">
-		<div class="input-group">
-		    <input type="text" class="form-control" id='amount_value' name='amount_value' placeholder="0.00" required>
-		    <div class="input-group-btn">
-			<button type="button" id="currency_selected" class="btn btn-default dropdown-toggle" data-toggle="dropdown" tabindex="-1">руб.&nbsp;&nbsp;<span class="caret"></span></button>
-			<ul class="dropdown-menu pull-right" role="menu">
-			    <li><a href="#" onclick="return change_currency('usd');">долл., $</a></li>
-			    <li><a href="#" onclick="return change_currency('uah');">грн., ₴</a></li>
-			    <li><a href="#" onclick="return change_currency('rub');">руб.</a></li>
-			</ul>
-		    </div>
-		</div><!-- /input-group -->
-	    </div><!-- /.col-lg-6 -->
-	</div><!-- /.row -->
-    </div>
-
-    <div class="row">
-	<div class="form-group col-xs-6">
-	    <label for="exampleInputFile">Список SubID</label>
-	    <textarea class="form-control" rows='5' id='subids' name='subids' required></textarea>
-	    <p class="help-block">По одному на строке или через запятую.</p>
-	</div>
-    </div>
-
-    <button type="submit" class="btn btn-default">Добавить</button>
-    <input type='hidden' name='ajax_act' value='import_sales'>
-    <input type="hidden" name="csrfkey" value="<?php echo CSRF_KEY; ?>">
-    <input type='hidden' id='currency_code' name='currency_code' value='rub'>
-    <input type='hidden' id='leadsType' name='leadsType' value='sale'>
-
-    <?php if ($mode == 'lead') { ?>
-        <script>
-    	$('#leadsType').val('lead'); $('#sale_amount').hide(); $('#amount_value').removeAttr('required');
-        </script>
-<?php } ?>
-    <?php if (!empty($_REQUEST['currency_code'])) { ?>
-        <script>
-    	change_currency('<?php echo $_REQUEST['currency_code']; ?>');
-        </script>
-<?php } ?>
-</form>

@@ -10,15 +10,11 @@
         </div>
 
         <div class="btn-group" data-toggle="buttons">
-            <label class="btn btn-default active" onclick="show_columns('report-{{report_name}}', '.c-action', '.c-sale, .c-lead');">
-                <input type="radio" name="options2" autocomplete="off" checked="">Все действия
-            </label>
-            <label class="btn btn-default" onclick="show_columns('report-{{report_name}}', '.c-sale', '.c-action, .c-lead');">
-                <input type="radio" name="options2" autocomplete="off"> Продажи
-            </label>
-            <label class="btn btn-default" onclick="show_columns('report-{{report_name}}', '.c-lead', '.c-action, .c-sale');">
-                <input type="radio" name="options2" autocomplete="off"> Лиды
-            </label>
+            {{#report-toolbar-filter-actions}}
+                <label class="btn btn-default {{active}}" onclick="return refresh_report('filter_actions', '{{value}}');">
+                    {{caption}}
+                </label>
+            {{/report-toolbar-filter-actions}}
         </div>
 
         <div class="btn-group pull-right" data-toggle="buttons">

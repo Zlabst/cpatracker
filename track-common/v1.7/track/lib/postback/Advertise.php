@@ -2,8 +2,11 @@
 
 class Advertise {
 
-    public $net = 'Advertise';
-    private $common;
+    public $network_name = 'Advertise';
+    private $display_url = 'www.advertise.ru';
+    private $registration_url = 'http://www.cpatracker.ru/networks/advertise';
+    private $network_description = 'Партнерская сеть с повышенными ставками на все офферы, ежедневные выплаты без комиссии и эксклюзивные промо-материалы. Среди рекламодателей: онлайн-игры, сайты знакомств, wow-товары и финансовые сервисы.';
+
     private $params = array(
         'subid' => 'subid',
         'profit' => 'amount',
@@ -32,40 +35,41 @@ class Advertise {
         't21' => 'keyword',
         't22' => 'action_name',
     );
-    private $reg_url = 'http://www.cpatracker.ru/networks/advertise';
-    private $net_text = 'Партнерская сеть с повышенными ставками на все офферы, ежедневные выплаты без комиссии и эксклюзивные промо-материалы. Среди рекламодателей: онлайн-игры, сайты знакомств, wow-товары и финансовые сервисы.';
 
+    private $common;
     function __construct() {
         $this->common = new common($this->params);
     }
 
-    function get_links() {
-        $url = tracklink() . '/p.php?n=' . $this->net;
+    function get_network_info()
+    {
+        $postback_links=array();
+        $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
             $url .= '&' . $name . '={' . $value . '}';
         }
 
-        $code = $this->common->get_code();
-        $url .= '&ak=' . $code;
+        $url .= '&ak=' . $this->common->get_code();
 
-        $return = array(
-            'id' => 0,
-            'url' => $url,
-            'description' => 'Вставьте эту ссылку в поле PostBack ссылки в настройках оффера Advertise.'
-        );
+        $postback_links[]=array('id'=>'main',
+            'url'=>$url,
+            'description'=>'Для автоматического импорта продаж добавьте ссылку в поле PostBack в настройках оффера:');
 
         return array(
-            0 => $return,
-            'reg_url' => $this->reg_url,
-            'net_text' => $this->net_text
+            'links'=>$postback_links,
+            'name' => $this->network_name,
+            'display-url' => $this->display_url,
+            'registration-url' => $this->registration_url,
+            'network-description' => $this->network_description
         );
     }
 
-    function process_conversion($data_all) {
-        $this->common->log($this->net, $data_all['post'], $data_all['get']);
+    function process_conversion($data_all)
+    {
+        $this->common->log($this->network_name, $data_all['post'], $data_all['get']);
         $data = $this->common->request($data_all);
-        $data['network'] = $this->net;
+        $data['network'] = $this->network_name;
 
         if (empty($data['type'])) {
             $data['type'] = 'sale';

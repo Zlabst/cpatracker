@@ -2754,4 +2754,57 @@ function generate_random_string($length = 10) {
     return $out;
 }
 
+function load_networks_list()
+{
+    require_once _TRACK_LIB_PATH . '/class/common.php';
+    require_once _TRACK_LIB_PATH . '/class/custom.php';
+    $arr_networks = array();
+    $networks = dir(_TRACK_LIB_PATH . '/postback');
+
+    while ($file = $networks->read())
+    {
+        if ($file != '.' && $file != '..')
+        {
+            $file = str_replace('.php', '', $file);
+
+            switch ($file)
+            {
+                case 'GdeSlon':
+                    $name = 'Где Слон?';
+                break;
+
+                default:
+                    $name = $file;
+                break;
+            }
+            $arr_networks[$file] = $name;
+        }
+    }
+
+    asort($arr_networks);
+
+    $result=array();
+    $i = 0;
+    $first_letter_old = '';
+    foreach ($arr_networks as $network => $name)
+    {
+        $first_letter = mb_strtoupper(mb_substr($name, 0, 1, 'UTF-8'), 'UTF-8');
+
+        if ($first_letter_old == $first_letter)
+        {
+            $result[$i]['class']="is-hidden";
+        }
+        else
+        {
+            $result[$i]['class']='';
+        }
+        $result[$i]['network']=$network;
+        $result[$i]['letter']=$first_letter;
+        $result[$i]['caption']=$name;
+        $first_letter_old = $first_letter;
+        $i++;
+    }
+
+    return $result;
+}
 ?>

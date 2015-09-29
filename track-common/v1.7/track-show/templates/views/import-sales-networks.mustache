@@ -1,0 +1,12 @@
+<ul class="link-columns">
+    {{#networks}}
+        <li>
+            <span class="{{class}}">{{letter}}</span>
+            <a class="btn btn-link-alt" href="#" data-network="{{network}}">{{caption}}</a>
+        </li>
+    {{/networks}}
+    <li>
+        <span class="is-hidden">X</span>
+        <a class="btn btn-link-alt" href="#" id="custom-master-start" data-network>Другая CPA сеть&hellip;</a>
+    </li>
+</ul>

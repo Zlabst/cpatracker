@@ -266,10 +266,11 @@
       PRIMARY KEY  (`id`)
     ) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
 
-    $arr_sql[]="ALTER TABLE  `tbl_clicks` ADD  `is_parent` BOOL NOT NULL AFTER  `is_sale` ;";
-    $arr_sql[]="ALTER TABLE  `tbl_clicks` ADD  `is_connected` BOOL NOT NULL AFTER  `is_parent` ;";
-    $arr_sql[]="ALTER TABLE  `tbl_clicks` ADD  `parent_id` INT NOT NULL AFTER  `is_connected` ;";
-    
+    $arr_sql[]="ALTER TABLE `tbl_clicks` ADD  `is_parent` BOOL NOT NULL AFTER  `is_sale` ;";
+    $arr_sql[]="ALTER TABLE `tbl_clicks` ADD  `is_connected` BOOL NOT NULL AFTER  `is_parent` ;";
+    $arr_sql[]="ALTER TABLE `tbl_clicks` ADD  `parent_id` INT NOT NULL AFTER  `is_connected` ;";
+    $arr_sql[]="ALTER TABLE `tbl_clicks` ADD `conversion_currency_id` INT NOT NULL AFTER `conversion_price_main`, ADD `conversion_currency_sum` DECIMAL(10,4) NOT NULL AFTER `conversion_currency_id`;";
+
 	$arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_clicks_map` (
 	  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
 	  `time_begin` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -326,6 +327,139 @@
 	) ENGINE=MyISAM  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
     
     $arr_sql[]="UPDATE `tbl_offers` SET `offer_tracking_url` = REPLACE(`offer_tracking_url`, '%SUBID%', '[SUBID]')";
+
+
+    // =========== Currency ============
+    $arr_sql[]="CREATE TABLE `tbl_currency` ( `id` INT NOT NULL AUTO_INCREMENT , `code` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL , `caption` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL , `symbol` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL , `is_active` TINYINT NOT NULL , PRIMARY KEY (`id`), INDEX (`is_active`), UNIQUE (`code`)) ENGINE = InnoDB;";
+
+    $arr_sql[]="CREATE TABLE `tbl_currency_rates` ( `id` INT NOT NULL AUTO_INCREMENT , `main_currency_id` INT NOT NULL , `currency_id` INT NOT NULL , `rate_date` DATE NOT NULL , `rate_value` DECIMAL(10,6) NOT NULL, `date_add` DATETIME NOT NULL , `status` TINYINT NOT NULL , PRIMARY KEY (`id`), INDEX (`main_currency_id`), INDEX (`rate_date`), INDEX (`status`), INDEX (`currency_id`), INDEX (`date_add`)) ENGINE = InnoDB;";
+    $arr_sql[]="ALTER TABLE `tbl_currency_rates` ADD UNIQUE( `main_currency_id`, `currency_id`, `rate_date`);";
+
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('XXX', 'Не определена', 'XXX', 1);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('USD', 'Доллар США', '$', 1);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('EUR', 'Евро', '€', 1);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('UAH', 'Украинская гривна', '₴', 1);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('KZT', 'Казахстанский тенге', '₸', 1);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('AUD', 'Австралийский доллар', 'A$', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('BYR', 'Белорусский рубль', 'Br', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('CAD', 'Канадский доллар', 'C$', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('CHF', 'Швейцарский франк', '₣', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('CNY', 'Китайский юань', 'CNY', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('DKK', 'Датская крона', 'DKK', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('GBP', 'Фунт стерлингов', '£', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('ISK', 'Исландская крона', 'ISK', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('JPY', 'Японская иена', 'JPY', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('NOK', 'Норвежская крона', 'NOK', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('RUR', 'Российский рубль', '₽', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('SEK', 'Шведская крона', 'SEK', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('SGD', 'Сингапурский доллар', 'S$', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('TRY', 'Турецкая лира', '₺', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('AED', 'AED', 'AED', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('AFN', 'AFN', 'AFN', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('ALL', 'ALL', 'ALL', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('AMD', 'AMD', 'AMD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('AOA', 'AOA', 'AOA', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('ARS', 'ARS', 'ARS', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('AZN', 'AZN', 'AZN', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('BDT', 'BDT', 'BDT', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('BGN', 'BGN', 'BGN', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('BHD', 'BHD', 'BHD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('BIF', 'BIF', 'BIF', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('BND', 'BND', 'BND', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('BOB', 'BOB', 'BOB', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('BRL', 'BRL', 'BRL', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('BWP', 'BWP', 'BWP', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('CDF', 'CDF', 'CDF', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('CLP', 'CLP', 'CLP', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('COP', 'COP', 'COP', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('CRC', 'CRC', 'CRC', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('CSD', 'CSD', 'CSD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('CUP', 'CUP', 'CUP', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('CYP', 'CYP', 'CYP', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('CZK', 'CZK', 'CZK', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('DJF', 'DJF', 'DJF', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('DZD', 'DZD', 'DZD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('EEK', 'EEK', 'EEK', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('EGP', 'EGP', 'EGP', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('ETB', 'ETB', 'ETB', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('GEL', 'GEL', 'GEL', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('GHS', 'GHS', 'GHS', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('GMD', 'GMD', 'GMD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('GNF', 'GNF', 'GNF', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('HKD', 'HKD', 'HKD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('HRK', 'HRK', 'HRK', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('HUF', 'HUF', 'HUF', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('IDR', 'IDR', 'IDR', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('ILS', 'ILS', 'ILS', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('INR', 'INR', 'INR', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('IQD', 'IQD', 'IQD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('IRR', 'IRR', 'IRR', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('JOD', 'JOD', 'JOD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('KES', 'KES', 'KES', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('KGS', 'KGS', 'KGS', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('KHR', 'KHR', 'KHR', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('KPW', 'KPW', 'KPW', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('KRW', 'KRW', 'KRW', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('KWD', 'KWD', 'KWD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('LAK', 'LAK', 'LAK', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('LBP', 'LBP', 'LBP', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('LKR', 'LKR', 'LKR', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('LTL', 'LTL', 'LTL', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('LVL', 'LVL', 'LVL', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('LYD', 'LYD', 'LYD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('MAD', 'MAD', 'MAD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('MDL', 'MDL', 'MDL', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('MGA', 'MGA', 'MGA', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('MKD', 'MKD', 'MKD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('MNT', 'MNT', 'MNT', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('MRO', 'MRO', 'MRO', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('MTL', 'MTL', 'MTL', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('MUR', 'MUR', 'MUR', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('MWK', 'MWK', 'MWK', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('MXN', 'MXN', 'MXN', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('MYR', 'MYR', 'MYR', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('MZN', 'MZN', 'MZN', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('NAD', 'NAD', 'NAD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('NGN', 'NGN', 'NGN', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('NIO', 'NIO', 'NIO', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('NPR', 'NPR', 'NPR', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('NZD', 'NZD', 'NZD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('OMR', 'OMR', 'OMR', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('PEN', 'PEN', 'PEN', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('PHP', 'PHP', 'PHP', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('PKR', 'PKR', 'PKR', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('PLN', 'PLN', 'PLN', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('PYG', 'PYG', 'PYG', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('QAR', 'QAR', 'QAR', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('RON', 'RON', 'RON', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('SAR', 'SAR', 'SAR', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('SCR', 'SCR', 'SCR', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('SDG', 'SDG', 'SDG', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('SIT', 'SIT', 'SIT', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('SKK', 'SKK', 'SKK', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('SLL', 'SLL', 'SLL', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('SOS', 'SOS', 'SOS', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('SRD', 'SRD', 'SRD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('SYP', 'SYP', 'SYP', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('SZL', 'SZL', 'SZL', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('THB', 'THB', 'THB', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('TJS', 'TJS', 'TJS', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('TMM', 'TMM', 'TMM', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('TND', 'TND', 'TND', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('TWD', 'TWD', 'TWD', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('TZS', 'TZS', 'TZS', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('UGX', 'UGX', 'UGX', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('UYU', 'UYU', 'UYU', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('UZS', 'UZS', 'UZS', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('VEF', 'VEF', 'VEF', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('VND', 'VND', 'VND', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('XAF', 'XAF', 'XAF', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('XOF', 'XOF', 'XOF', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('YER', 'YER', 'YER', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('ZAR', 'ZAR', 'ZAR', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('ZMK', 'ZMK', 'ZMK', 0);";
+    $arr_sql[]="insert into tbl_currency (code, caption, symbol, is_active) values ('ZWD', 'ZWD', 'ZWD', 0);";
+
     
     //$arr_sql[]="ALTER TABLE `tbl_conversions` ADD `txt_status` VARCHAR(255), ADD `t1` TEXT,  ADD `t2` TEXT,  ADD `t3` TEXT ,  ADD `t4` TEXT ,  ADD `t5` TEXT ,  ADD `t6` TEXT ,  ADD `t7` TEXT ,  ADD `t8` TEXT ,  ADD `t9` TEXT ,  ADD `t10` TEXT ,  ADD `t11` TEXT ,  ADD `t12` TEXT ,  ADD `t13` TEXT ,  ADD `t14` TEXT ,  ADD `t15` TEXT ,  ADD `t16` TEXT ,  ADD `t17` TEXT ,  ADD `t18` TEXT ,  ADD `t19` TEXT ,  ADD `t20` TEXT ,  ADD `t21` TEXT ,  ADD `t22` TEXT ,  ADD `t23` TEXT ,  ADD `t24` TEXT ,  ADD `t25` TEXT ,   ADD `t26` TEXT ,   ADD `t27` TEXT ,   ADD `t28` TEXT ,   ADD `t29` TEXT ,   ADD `t30` TEXT ,  ADD `f1` FLOAT(10,4) ,  ADD `f2` FLOAT(10,4) ,  ADD `f3` FLOAT(10,4) ,  ADD `f4` FLOAT(10,4) ,  ADD `f5` FLOAT(10,4) ,  ADD `i1` INT(11) ,  ADD `i2` INT(11) ,  ADD `i3` INT(11) ,  ADD `i4` INT(11) ,  ADD `i5` INT(11) ,  ADD `i6` INT(11) ,  ADD `i7` INT(11) ,  ADD `i8` INT(11) ,  ADD `i9` INT(11) ,  ADD `i10` INT(11) ,  ADD `i11` INT(11) ,  ADD `i12` INT(11) ,  ADD `i13` INT(11) ,  ADD `i14` INT(11) ,  ADD `i15` INT(11) ,  ADD `i16` INT(11) ,  ADD `i17` INT(11) ,  ADD `i18` INT(11) ,  ADD `i19` INT(11) ,  ADD `i20` INT(11) ,  ADD `d1` INT ,  ADD `d2` DATETIME ,  ADD `d3` DATETIME ,  ADD `d4` DATETIME ,  ADD `d5` DATETIME ";
 

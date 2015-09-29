@@ -3,10 +3,6 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<!-- <?php echo _HTML_ROOT_PATH . '/' . _HTML_LIB_PATH;; ?> -->
-<!-- <?php echo _HTML_TRACK_PATH; ?> -->
-<!-- <?php echo realpath(_HTML_TRACK_PATH); ?> -->
-
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 <script src="<?php echo _HTML_TEMPLATE_PATH;?>/js/jquery.cookie.js"></script>

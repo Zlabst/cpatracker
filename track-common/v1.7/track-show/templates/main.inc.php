@@ -38,7 +38,8 @@ $is_authorized = (!in_array($_REQUEST['page'], $open_pages) and $settings[0] and
             $main_content = '';
         }
 
-        if ($is_authorized) {
+        if ($is_authorized)
+        {
             // Меню сверху
             include _TRACK_SHOW_COMMON_PATH . "/templates/menu-top.inc.php";
             
@@ -51,7 +52,8 @@ $is_authorized = (!in_array($_REQUEST['page'], $open_pages) and $settings[0] and
         ?>
         
             <?php
-            if ($is_authorized) {
+            if ($is_authorized)
+            {
                 echo load_plugin('payreminder');
                 echo load_plugin('expiry');
             }
@@ -60,16 +62,5 @@ $is_authorized = (!in_array($_REQUEST['page'], $open_pages) and $settings[0] and
         	</div>
         <? } ?>
         <?php echo tpx('footer'); ?>
-        <?php
-        	if(!empty($_GET['debug'])) {
-        		echo '<pre style="margin-left: 270px;">';
-        		foreach($sql_log as $q)	{
-        			echo $q.'<br>';
-        		}
-        		echo 'Total: <b>' .$sql_time. '</b>';
-        		echo '</pre>';
-        	}
-        ?> 
     </body>
-    	
 </html>

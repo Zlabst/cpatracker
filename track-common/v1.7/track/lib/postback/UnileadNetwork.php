@@ -2,8 +2,10 @@
 
 class UnileadNetwork {
 
-    public $net = 'UnileadNetwork';
-    private $common;
+    public $network_name = 'UnileadNetwork';
+    private $display_url = 'www.unileadnetwork.com';
+    private $registration_url = 'http://www.cpatracker.ru/networks/unilead';
+    private $network_description = 'Международная сеть с большим количеством офферов для российского трафика. Сеть специализируется на мобильных офферах для iPhone и Android, с оплатой за установку приложений. Среди рекламодателей такие известные бренды как Castle Clash, Kaspersky Internet Security, Drakensang Online, Carnage и Travian. Кроме игр сеть предлагает также мобильные лендинги для кредитных продуктов, заказа такси и товаров Mail.Ru.';
     private $params = array(
         'profit' => 'payout',
         'subid' => 'aff_sub',
@@ -40,43 +42,43 @@ class UnileadNetwork {
         'i13' => 'affiliate_ref',
         'i14' => 'offer_ref',
     );
-    private $reg_url = 'http://www.cpatracker.ru/networks/unilead';
-    private $net_text = 'Международная сеть с большим количеством офферов для российского трафика. Сеть специализируется на мобильных офферах для iPhone и Android, с оплатой за установку приложений. Среди рекламодателей такие известные бренды как Castle Clash, Kaspersky Internet Security, Drakensang Online, Carnage и Travian. Кроме игр сеть предлагает также мобильные лендинги для кредитных продуктов, заказа такси и товаров Mail.Ru.';
 
+    private $common;
     function __construct() {
         $this->common = new common($this->params);
     }
 
-    function get_links() {
-        $url = tracklink() . '/p.php?n=' . $this->net;
+    function get_network_info()
+    {
+        $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
             $url .= '&' . $name . '={' . $value . '}';
         }
 
-        $code = $this->common->get_code();
-        $url .= '&ak=' . $code;
+        $url .= '&ak=' . $this->common->get_code();
 
-        $return = array(
-            'id' => 0,
-            'url' => $url,
-            'description' => 'Вставьте эту ссылку в поле PostBack ссылки в настройках оффера UnileadNetwork.'
-        );
+        $postback_links[]=array('id'=>'main',
+            'url'=>$url,
+            'description'=>'Для автоматического импорта продаж добавьте ссылку в поле PostBack в настройках оффера:');
 
         return array(
-            0 => $return,
-            'reg_url' => $this->reg_url,
-            'net_text' => $this->net_text
+            'links'=>$postback_links,
+            'name' => $this->network_name,
+            'display-url' => $this->display_url,
+            'registration-url' => $this->registration_url,
+            'network-description' => $this->network_description
         );
+
     }
 
-    function process_conversion($data_all) {
-        $this->common->log($this->net, $data_all['post'], $data_all['get']);
+    function process_conversion($data_all)
+    {
+        $this->common->log($this->network_name, $data_all['post'], $data_all['get']);
         $data = $this->common->request($data_all);
-        $data['network'] = $this->net;
+        $data['network'] = $this->network_name;
         $data['status'] = 1;
         unset($data['net']);
-
 
         $this->common->process_conversion($data);
     }

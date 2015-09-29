@@ -2,8 +2,11 @@
 
 class Adinfo {
 
-    public $net = 'Adinfo';
-    private $common;
+    public $network_name = 'Adinfo';
+    private $display_url = 'www.adinfo.ru';
+    private $registration_url = 'http://www.cpatracker.ru/networks/adinfo';
+    private $network_description = 'Надежная партнерская программа с большим количеством эксклюзивных офферов.';
+
     private $params = array(
         'profit' => 'commission',
         'subid' => 'sud_id',
@@ -14,62 +17,68 @@ class Adinfo {
         'i3' => 'order_id',
         'i4' => 'group_id',
     );
-    private $reg_url = 'http://www.cpatracker.ru/networks/adinfo';
-    private $net_text = 'Надежная партнерская программа с большим количеством эксклюзивных офферов.';
 
+    private $common;
     function __construct() {
         $this->common = new common($this->params);
     }
 
-    function get_links() {
-        $url = tracklink() . '/p.php?n=' . $this->net;
+    function get_network_info()
+    {
+        $postback_links=array();
+        $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
             $url .= '&' . $name . '={' . $value . '}';
         }
 
-        $code = $this->common->get_code();
-        $url .= '&ak=' . $code;
+        $url .= '&ak=' . $this->common->get_code();
 
-        $return = array(
-            'id' => 0,
-            'url' => $url,
-            'description' => 'Вставьте эту ссылку в поле PostBack ссылки в настройках оффера Adinfo.'
-        );
+        $postback_links[]=array('id'=>'main',
+            'url'=>$url,
+            'description'=>'Для автоматического импорта продаж добавьте ссылку в поле PostBack в настройках оффера:');
 
         return array(
-            0 => $return,
-            'reg_url' => $this->reg_url,
-            'net_text' => $this->net_text
+            'links'=>$postback_links,
+            'name' => $this->network_name,
+            'display-url' => $this->display_url,
+            'registration-url' => $this->registration_url,
+            'network-description' => $this->network_description
         );
+
     }
 
-    function process_conversion($data_all) {
-        $this->common->log($this->net, $data_all['post'], $data_all['get']);
+    function process_conversion($data_all)
+    {
+        $this->common->log($this->network_name, $data_all['post'], $data_all['get']);
         $data = $this->common->request($data_all);
-        $data['network'] = $this->net;
+        $data['network'] = $this->network_name;
         $data['type'] = 'sale';
         $data['txt_param20'] = 'rub';
         unset($data['net']);
 
-        switch ($data['txt_status']) {
+        switch ($data['txt_status'])
+        {
             case 'confirmed':
             case 'payed':
                 $data['txt_status'] = 'approved';
                 $data['status'] = 1;
-                break;
+            break;
+
             case 'cancel':
                 $data['txt_status'] = 'declined';
                 $data['status'] = 2;
-                break;
-            case 'new':
-            case 'toconfirmed':
+            break;
+
+            case 'new': case 'toconfirmed':
                 $data['txt_status'] = 'waiting';
                 $data['status'] = 3;
+            break;
+
             default:
                 $data['txt_status'] = 'Unknown';
                 $data['status'] = 0;
-                break;
+            break;
         }
 
         $this->common->process_conversion($data);

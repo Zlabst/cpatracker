@@ -2,8 +2,11 @@
 
 class CTR {
 
-    public $net = 'CTR';
-    private $common;
+    public $network_name = 'CTR';
+    private $display_url = 'www.ctr.ru';
+    private $registration_url = 'http://www.cpatracker.ru/networks/ctr';
+    private $network_description = 'Позволит вам отслеживать эффективные каналы трафика и увеличивать конверсию и заработок.';
+
     private $params = array(
         'subid' => 'sub_id',
         'profit' => 'payment',
@@ -19,43 +22,40 @@ class CTR {
         'i3' => 'order_id',
         'i12' => 'out_order_id',
     );
-    private $reg_url = 'http://www.cpatracker.ru/networks/ctr';
-    private $net_text = 'Позволит вам отслеживать эффективные каналы трафика и увеличивать конверсию и заработок';
+    private $common;
 
     function __construct() {
         $this->common = new common($this->params);
     }
 
-    function get_links() {
-        $url = tracklink() . '/p.php?n=' . $this->net;
+    function get_network_info()
+    {
+        $postback_links=array();
+        $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
             $url .= '&' . $name . '={' . $value . '}';
         }
 
-        $code = $this->common->get_code();
-        $url .= '&ak=' . $code;
+        $url .= '&ak=' . $this->common->get_code();
 
-        $return = array('reg_url' => $this->reg_url, 'net_text' => $this->net_text);
-
-        $return = array(
-            'id' => 0,
-            'url' => $url,
-            'description' => 'Вставьте эту ссылку в поле PostBack ссылки в настройках оффера CTR.'
-        );
+        $postback_links[]=array('id'=>'main',
+            'url'=>$url,
+            'description'=>'Для автоматического импорта продаж добавьте ссылку в поле PostBack в настройках оффера:');
 
         return array(
-            0 => $return,
-            'reg_url' => $this->reg_url,
-            'net_text' => $this->net_text
+            'links'=>$postback_links,
+            'name' => $this->network_name,
+            'display-url' => $this->display_url,
+            'registration-url' => $this->registration_url,
+            'network-description' => $this->network_description
         );
     }
 
     function process_conversion($data_all = array()) {
-        $this->common->log($this->net, $data_all['post'], $data_all['get']);
+        $this->common->log($this->network_name, $data_all['post'], $data_all['get']);
         $data = $this->common->request($data_all);
-        $data['network'] = $this->net;
-        //$output_data['status'] = 1;
+        $data['network'] = $this->network_name;
         $this->common->process_conversion($data);
     }
 

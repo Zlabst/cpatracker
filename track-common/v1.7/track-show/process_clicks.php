@@ -15,6 +15,9 @@
 
 	hide_crontab_notification();
 
+    connect_to_database();
+    update_currency_rates();
+
 	download_clicks();
 	get_clicks_to_process();
 	mark_all_files_processing();
@@ -22,8 +25,6 @@
     load_geoip();
     load_uaparser();
     load_wurfl_manager();
-
-    connect_to_database();
 
 	foreach ($arr_files as $cur_file) 
 	{
@@ -877,4 +878,82 @@ function parse_search_referer($refer, $tail = 1)
     }
 
     return ($result);
+}
+
+function update_currency_rates()
+{
+    set_error_handler(function($errno, $errstr, $errfile, $errline)
+    {
+        throw new Exception($errstr, $errno);
+    });
+
+    global $link;
+    $cur_date_xml=date('d/m/Y');
+    $cur_date_sql=date('Y-m-d');
+    $sql = "SELECT COALESCE (TIME_FORMAT(TIMEDIFF(NOW(), MAX(date_add)),'%H'), 'empty') as h FROM tbl_currency_rates";
+    $arr_currency_rates=array();
+    if ($result = $link->query($sql))
+    {
+        $row = $result->fetch_assoc();
+        // Update currency rate every 12 hours
+        if (isset($row) && $row['h']=='empty' || $row['h']>12)
+        {
+            try
+            {
+                $str=file_get_contents('http://www.cbr.ru/scripts/XML_daily.asp?date_req='.$cur_date_xml);
+            }
+            catch(Exception $e)
+            {
+                return;
+            }
+
+            try
+            {
+                $arr=simplexml_load_string($str);
+            }
+            catch(Exception $e)
+            {
+                return;
+            }
+            if (!is_object($arr)){return;}
+
+            foreach ($arr->Valute as $cur)
+            {
+                $value=str_replace(',', '.', $cur->Value)/(int)$cur->Nominal;
+                $arr_currency_rates[(string)$cur->CharCode]=$value;
+            }
+        }
+        $result->free();
+    }
+    else
+    {
+        return;
+    }
+
+    $arr_active_currencies=array();
+    $sql = "SELECT id, code from tbl_currency where is_active=1 and code!='XXX'";
+    if ($result = $link->query($sql))
+    {
+        while ( $row = $result->fetch_assoc())
+        {
+            $arr_active_currencies[$row['code']]=$row['id'];
+        }
+    }
+
+    // Russian ruble is used as main currency for this account
+
+    foreach ($arr_active_currencies as $code=>$id)
+    {
+        if (isset($arr_currency_rates[$code]))
+        {
+            if ($arr_currency_rates[$code]==0){continue;}
+            $sql_prepared="INSERT INTO tbl_currency_rates (main_currency_id, currency_id, rate_date, rate_value, date_add, status)
+            VALUES (?,?,?,?,NOW(),0) ON DUPLICATE KEY UPDATE rate_date=?, rate_value=?, date_add=NOW(), status=0";
+
+            $stmt = $link->prepare($sql_prepared);
+            $stmt->bind_param('iissss', $main_currency_id, $id, $cur_date_sql, $arr_currency_rates[$code],
+                                $cur_date_sql, $arr_currency_rates[$code]);
+            $stmt->execute();
+        }
+    }
 }
