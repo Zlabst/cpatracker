@@ -1777,7 +1777,7 @@ ol.help li p {
   color: #7b9cb3;
 }
 .breadcrumb a {
-  font-weight: 600;
+    font-weight: 600;
 }
 .table-report-box {
   border: 1px solid #c1d1db;

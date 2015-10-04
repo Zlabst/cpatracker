@@ -4660,6 +4660,7 @@ textarea.input-group-sm > .form-control,textarea.input-group-sm > .input-group-a
 .breadcrumb > li + li:before {
 	color: #7b9cb3;
     content: "— ";
+
     padding: 0 5px;
 }
 

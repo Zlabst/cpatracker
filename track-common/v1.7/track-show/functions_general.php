@@ -43,6 +43,61 @@ function fatal_handler() {
     }
 }
 
+function convert_currency($value, $from, $to, $date)
+{
+    if ($from==$to){return $value;}
+
+    $arr_default_rates=array();
+    $arr_default_rates[16][2]=65.54700; $arr_default_rates[2][16]=1/$arr_default_rates[16][2]; // USD/RUB
+    $arr_default_rates[16][3]=73.26840; $arr_default_rates[3][16]=1/$arr_default_rates[16][3]; // EUR/RUB
+    $arr_default_rates[16][4]=3.03951;  $arr_default_rates[4][16]=1/$arr_default_rates[16][4]; // UAH/RUB
+    $arr_default_rates[16][5]=0.24239;  $arr_default_rates[5][16]=1/$arr_default_rates[16][5]; // KZT/RUB
+
+    $sql="select id, main_currency_id, currency_id, rate_value from tbl_currency_rates where ((main_currency_id='"._str($from)."' AND currency_id='"._str($to)."') OR (main_currency_id='"._str($to)."' and currency_id='"._str($from)."')) AND date_add<='"._str($date.'23:59:59')."' order by date_add desc limit 1";
+    $result=mysql_query($sql);
+    $row=mysql_fetch_assoc($result);
+
+    if (isset($row['id']) && $row['id']>0)
+    {
+        if ($row['main_currency_id']==$from)
+        {
+            return $value/$row['rate_value'];
+        }
+        else
+        {
+            return $value*$row['rate_value'];
+        }
+    }
+    else
+    {
+        if (isset($arr_default_rates[$from][$to]))
+        {
+            return $value/$arr_default_rates[$from][$to];
+        }
+        else
+        {
+            // Current and default rate not found
+            return $value;
+        }
+    }
+}
+
+function get_active_currencies()
+{
+    $sql="SELECT tbl_currency.id, tbl_currency.code, tbl_currency.caption, tbl_currency.symbol FROM tbl_currency WHERE (is_active=1 or code='RUR') AND code!='XXX' order by id asc";
+    $result=mysql_query($sql);
+    $arr_currencies_list=array();
+    $i=1;
+    while ($row=mysql_fetch_assoc($result))
+    {
+        $data=array('id'=>$row['id'], 'symbol'=>$row['symbol'], 'caption'=>$row['caption'].', '.$row['symbol']);
+        if ($row['code']=='RUR'){$arr_currencies_list[0]=$data; continue;}
+        $arr_currencies_list[$i++]=$data;
+    }
+    ksort($arr_currencies_list);
+    return $arr_currencies_list;
+}
+
 /**
  * Форматирование текста ошибки
  */
@@ -842,28 +897,55 @@ function get_links_categories_list() {
     );
 }
 
-function import_sale_info($lead_type, $amount, $subid) {
-    $sql = "select id from tbl_conversions where subid='" . _str($subid) . "' and type='" . _str($lead_type) . "'";
+function import_sale_info($lead_type, $amount, $currency_id, $subid)
+{
+    $sql = "select id from tbl_conversions where subid='" . _str($subid) . "' and type='" . _str($lead_type) . "' limit 2";
     $result = db_query($sql) or die(mysql_error());
-    $row = mysql_fetch_assoc($result);
+    $arr=array();
+    while ($row = mysql_fetch_assoc($result))
+    {
+        $arr[]=$row;
+    }
+    if (count($arr)==2){
+        // Found at least two sales with same click id, do nothing
+        return;
+    }
 
-    if ($row['id'] > 0) {
+    $row=$arr[0];
+    if ($row['id'] > 0)
+    {
         $id = $row['id'];
-        $sql = "update tbl_conversions set profit='" . _str($amount) . "', date_add=NOW() where id='" . _str($id) . "'";
+
+        $sql = "update tbl_conversions set profit='" . _str($amount) . "', currency_id='"._str($currency_id)."', date_add=NOW() where id='" . _str($id) . "'";
         db_query($sql) or die(mysql_error());
-    } else {
-        $sql = "insert into tbl_conversions (profit, subid, date_add, type) values ('" . _str($amount) . "', '" . _str($subid) . "', NOW(), '" . _str($lead_type) . "') ON DUPLICATE KEY UPDATE `date_add` = NOW()";
+    }
+    else
+    {
+        $sql = "insert into tbl_conversions (profit, currency_id, subid, date_add, type) values ('" . _str($amount) . "', '" . _str($currency_id) . "', '" . _str($subid) . "', NOW(), '" . _str($lead_type) . "')";
         db_query($sql) or die(mysql_error());
     }
 
-    switch ($lead_type) {
+    // Default account currency id: 16; RUB
+    $main_currency_id=16;
+
+    switch ($lead_type)
+    {
         case 'sale':
-            $sql = "update tbl_clicks set conversion_price_main='" . _str($amount) . "', is_sale='1' where subid='" . _str($subid) . "'";
-            break;
+            if ($currency_id!=$main_currency_id)
+            {
+                // Perform conversion to main currency
+                $conversion_price_main=convert_currency($amount, $currency_id, $main_currency_id, date('Y-m-d'));
+            }
+            else
+            {
+                $conversion_price_main=$amount;
+            }
+            $sql = "update tbl_clicks SET conversion_price_main='" . _str($conversion_price_main) . "', conversion_currency_id='"._str($currency_id)."', conversion_currency_sum='"._str($amount)."', is_sale='1' where subid='" . _str($subid) . "'";
+        break;
 
         case 'lead':
             $sql = "update tbl_clicks set is_lead='1' where subid='" . _str($subid) . "'";
-            break;
+        break;
     }
     db_query($sql) or die(mysql_error());
 

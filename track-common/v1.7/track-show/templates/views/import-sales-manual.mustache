@@ -18,11 +18,11 @@
                 <div class="input-group">
                     <input type="text" class="form-control" id='amount_value' name='amount_value' placeholder="0.00" required>
                     <div class="input-group-btn">
-                        <button type="button" id="currency_selected" class="btn btn-default dropdown-toggle" data-toggle="dropdown" tabindex="-1">руб.&nbsp;&nbsp;<span class="caret"></span></button>
+                        <button type="button" id="currency_selected" class="btn btn-default dropdown-toggle" data-toggle="dropdown" tabindex="-1">{{selected_currency_symbol}}&nbsp;&nbsp;<span class="caret"></span></button>
                         <ul class="dropdown-menu pull-right" role="menu">
-                            <li><a href="#" onclick="return change_currency('usd');">долл., $</a></li>
-                            <li><a href="#" onclick="return change_currency('uah');">грн., ₴</a></li>
-                            <li><a href="#" onclick="return change_currency('rub');">руб.</a></li>
+                            {{#currencies}}
+                                <li><a href="#" onclick="return change_currency('{{id}}', '{{symbol}}');">{{caption}}</a></li>
+                            {{/currencies}}
                         </ul>
                     </div>
                 </div>
@@ -41,6 +41,6 @@
     <button type="submit" class="btn btn-default">Добавить</button>
     <input type='hidden' name='ajax_act' value='import_sales'>
     <input type="hidden" name="csrfkey" value="{{CSRF_KEY}}">
-    <input type='hidden' id='currency_code' name='currency_code' value='rub'>
+    <input type='hidden' id='currency_id' name='currency_id' value='{{selected_currency_id}}'>
     <input type='hidden' id='leadsType' name='leadsType' value='sale'>
 </form>

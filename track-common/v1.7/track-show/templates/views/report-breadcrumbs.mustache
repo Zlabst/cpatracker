@@ -1,0 +1,9 @@
+{{#breadcrumbs}}
+<ol class="breadcrumb">
+    <li><a href="?act=reports">Все данные</a></li>
+    {{#values}}
+        <li class="{{class}}">{{name}} <a href="#" onclick="#">{{caption}}</a></li>
+    {{/values}}
+    <li class="active">{{selected_caption}}</li>
+</ol>
+{{/breadcrumbs}}

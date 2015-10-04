@@ -45,7 +45,7 @@ class AD1 {
 
         $postback_links[]=array('id'=>'main',
             'url'=>$url,
-            'description'=>'Вставьте эту ссылку в поле PostBack ссылки в настройках Вашего потока в сети AD1:');
+            'description'=>'Вставьте эту ссылку в поле PostBack ссылки в настройках Вашего потока в сети AD1 и выберите тип передачи POST:');
 
         return array(
             'links'=>$postback_links,

@@ -895,6 +895,7 @@ function update_currency_rates()
     if ($result = $link->query($sql))
     {
         $row = $result->fetch_assoc();
+
         // Update currency rate every 12 hours
         if (isset($row) && $row['h']=='empty' || $row['h']>12)
         {
@@ -941,6 +942,7 @@ function update_currency_rates()
     }
 
     // Russian ruble is used as main currency for this account
+    $main_currency_id=16;
 
     foreach ($arr_active_currencies as $code=>$id)
     {
@@ -953,6 +955,7 @@ function update_currency_rates()
             $stmt = $link->prepare($sql_prepared);
             $stmt->bind_param('iissss', $main_currency_id, $id, $cur_date_sql, $arr_currency_rates[$code],
                                 $cur_date_sql, $arr_currency_rates[$code]);
+
             $stmt->execute();
         }
     }

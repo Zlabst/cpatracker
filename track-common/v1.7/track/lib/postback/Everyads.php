@@ -2,7 +2,7 @@
 
 class Everyads {
 
-    public $net = 'Everyads';
+    public $network_name = 'Everyads';
     private $display_url = 'www.everyads.com';
     private $registration_url = 'http://www.cpatracker.ru/networks/everyads';
     private $network_description = 'Рекламная сеть с оплатой за установку. У Вас есть собственное приложение, сайт или сообщество которое посещают с мобильных устройств? С нами вы сможете эффективно монетизировать свои ресурсы. Наши клиенты: eBay, Aviasales, MachineZone, Natural Motion, GetTaxi, Tap4Fun, Kabam, Pacific Interactive, Momondo, Alawar и многие другие';
@@ -43,7 +43,7 @@ class Everyads {
         $protocol = isset($_SERVER["HTTPS"]) ? (($_SERVER["HTTPS"] === "on" || $_SERVER["HTTPS"] === 1 || $_SERVER["SERVER_PORT"] === $pv_sslport) ? "https://" : "http://") : (($_SERVER["SERVER_PORT"] === $pv_sslport) ? "https://" : "http://");
         $cur_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
         $url = substr($cur_url, 0, strlen($cur_url) - 21);
-        $url .= '/track/p.php?n=' . $this->net;
+        $url .= '/track/p.php?n=' . $this->network_name;
         foreach ($this->params as $name => $value) {
             $url .= '&' . $name . '={' . $value . '}';
         }
@@ -64,9 +64,9 @@ class Everyads {
     }
 
     function process_conversion($data_all) {
-        $this->common->log($this->net, $data_all['post'], $data_all['get']);
+        $this->common->log($this->network_name, $data_all['post'], $data_all['get']);
         $data = $this->common->request($data_all);
-        $data['network'] = $this->net;
+        $data['network'] = $this->network_name;
         $data['status'] = 1;
         unset($data['net']);
 

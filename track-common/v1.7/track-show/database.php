@@ -190,6 +190,8 @@
 		  KEY `status` (`status`)
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
 
+    $arr_sql[]="ALTER TABLE `tbl_conversions` ADD `currency_id` INT NOT NULL AFTER `profit`, ADD INDEX (`currency_id`);";
+
     $arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_cpa_networks` (
       `id` int(11) NOT NULL auto_increment,
       `network_name` varchar(255) character set utf8 NOT NULL,

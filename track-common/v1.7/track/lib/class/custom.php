@@ -79,17 +79,19 @@ class custom {
             }
         }
     }
-    
-    
-    
-    function get_links() {
-        $url = tracklink() . '/p.php?n=custom';
-        
-        $code = $this->common->get_code();
-        $url .= '&ak='.$code;
-        
-        
-        return $url;
+
+    function get_network_info()
+    {
+        $postback_links=array();
+        $url = tracklink() . '/p.php?n=custom&ak='.$this->common->get_code();
+        $postback_links[]=array('id'=>'main',
+            'url'=>$url,
+            'description'=>'Универсальная Postback ссылка. Перед использованием измените значения параметров согласно документации CPA сети.');
+
+        return array(
+            'base_url'=>$url,
+            'links'=>$postback_links
+        );
     }
     
     function get_pixel_link() {

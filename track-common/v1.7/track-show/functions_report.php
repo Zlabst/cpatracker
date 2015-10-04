@@ -1,7 +1,64 @@
 <?php
 
+function prepare_filtered_report($arr_allowed_main_columns, $IN)
+{
+    $arr_sql_data=array();
+    $main_column=$IN['main_column'];
+
+    switch ($IN['filter_by'])
+    {
+        case 'offer_name':
+            $arr_sql_add['join']=array('LEFT JOIN tbl_offers on tbl_offers.id = tbl_clicks.out_id');
+            $arr_sql_add['where']=array("tbl_offers."._str($IN['filter_by'])."='"._str($IN['filter_value'])."'");
+        break;
+
+        default:
+            $arr_sql_add['where']=array("tbl_clicks."._str($IN['filter_by'])."='"._str($IN['filter_value'])."'");
+        break;
+    }
+
+    if ($main_column=='popular')
+    {
+        $arr_report_columns = array('offer_name', 'source_name', 'campaign_name', 'campaign_ads', 'referer',
+            'link_name', 'country', 'region', 'city', 'user_ip', 'isp', 'user_os', 'user_platform', 'user_browser');
+        $arr_sql_add['limit'] = 'LIMIT 1';
+    }
+    else
+    {
+        $arr_report_columns=array($IN['main_column']);
+        $arr_sql_add['limit']='';
+    }
+
+    foreach ($arr_report_columns as $column)
+    {
+        if ($column==$IN['filter_by'])
+        {
+            // Skip filtered row from traffic structure results
+            continue;
+        }
+        $IN['main_column']=$column;
+        $sql=generate_main_report_sql($arr_allowed_main_columns, $IN, $arr_sql_add);
+
+        $result=mysql_query($sql);
+        while($row=mysql_fetch_assoc($result))
+        {
+            if ($main_column=='popular')
+            {
+                $row['c0']=$column;
+            }
+
+            $arr_sql_data[]=$row;
+        }
+    }
+
+    return $arr_sql_data;
+}
+
 function prepare_report($report_name, $request_parameters)
 {
+    // Default currency for this account: RUB (16)
+    $main_currency_id=16;
+
     // Set default values
     $allowed_report_in_params=array(
         'report_type'=>'clicks',      // clicks, sales
@@ -9,8 +66,11 @@ function prepare_report($report_name, $request_parameters)
         'main_column'=>'offer_name',  // link_name, category, country, ...
         'filter_conversions'=>'all', // all, has_actions, no_actions
         'filter_actions'=>'all',      // all, sales_only, leads_only
+        'filter_by'=>'',
+        'filter_value'=>'',
         'sort_by'=>'clicks_count',    // main_column, clicks_count, actions_count, conversion_rate, costs, profit, roi, date_column
         'sort_order'=>'DESC',
+        'currency_id'=>'16',          // RUB (16) is default currency for this account
         'timezone_offset'=>get_current_timezone_shift(),
         'date_start'=>get_current_day('-7 days'),
         'date_end'=>get_current_day(),
@@ -49,12 +109,6 @@ function prepare_report($report_name, $request_parameters)
         break;
     }
 
-    $sql_select=array();
-    $sql_join=array();
-    $sql_where=array();
-    $sql_group=array();
-    $sql_order=array();
-
     $arr_allowed_main_columns=array('offer_name'=>'Оффер', 'offer_category'=>'Категория', 'os_and_version'=>'ОС',
         'campaign_ads'=>'Кампания', 'link_name'=>'Ссылка', 'date_add_day'=>'День',
         'date_add_hour'=>'Час', 'user_ip'=>'IP', 'user_agent'=>'User agent',
@@ -76,181 +130,42 @@ function prepare_report($report_name, $request_parameters)
         'click_param_name13'=>'Параметр перехода #13', 'click_param_name14'=>'Параметр перехода #14',
         'click_param_name15'=>'Параметр перехода #15');
 
-
-    // Process main column
-    switch($IN['main_column'])
+    $arr_data=array();
+    if (isset($IN['filter_by']) && $IN['filter_by']!='')
     {
-        case 'offer_name':
-            $sql_select[]='tbl_offers.offer_name as c1';
-            $sql_select[]='tbl_clicks.out_id as c1_id';
-            $sql_join[]='LEFT JOIN tbl_offers on tbl_offers.id=tbl_clicks.out_id';
-            $sql_group[]='tbl_clicks.out_id';
-        break;
-
-        case 'offer_category':
-            $sql_select[]='tbl_links_categories_list.category_caption as c1';
-            $sql_select[]='tbl_links_categories.category_id as c1_id';
-            $sql_join[]='LEFT JOIN tbl_links_categories on tbl_links_categories.offer_id=tbl_clicks.out_id';
-            $sql_join[]='LEFT JOIN tbl_links_categories_list on tbl_links_categories_list.id=tbl_links_categories.category_id';
-            $sql_group[]='tbl_links_categories.category_id';
-        break;
-
-        case 'os_and_version':
-            $sql_select[]='CONCAT(tbl_clicks.user_os, " ", tbl_clicks.user_os_version) as c1';
-            $sql_group[]='tbl_clicks.user_os';
-            $sql_group[]='tbl_clicks.user_os_version';
-        break;
-
-        case 'campaign_ads':
-            $sql_select[]='CONCAT(tbl_clicks.campaign_name, "-", tbl_clicks.ads_name) as c1';
-            $sql_group[]='tbl_clicks.campaign_name';
-            $sql_group[]='tbl_clicks.ads_name';
-        break;
-
-        case 'link_name':
-            $sql_select[]='tbl_rules.link_name as c1';
-            $sql_select[]='tbl_clicks.rule_id as c1_id';
-            $sql_join[]='LEFT JOIN tbl_rules on tbl_rules.id=tbl_clicks.rule_id';
-            $sql_group[]='tbl_clicks.rule_id';
-        break;
-
-        default:
-            if (in_array($IN['main_column'], array_keys($arr_allowed_main_columns)))
-            {
-                $sql_select[]='tbl_clicks.'.$IN['main_column'].' as c1';
-                $sql_group[]='tbl_clicks.'.$IN['main_column'];
-            }
-        break;
-    }
-
-    // Process range_type
-    switch ($IN['range_type'])
-    {
-        case 'all':
-            $sql_select=array_merge($sql_select, array(
-                'COUNT(tbl_clicks.id) as cnt',
-                'SUM(tbl_clicks.is_lead) as leads_count',
-                'SUM(tbl_clicks.is_sale) as sales_count',
-                'SUM(tbl_clicks.is_lead)+SUM(tbl_clicks.is_sale) as actions_count',
-                '(SUM(tbl_clicks.is_lead)+SUM(tbl_clicks.is_sale))/COUNT(tbl_clicks.id)*100 as actions_conversion_rate',
-                '(SUM(tbl_clicks.is_sale))/COUNT(tbl_clicks.id)*100 as sales_conversion_rate',
-                '(SUM(tbl_clicks.is_lead))/COUNT(tbl_clicks.id)*100 as leads_conversion_rate',
-                'SUM(tbl_clicks.click_price) as cost',
-                'SUM(tbl_clicks.conversion_price_main) as profit',
-                'SUM(tbl_clicks.conversion_price_main)/COUNT(tbl_clicks.id) as epc',
-                '(SUM(tbl_clicks.conversion_price_main)-SUM(tbl_clicks.click_price))/SUM(tbl_clicks.conversion_price_main)*100 as roi',
-                'SUM(tbl_clicks.click_price)/SUM(tbl_clicks.is_lead) as cpl')
-            );
-        break;
-
-        case 'hourly': case 'daily': case 'monthly':
-            $sql_select[]='COUNT(tbl_clicks.id) as cnt';
-            $sql_select[]='SUM(tbl_clicks.is_lead)+SUM(tbl_clicks.is_sale) as actions_count';
-
-            $t=array(
-                'hourly'=>array('f'=>'HOUR', 'param'=>'hour_add'),
-                'daily'=>array('f'=>'DATE', 'param'=>'day_add'),
-                'monthly'=>array('f'=>'MONTH', 'param'=>'month_add')
-            );
-
-            if (in_array($IN['timezone_offset'], array('+00:00', '-00:00', '00:00')))
-            {
-                $sql_select[]=$t[$IN['range_type']]['f'].'(tbl_clicks.date_add) as '.$t[$IN['range_type']]['param'];
-                $sql_group[]=$t[$IN['range_type']]['param'];
-            }
-            else
-            {
-                $sql_select[]=$t[$IN['range_type']]['f']."(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '"._str($IN['timezone_offset'])."')) as ".$t[$IN['range_type']]['param'];
-                $sql_group[]=$t[$IN['range_type']]['param'];
-            }
-        break;
-    }
-
-    switch ($IN['sort_by'])
-    {
-        case 'clicks_count':
-            $sort_order=($IN['sort_order']=='ASC')?'ASC':'DESC';
-            $sql_order[]='cnt '.$sort_order;
-        break;
-
-        case 'main_column':
-            // Sorting by main column is always ASC
-            $sql_order[]='c1 '.'ASC';
-        break;
-
-        case 'actions_count': case 'sales_count': case 'leads_count': case 'actions_conversion_rate':
-        case 'sales_conversion_rate': case 'leads_conversion_rate': case 'cost': case 'profit':
-        case 'roi': case 'epc': case 'cpl':
-            $sort_order=($IN['sort_order']=='ASC')?'ASC':'DESC';
-            $sql_order[]=$IN['sort_by'].' '.$sort_order;
-        break;
-    }
-
-// Apply timezone offset
-    if (in_array ($IN['timezone_offset'], array('+00:00', '-00:00', '00:00')))
-    {
-        // Same timezones in DB and report
-        $sql_date_start="'"._str($IN['date_start'])." 00:00:00'";
-        $sql_date_end="'"._str($IN['date_end'])." 23:59:59'";
+        // Traffic structure report
+        $arr_data=prepare_filtered_report($arr_allowed_main_columns, $IN);
     }
     else
     {
-        $timezone_offset_inverted=timezone_shift_invert($IN['timezone_offset']);
-        $sql_date_start="CONVERT_TZ('"._str($IN['date_start'])." 00:00:00', '+00:00', '"._str($timezone_offset_inverted)."')";
-        $sql_date_end="CONVERT_TZ('"._str($IN['date_end'])." 23:59:59', '+00:00', '"._str($timezone_offset_inverted)."')";
-    }
+        // Main report
+        $sql=generate_main_report_sql($arr_allowed_main_columns, $IN);
+        $result=mysql_query($sql);
+        while($row=mysql_fetch_assoc($result))
+        {
+            $arr_data[]=$row;
+        }
 
-    $sql_where[]="tbl_clicks.date_add BETWEEN {$sql_date_start} AND {$sql_date_end}";
-
-    $sql='SELECT '.implode (', ', $sql_select).'
+        if ($IN['currency_id']!=$main_currency_id)
+        {
+            // Report is not using default currency, need to get correct sales values
+            $sql2='SELECT '.implode (', ', array_merge($sql_select, array('SUM(tbl_clicks.conversion_currency_sum) as profit_currency'))).'
           FROM
               tbl_clicks
               '.implode (' ', $sql_join).'
           WHERE
               1=1 AND
-              '.implode (' AND ', $sql_where).'
+              '.implode (' AND ', array_merge($sql_where, array('tbl_clicks.conversion_currency_id='._str($IN['currency_id'])))).'
           GROUP BY
               '.implode (',', $sql_group).'
           ORDER BY '.implode (', ', $sql_order);
-
-    $result=mysql_query($sql);
-
-    $arr_allowed_actions=array('all'=>'actions_count', 'sales'=>'sales_count', 'leads'=>'leads_count');
-    $arr_data=array();
-    while($row=mysql_fetch_assoc($result))
-    {
-        switch ($IN['filter_conversions'])
-        {
-            case 'has_actions':
-                if (isset($arr_allowed_actions[$IN['filter_actions']]))
-                {
-                    if ($row[$arr_allowed_actions[$IN['filter_actions']]]==0)
-                    {
-                        continue 2;
-                    }
-                }
-                else
-                {
-                    if ($row[$arr_allowed_actions['all']]==0)
-                    {
-                        continue 2;
-                    }
-                }
-            break;
-
-            case 'no_actions':
-                if (isset($arr_allowed_actions[$IN['filter_actions']]))
-                {
-                    if ($row[$arr_allowed_actions[$IN['filter_actions']]]!=0){continue 2;}
-                }
-                else
-                {
-                    if ($row[$arr_allowed_actions['all']]!=0){continue 2;}
-                }
-
-            break;
+            $result2=mysql_query($sql2);
+            $arr_data2=array();
+            while($row=mysql_fetch_assoc($result2))
+            {
+                $arr_data2['_'.$row['c1']]=$row;
+            }
         }
-        $arr_data[]=$row;
     }
 
     $arr_report_data=array();
@@ -261,8 +176,25 @@ function prepare_report($report_name, $request_parameters)
         case 'all':
             foreach ($arr_data as $i=>$row)
             {
-                $arr_report_data['table_rows'][$i]['values']=array(
-                    array('value' => $row['c1'], 'class' =>'report-header', 'nowrap' => 'nowrap'),
+                // All sales are in the same currency, use accurate value
+                if (isset($arr_data2) && isset($arr_data2['_'.$row['c1']]) && $arr_data2['_'.$row['c1']]['profit']==$row['profit'])
+                {
+                    $profit=$arr_data2['_'.$row['c1']]['profit_currency'];
+                    $epc=($row['cnt']==0)?0:($profit/$row['cnt']);
+                }
+                else
+                {
+                    // Using currency rate for the beginning of the period
+                    $profit=($row['profit']==0)?0:convert_currency($row['profit'], $main_currency_id, $IN['currency_id'], $IN['date_start']);
+                    $epc=($row['epc']==0)?0:convert_currency($row['epc'], $main_currency_id, $IN['currency_id'], $IN['date_start']);
+                }
+
+                $cost=($row['cost']==0)?0:convert_currency($row['cost'], $main_currency_id, $IN['currency_id'], $IN['date_start']);
+
+                $arr_report_data['table_rows'][$i]['values']=array
+                (
+                    array('value' => $row['c1'], 'class' =>'report-header', 'nowrap' => 'nowrap', 'action'=>array('name'=>'main_column||filter|'.$IN['main_column'], 'value'=>'popular||'.$row['c1'])),
+
                     array('value' => $row['cnt']),
                     array('value' => $row['actions_count'], 'class' =>'c-action'),
                     array('value' => $row['sales_count'], 'class' =>'c-sale'),
@@ -270,19 +202,27 @@ function prepare_report($report_name, $request_parameters)
                     array('value' => round($row['actions_conversion_rate'], 3).'%', 'class' =>'c-action'),
                     array('value' => round($row['sales_conversion_rate'], 3).'%', 'class' =>'c-sale'),
                     array('value' => round($row['leads_conversion_rate'], 3).'%', 'class' =>'c-lead'),
-                    array('value' => round($row['cost'], 2)),
-                    array('value' => round($row['profit'], 2), 'class'=>'c-action c-sale'),
-                    array('value' => round($row['epc'], 3), 'class' =>'c-sale'),
-                    array('value' => round($row['roi']), 'class'=>'c-action c-sale'),
+                    array('value' => round($cost, 2)),
+                    array('value' => round($profit, 2), 'class'=>'c-action c-sale'),
+                    array('value' => round($epc, 3), 'class' =>'c-sale'),
+                    array('value' => number_format($row['roi'], 0, '.', ' ').' %', 'class'=>'c-action c-sale'),
                     array('value' => round($row['cpl'], 3), 'class' =>'c-lead')
                 );
+
+                // Add column to the beginning for traffic structure report
+                if ($IN['main_column']=='popular')
+                {
+                    $arr_report_data['table_rows'][$i]['values'] = array_merge(array(array('value' => $arr_allowed_main_columns[$row['c0']],
+                        'action'=>array('name'=>'main_column', 'value'=>$row['c0']))),
+                        $arr_report_data['table_rows'][$i]['values']);
+                }
 
                 $arr_report_totals['clicks_count']+=$row['cnt'];
                 $arr_report_totals['sales_count']+=$row['sales_count'];
                 $arr_report_totals['leads_count']+=$row['leads_count'];
                 $arr_report_totals['actions_count']+=$row['actions_count'];
-                $arr_report_totals['cost']+=$row['cost'];
-                $arr_report_totals['profit']+=$row['profit'];
+                $arr_report_totals['cost']+=$cost;
+                $arr_report_totals['profit']+=$profit;
             }
         break;
 
@@ -357,17 +297,20 @@ function prepare_report($report_name, $request_parameters)
     }
 
     $arr_report_data['cost_total']=isset($arr_report_totals['cost'])?$arr_report_totals['cost']:null;
+    $arr_report_data['cost_total']=round($arr_report_data['cost_total'], 2);
+
     $arr_report_data['profit_total']=isset($arr_report_totals['profit'])?$arr_report_totals['profit']:null;
+    $arr_report_data['profit_total']=round($arr_report_data['profit_total'], 2);
 
     $arr_report_data['epc_total']=(isset($arr_report_totals['cost']) && isset($arr_report_totals['sales_count']) && ($arr_report_totals['sales_count']!=0))?$arr_report_totals['cost']/$arr_report_totals['sales_count']:0;
     $arr_report_data['epc_total']=round($arr_report_data['epc_total'], 3);
 
     $arr_report_data['roi_total']=(isset($arr_report_data['cost_total']) && isset($arr_report_data['profit_total']) && $arr_report_data['cost_total']>0)?($arr_report_data['profit_total']-$arr_report_data['cost_total'])/$arr_report_data['cost_total']*100:0;
-    $arr_report_data['roi_total']=round($arr_report_data['roi_total']);
+    $arr_report_data['roi_total']=number_format($arr_report_data['roi_total'], 0, '.', ' ');
 
     $arr_report_data['cpl_total']=(isset($arr_report_totals['cost']) && isset($arr_report_totals['leads_count']) && $arr_report_totals['leads_count']!=0)?$arr_report_totals['cost']/$arr_report_totals['leads_count']:0;
 
-    // Fill report params, hidden
+    // Fill report params, hidden fields
     foreach ($IN as $key=>$value)
     {
         // Fill default report params
@@ -407,6 +350,21 @@ function prepare_report($report_name, $request_parameters)
 
     $arr_report_data['report_caption']=(isset($arr_report_captions[$IN['main_column']]))?$arr_report_captions[$IN['main_column']]:$arr_report_captions['default'];
 
+    // Fill report breadcrumbs values
+    if (isset($IN['filter_by']) && $IN['filter_by']!='')
+    {
+        $arr_breadcrumbs_captions=array('offer_name'=>'Оффер', 'source_name'=>'Источник', 'campaign_name'=>'Кампания',
+            'campaign_ads'=>'Объявление', 'referer'=>'Площадка', 'link_name'=>'Ссылка', 'country'=>'Страна',
+            'region'=>'Регион', 'city'=>'Город', 'user_ip'=>'IP адрес', 'isp'=>'Провайдер',
+            'user_os'=>'ОС', 'user_platform'=>'Платформа', 'user_browser'=>'Браузер', 'popular'=>'Популярные'
+        );
+        if (isset($arr_breadcrumbs_captions[$IN['filter_by']]))
+        {
+            $name=$arr_breadcrumbs_captions[$IN['filter_by']];
+            $arr_report_data['breadcrumbs']=array('values'=>array('name'=>$name, 'caption'=>$IN['filter_value']), 'selected_caption'=>$arr_breadcrumbs_captions[$IN['main_column']]);
+        }
+    }
+
     // Fill report table toolbar values
     $arr_filter_conversions_buttons=array('Все переходы|all', 'Только действия|has_actions', 'Без конверсий|no_actions');
     foreach ($arr_filter_conversions_buttons as $cur)
@@ -435,8 +393,7 @@ function prepare_report($report_name, $request_parameters)
     switch ($IN['range_type'])
     {
         case 'all':
-            $arr_table_columns=array(
-                $arr_allowed_main_columns[$IN['main_column']].'|main_column',
+            $arr_table_columns=array($arr_allowed_main_columns[$IN['main_column']].'|main_column',
                 'Переходы|clicks_count',
                 'Действия|actions_count|c-action',
                 'Продажи|sales_count|c-sale',
@@ -531,6 +488,189 @@ function prepare_report($report_name, $request_parameters)
     }
     return $arr_report_data;
 }
+
+function generate_main_report_sql($arr_allowed_main_columns, $IN, $sql_add='')
+{
+    $sql_select=array();
+    $sql_join=array();
+    $sql_where=array();
+    $sql_group=array();
+    $sql_order=array();
+    $sql_limit='';
+    if ($sql_add!='')
+    {
+        $sql_select=isset($sql_add['select'])?array_merge($sql_add['select'], $sql_select):array();
+        $sql_join=isset($sql_add['join'])?array_merge($sql_add['join'], $sql_join):array();
+        $sql_where=isset($sql_add['where'])?array_merge($sql_add['where'], $sql_where):array();
+        $sql_group=isset($sql_add['group'])?array_merge($sql_add['group'], $sql_group):array();
+        $sql_order=isset($sql_add['order'])?array_merge($sql_add['order'], $sql_order):array();
+        $sql_limit=isset($sql_add['limit'])?$sql_add['limit']:'';
+    }
+
+    // Process main column
+    switch($IN['main_column'])
+    {
+        case 'offer_name':
+            $sql_select['c1']='tbl_offers.offer_name as c1';
+            $sql_select['c1_id']='tbl_clicks.out_id as c1_id';
+            $sql_join[]='LEFT JOIN tbl_offers on tbl_offers.id=tbl_clicks.out_id';
+            $sql_group[]='tbl_clicks.out_id';
+        break;
+
+        case 'offer_category':
+            $sql_select['c1']='tbl_links_categories_list.category_caption as c1';
+            $sql_select['c1_id']='tbl_links_categories.category_id as c1_id';
+            $sql_join[]='LEFT JOIN tbl_links_categories on tbl_links_categories.offer_id=tbl_clicks.out_id';
+            $sql_join[]='LEFT JOIN tbl_links_categories_list on tbl_links_categories_list.id=tbl_links_categories.category_id';
+            $sql_group[]='tbl_links_categories.category_id';
+        break;
+
+        case 'os_and_version':
+            $sql_select['c1']='CONCAT(tbl_clicks.user_os, " ", tbl_clicks.user_os_version) as c1';
+            $sql_group[]='tbl_clicks.user_os';
+            $sql_group[]='tbl_clicks.user_os_version';
+        break;
+
+        case 'campaign_ads':
+            $sql_select['c1']='CONCAT(tbl_clicks.campaign_name, "-", tbl_clicks.ads_name) as c1';
+            $sql_group[]='tbl_clicks.campaign_name';
+            $sql_group[]='tbl_clicks.ads_name';
+        break;
+
+        case 'link_name':
+            $sql_select['c1']='tbl_rules.link_name as c1';
+            $sql_select['c1_id']='tbl_clicks.rule_id as c1_id';
+            $sql_join[]='LEFT JOIN tbl_rules on tbl_rules.id=tbl_clicks.rule_id';
+            $sql_group[]='tbl_clicks.rule_id';
+        break;
+
+        default:
+            if (in_array($IN['main_column'], array_keys($arr_allowed_main_columns)))
+            {
+                $sql_select['c1']='tbl_clicks.'.$IN['main_column'].' as c1';
+                $sql_group[]='tbl_clicks.'.$IN['main_column'];
+            }
+        break;
+    }
+
+    // Process range_type
+    switch ($IN['range_type'])
+    {
+        case 'all':
+            $sql_select['cnt']='COUNT(tbl_clicks.id) as cnt';
+            $sql_select['leads_count']='SUM(tbl_clicks.is_lead) as leads_count';
+            $sql_select['sales_count']='SUM(tbl_clicks.is_sale) as sales_count';
+            $sql_select['actions_count']='SUM(tbl_clicks.is_lead)+SUM(tbl_clicks.is_sale) as actions_count';
+            $sql_select['actions_conversion_rate']='(SUM(tbl_clicks.is_lead)+SUM(tbl_clicks.is_sale))/COUNT(tbl_clicks.id)*100 as actions_conversion_rate';
+            $sql_select['sales_conversion_rate']='(SUM(tbl_clicks.is_sale))/COUNT(tbl_clicks.id)*100 as sales_conversion_rate';
+            $sql_select['leads_conversion_rate']='(SUM(tbl_clicks.is_lead))/COUNT(tbl_clicks.id)*100 as leads_conversion_rate';
+            $sql_select['cost']='SUM(tbl_clicks.click_price) as cost';
+            $sql_select['profit']='SUM(tbl_clicks.conversion_price_main) as profit';
+            $sql_select['epc']='SUM(tbl_clicks.conversion_price_main)/COUNT(tbl_clicks.id) as epc';
+            $sql_select['roi']='(SUM(tbl_clicks.conversion_price_main)-SUM(tbl_clicks.click_price))/SUM(tbl_clicks.click_price)*100 as roi';
+            $sql_select['cpl']='SUM(tbl_clicks.click_price)/SUM(tbl_clicks.is_lead) as cpl';
+        break;
+
+        case 'hourly': case 'daily': case 'monthly':
+            $sql_select['cnt']='COUNT(tbl_clicks.id) as cnt';
+            $sql_select['actions_count']='SUM(tbl_clicks.is_lead)+SUM(tbl_clicks.is_sale) as actions_count';
+
+            $t=array(
+                'hourly'=>array('f'=>'HOUR', 'param'=>'hour_add'),
+                'daily'=>array('f'=>'DATE', 'param'=>'day_add'),
+                'monthly'=>array('f'=>'MONTH', 'param'=>'month_add')
+            );
+
+            if (in_array($IN['timezone_offset'], array('+00:00', '-00:00', '00:00')))
+            {
+                $sql_select[$t[$IN['range_type']]['param']]=$t[$IN['range_type']]['f'].'(tbl_clicks.date_add) as '.$t[$IN['range_type']]['param'];
+                $sql_group[]=$t[$IN['range_type']]['param'];
+            }
+            else
+            {
+                $sql_select[$t[$IN['range_type']]['param']]=$t[$IN['range_type']]['f']."(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '"._str($IN['timezone_offset'])."')) as ".$t[$IN['range_type']]['param'];
+                $sql_group[]=$t[$IN['range_type']]['param'];
+            }
+        break;
+    }
+
+    switch ($IN['sort_by'])
+    {
+        case 'clicks_count':
+            $sort_order=($IN['sort_order']=='ASC')?'ASC':'DESC';
+            $sql_order[]='cnt '.$sort_order;
+        break;
+
+        case 'main_column':
+            // Sorting by main column is always ASC
+            $sql_order[]='c1 '.'ASC';
+        break;
+
+        case 'actions_count': case 'sales_count': case 'leads_count': case 'actions_conversion_rate':
+        case 'sales_conversion_rate': case 'leads_conversion_rate': case 'cost': case 'profit':
+        case 'roi': case 'epc': case 'cpl':
+            $sort_order=($IN['sort_order']=='ASC')?'ASC':'DESC';
+            $sql_order[]=$IN['sort_by'].' '.$sort_order;
+        break;
+    }
+
+    // Apply timezone offset
+    if (in_array ($IN['timezone_offset'], array('+00:00', '-00:00', '00:00')))
+    {
+        // Same timezones in DB and report
+        $sql_date_start="'"._str($IN['date_start'])." 00:00:00'";
+        $sql_date_end="'"._str($IN['date_end'])." 23:59:59'";
+    }
+    else
+    {
+        $timezone_offset_inverted=timezone_shift_invert($IN['timezone_offset']);
+        $sql_date_start="CONVERT_TZ('"._str($IN['date_start'])." 00:00:00', '+00:00', '"._str($timezone_offset_inverted)."')";
+        $sql_date_end="CONVERT_TZ('"._str($IN['date_end'])." 23:59:59', '+00:00', '"._str($timezone_offset_inverted)."')";
+    }
+
+    $sql_where[]="tbl_clicks.date_add BETWEEN {$sql_date_start} AND {$sql_date_end}";
+
+    $sql='SELECT '.implode (', ', $sql_select).'
+          FROM
+              tbl_clicks
+              '.implode (' ', $sql_join).'
+          WHERE
+              1=1 AND
+              '.implode (' AND ', $sql_where).'
+          GROUP BY
+              '.implode (',', $sql_group).'
+          ORDER BY '.implode (', ', $sql_order);
+
+    $arr_allowed_actions=array('all'=>'actions_count', 'sales'=>'sales_count', 'leads'=>'leads_count');
+    switch ($IN['filter_conversions'])
+    {
+        case 'has_actions':
+            $outer_select=array();
+            foreach (array_keys($sql_select) as $key)
+            {
+                $outer_select[]='main_table.'.$key;
+            }
+            $sql='SELECT '.implode (', ', $outer_select).' FROM ('.$sql.') as main_table
+                    WHERE main_table.'.$arr_allowed_actions[$IN['filter_actions']].'>0'." {$sql_limit}";
+        break;
+
+        case 'no_actions':
+            $outer_select=array();
+            foreach (array_keys($sql_select) as $key){
+                $outer_select[]='main_table.'.$key;
+            }
+            $sql='SELECT '.implode (', ', $outer_select).' FROM ('.$sql.') as main_table
+                    WHERE main_table.'.$arr_allowed_actions[$IN['filter_actions']].'=0'." {$sql_limit}";
+        break;
+
+        default:
+            $sql=$sql." {$sql_limit}";
+        break;
+    }
+
+    return $sql;
+}
+
 
 function load_from_cache($params) {
     $out = array();

@@ -586,25 +586,25 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             break;
 
         case 'import_sales':
-            // Convert currency
-            $amount = convert_to_usd($_REQUEST['currency_code'], $_REQUEST['amount_value']);
-
+            $currency_id=$_REQUEST['currency_id'];
+            $amount=$_REQUEST['amount_value'];
             $leadsType = $_REQUEST['leadsType'];
             $str_subids = $_REQUEST['subids'];
 
             $pattern = '/\d{14}x\d{5}/';
             preg_match_all($pattern, $str_subids, $subids);
-            foreach ($subids[0] as $key => $subid) {
-                import_sale_info($leadsType, $amount, $subid);
+            foreach ($subids[0] as $key => $subid)
+            {
+                import_sale_info($leadsType, $amount, $currency_id, $subid);
             }
-            break;
+        break;
 
         case 'arch_link':
             $ids = rq('id', -2);
             $arch = rq('arch', 2);
             delete_offer($ids, $arch ? 2 : 0);
             cache_outs_update($ids);
-            break;
+        break;
 
         case 'fave_link':
             $ids = rq('id', 2);
@@ -993,23 +993,30 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
 
         case 'get_network_info':
             $network_name = $_POST['network'];
-            $result = array();
 
-            if (!ctype_alnum($network_name) || !is_file(_TRACK_LIB_PATH . '/postback/' . $network_name . '.php'))
+            if ($network_name!='custom' &&
+                (!ctype_alnum($network_name) ||
+                !is_file(_TRACK_LIB_PATH . '/postback/' . $network_name . '.php')))
             {
-                $result['status'] = 'ERR';
-                echo json_encode($result);
                 exit;
             }
 
             require(_TRACK_LIB_PATH . '/class/common.php');
-            require(_TRACK_LIB_PATH . '/postback/' . $network_name . '.php');
-            $result['status'] = 'OK';
-            $network = new $network_name();
+
+            if ($network_name=='custom')
+            {
+                require(_TRACK_LIB_PATH . '/class/custom.php');
+                $network = new custom();
+
+            }
+            else
+            {
+                require(_TRACK_LIB_PATH . '/postback/' . $network_name . '.php');
+                $network = new $network_name();
+            }
             $result=$network->get_network_info();
             echo json_encode($result);
-
-            exit;
+            exit();
         break;
     }
 } // End CSRF check

@@ -17,20 +17,15 @@
             {{/report-toolbar-filter-actions}}
         </div>
 
-        <div class="btn-group pull-right" data-toggle="buttons">
-            <label class="btn btn-default active ">
-                <input type="radio" name="options3" id="option9" autocomplete="off" checked="">$
-            </label>
-            <label class="btn btn-default">
-                <input type="radio" name="options3" id="option10" autocomplete="off"> <i class="cpa cpa-rouble"></i>
-            </label>
+        <div class="btn-group" data-toggle="buttons">
             <label class="dropup">
                 <a class="btn btn-default dropdown-toggle" href="#fakelink" data-toggle="dropdown" role="button" aria-expanded="false">
-                    <i class="cpa cpa-angle-up"></i>
+                    <strong>{{selected_currency_symbol}}</strong>
                 </a>
                 <ul class="dropdown-menu" role="menu">
-                    <li><a class="dropdown-link" href="#">Валюта 1</a></li>
-                    <li><a class="dropdown-link" href="#">Валюта 2</a></li>
+                    {{#currencies}}
+                        <li><a class="dropdown-link" href="#" onclick="return refresh_report('currency_id', '{{id}}');">{{caption}}</a></li>
+                    {{/currencies}}
                 </ul>
             </label>
         </div>

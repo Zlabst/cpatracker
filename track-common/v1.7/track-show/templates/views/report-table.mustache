@@ -11,7 +11,7 @@
         {{#table_rows}}
         <tr>
             {{#values}}
-            <td {{nowrap}} class="c-cell {{class}}" style='visibility: hidden'>{{value}}</td>
+            <td {{nowrap}} class="c-cell {{class}}" style='visibility: hidden'><span {{#action}}onclick="return refresh_report('{{name}}', '{{value}}');"{{/action}}>{{value}}</td></span></td>
             {{/values}}
         </tr>
         {{/table_rows}}
@@ -23,9 +23,9 @@
             <td class="c-cell c-sale" style='visibility: hidden'>{{sales_total}}</td>
             <td class="c-cell c-lead" style='visibility: hidden'>{{leads_total}}</td>
             <td class="c-cell c-action" style='visibility: hidden'>{{actions_total}}</td>
-            <td class="c-cell c-sale" style='visibility: hidden'>{{sales_conversion_total}}</td>
-            <td class="c-cell c-lead" style='visibility: hidden'>{{leads_conversion_total}}</td>
-            <td class="c-cell c-action" style='visibility: hidden'>{{actions_conversion_total}}</td>
+            <td class="c-cell c-sale" style='visibility: hidden'>{{sales_conversion_total}}%</td>
+            <td class="c-cell c-lead" style='visibility: hidden'>{{leads_conversion_total}}%</td>
+            <td class="c-cell c-action" style='visibility: hidden'>{{actions_conversion_total}}%</td>
             <td class="c-cell" style='visibility: hidden'>{{cost_total}}</td>
             <td class="c-cell c-action c-sale" style='visibility: hidden'>{{profit_total}}</td>
             <td class="c-cell c-sale" style='visibility: hidden'>{{epc_total}}</td>
