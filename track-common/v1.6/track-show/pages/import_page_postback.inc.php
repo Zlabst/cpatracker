@@ -4,12 +4,17 @@ require_once _TRACK_LIB_PATH.'/class/custom.php';
 $available_nets = array();
 $networks = dir(_TRACK_LIB_PATH.'/postback');
 
-while ($file = $networks->read()) {
-    if ($file != '.' && $file != '..') {
+while ($file = $networks->read())
+{
+    if ($file != '.' && $file != '..')
+    {
         $file = str_replace('.php', '', $file);
         $name = $file;
         if ($file == 'GdeSlon')
+        {
             $name = 'Где Слон?';
+        }
+        $name=str_replace ('_','',$file );
         $available_nets[$file] = $name;
     }
 }
@@ -49,8 +54,10 @@ $custom = new custom();
 
                     links = data.links;
 
-                    $('.net-name').text($(btn).attr('net'));
-                    $('#netlink_name').text($(btn).attr('net'));
+                    var fullName=$(btn).attr('net').replace("_", "");
+
+                    $('.net-name').text(fullName);
+                    $('#netlink_name').text(fullName);
                     $('#netlink_text').html(data.net_text);
                     $('#netlink_href').attr('href', data.reg_url);
                     var template = $('#linkTemplate').html();
@@ -171,7 +178,7 @@ $custom = new custom();
         <div class="btn-group">
             <?php $i = 0; ?>
             <?php foreach ($available_nets as $net => $name) : ?>
-                <button class="btn btn-default net-btn" net="<?php echo  $net ?>"><?php echo  $name; ?></button>
+                <button class="btn btn-default net-btn" net="<?php echo $net ?>"><?php echo  $name; ?></button>
                 <?php $i++; ?>
                 <?php if ($i % 7 == 0): ?>
                 </div>
