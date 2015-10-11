@@ -2,7 +2,9 @@
 <ol class="breadcrumb">
     <li><a href="?act=reports">Все данные</a></li>
     {{#values}}
-        <li class="{{class}}">{{name}} <a href="#" onclick="#">{{caption}}</a></li>
+        <li class="{{class}}">
+            <span class="pointer" {{#name_action}}onclick="return refresh_report('{{name}}', '{{value}}')"{{/name_action}}>{{name}}</span>
+            <a href="#" {{#value_action}}onclick="return refresh_report('{{name}}', '{{value}}')"{{/value_action}}>{{caption}}</a></li>
     {{/values}}
     <li class="active">{{selected_caption}}</li>
 </ol>

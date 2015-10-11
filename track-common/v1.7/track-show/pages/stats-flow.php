@@ -50,9 +50,13 @@ foreach ($allowed_report_in_params as $report=>$data)
 }
 
 // Get hourly report data
-$arr_report_data=prepare_report('main-report', $IN['hourly_report'] + array('range_type'=>'hourly',
-                                                             'date_start'=>$IN['flow_report']['date'],
-                                                             'date_end'=>$IN['flow_report']['date']));
+$arr_report_data=prepare_report('main-report', $IN['hourly_report'] + array(
+        'report_type'=>'stats_flow',
+        'range_type'=>'hourly',
+        'date_start'=>$IN['flow_report']['date'],
+        'date_end'=>$IN['flow_report']['date'])
+);
+
 // Don't use parameters from hourly report
 unset($arr_report_data['report_params']);
 

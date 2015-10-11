@@ -62,9 +62,9 @@ if (!$include_flag) {
 			}
 			function mod_date(obj) {
 				href = $(obj).attr('href');
-				href = modify_link(href, 'from', format_date($(obj).parent().find('input[name=start]').val()))
-				href = modify_link(href, 'to', format_date($(obj).parent().find('input[name=end]').val()))
-				$(obj).attr('href', href)
+				href = modify_link(href, 'from', format_date($(obj).parent().find('input[name=start]').val()));
+				href = modify_link(href, 'to', format_date($(obj).parent().find('input[name=end]').val()));
+				$(obj).attr('href', href);
 				return true;
 			}
 		</script>

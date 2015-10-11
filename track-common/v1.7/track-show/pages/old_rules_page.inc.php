@@ -76,12 +76,12 @@
                 var rule_old_name = rule_name_text;
                 var stop_flag = false;
                // $(rule_name).attr('contenteditable','true');
-               $(rule_name).html('<input id="rn'+id+'" class="form-control rulenamein" placeholder="Имя не может быть пустым"  value="'+rule_old_name+'" >')
+               $(rule_name).html('<input id="rn'+id+'" class="form-control rulenamein" placeholder="Имя не может быть пустым"  value="'+rule_old_name+'" >');
                $("#rn"+id).focus(); 
                $("#rn"+id).select();
                $("#rn"+id).click(function(e){
                    e.stopPropagation();
-               })
+               });
                  $("#rn"+id).keypress(function(e) {
                      e.stopPropagation();
                     if(e.which == 13) {                      

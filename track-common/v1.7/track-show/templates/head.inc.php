@@ -4,7 +4,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+<script src="<?php echo _HTML_LIB_PATH;?>/jquery/jquery.min.js"></script>
 <script src="<?php echo _HTML_TEMPLATE_PATH;?>/js/jquery.cookie.js"></script>
 
 <!-- Bootstrap -->

@@ -237,20 +237,23 @@ function save_click_info ($arr_click_info, $timeshift = 0)
 	// 13. Referer
 	$OUT['referer']=$IN['referer'];
 
-    // 14. Keyword
+    // 14. Referer domain
+    $OUT['referer_domain']=parse_url ($IN['referer'], PHP_URL_HOST);
+
+    // 15. Keyword
     $OUT['keyword']=parse_search_referer($IN['referer']);
 
-	// 14. Links params 1-5
+	// 16. Links params 1-5
 	$OUT['link_param1']=$IN['link_param1'];
 	$OUT['link_param2']=$IN['link_param2'];
 	$OUT['link_param3']=$IN['link_param3'];
 	$OUT['link_param4']=$IN['link_param4'];
 	$OUT['link_param5']=$IN['link_param5'];
 
-	// 15. Visit params, parse and check for clicks from landing page
+	// 17. Visit params, parse and check for clicks from landing page
 	$OUT['visit_params']=parse_visit_params($IN, $parent_subid);
 
-	// 16. Process clicks from landing page
+	// 18. Process clicks from landing page
 	$OUT['parent_id']=0;
 	$OUT['is_connected']=false;
 	if ($parent_subid!='')
@@ -283,10 +286,11 @@ function save_click_info ($arr_click_info, $timeshift = 0)
         $stmt->close();
 	}
 
-	// 17. Save current click in DB
+	// 19. Save current click in DB
     $arr_prepared_visit_params=array();
 
-    for ($i=1; $i<=count($OUT['visit_params'])/2; $i++){
+    for ($i=1; $i<=count($OUT['visit_params'])/2; $i++)
+    {
         $arr_prepared_visit_params[]="`click_param_name{$i}`= ?, `click_param_value{$i}`= ?";
     }
 
@@ -298,11 +302,11 @@ function save_click_info ($arr_click_info, $timeshift = 0)
         $sql_prepared_visit_params=", {$sql_prepared_visit_params}";
 	}
 
-    $sql_prepared="INSERT IGNORE INTO tbl_clicks SET `date_add`= ?, `date_add_day`= ?, `date_add_hour`= ?, `user_ip`= ?, `user_agent`= ?, `user_os`= ?, `user_os_version`= ?, `user_platform`= ?, `user_platform_info`= ?, `user_platform_info_extra`= ?, `user_browser`= ?, `user_browser_version`= ?, `is_mobile_device`= ?, `is_phone`= ?, `is_tablet`= ?, `country`= ?, `state`= ?, `city`= ?, `region`= ?, `isp`= ?, `rule_id`= ?, `out_id`= ?, `subid`= ?, `is_connected`= ?, `is_unique`= ?, `parent_id`= ?, `subaccount`= ?, `source_name`= ?, `campaign_name`= ?, `ads_name`= ?, `referer`= ?, `search_string`= ?, `campaign_param1`= ?, `campaign_param2`= ?, `campaign_param3`= ?, `campaign_param4`= ?, `campaign_param5`= ?{$sql_prepared_visit_params}";
+    $sql_prepared="INSERT IGNORE INTO tbl_clicks SET `date_add`= ?, `date_add_day`= ?, `date_add_hour`= ?, `user_ip`= ?, `user_agent`= ?, `user_os`= ?, `user_os_version`= ?, `user_platform`= ?, `user_platform_info`= ?, `user_platform_info_extra`= ?, `user_browser`= ?, `user_browser_version`= ?, `is_mobile_device`= ?, `is_phone`= ?, `is_tablet`= ?, `country`= ?, `state`= ?, `city`= ?, `region`= ?, `isp`= ?, `rule_id`= ?, `out_id`= ?, `subid`= ?, `is_connected`= ?, `is_unique`= ?, `parent_id`= ?, `subaccount`= ?, `source_name`= ?, `campaign_name`= ?, `ads_name`= ?, `referer`= ?, `referer_domain`= ?, `search_string`= ?, `campaign_param1`= ?, `campaign_param2`= ?, `campaign_param3`= ?, `campaign_param4`= ?, `campaign_param5`= ?{$sql_prepared_visit_params}";
 
-    $arr_bind_values=array($OUT['date_time'], $OUT['day'], $OUT['hour'], $OUT['ip'], $OUT['user_agent'], $OUT['os'], $OUT['os_version'], $OUT['platform'], $OUT['platform_info'], $OUT['platform_info_extra'], $OUT['browser'], $OUT['browser_version'], $OUT['is_mobile_device'], $OUT['is_phone'], $OUT['is_tablet'], $OUT['country'], $OUT['state'], $OUT['city'], $OUT['region'], $OUT['isp'], $OUT['link_id'], $OUT['offer_id'], $OUT['subid'], $OUT['is_connected'], $OUT['is_unique'], $OUT['parent_id'], $OUT['subaccount'], $OUT['source'], $OUT['campaign'], $OUT['ads'], $OUT['referer'], $OUT['keyword'], $OUT['link_param1'], $OUT['link_param2'], $OUT['link_param3'], $OUT['link_param4'], $OUT['link_param5']);
+    $arr_bind_values=array($OUT['date_time'], $OUT['day'], $OUT['hour'], $OUT['ip'], $OUT['user_agent'], $OUT['os'], $OUT['os_version'], $OUT['platform'], $OUT['platform_info'], $OUT['platform_info_extra'], $OUT['browser'], $OUT['browser_version'], $OUT['is_mobile_device'], $OUT['is_phone'], $OUT['is_tablet'], $OUT['country'], $OUT['state'], $OUT['city'], $OUT['region'], $OUT['isp'], $OUT['link_id'], $OUT['offer_id'], $OUT['subid'], $OUT['is_connected'], $OUT['is_unique'], $OUT['parent_id'], $OUT['subaccount'], $OUT['source'], $OUT['campaign'], $OUT['ads'], $OUT['referer'], $OUT['referer_domain'], $OUT['keyword'], $OUT['link_param1'], $OUT['link_param2'], $OUT['link_param3'], $OUT['link_param4'], $OUT['link_param5']);
 
-    $arr_bind_values=array_merge(array('ssisssssssssiiissssssssiiisssssssssss'.str_repeat('s', count($bind_visit_params))), $arr_bind_values, $bind_visit_params);
+    $arr_bind_values=array_merge(array('ssisssssssssiiissssssssiiissssssssssss'.str_repeat('s', count($bind_visit_params))), $arr_bind_values, $bind_visit_params);
 
     // Create array of references, so bind can work
     for ($i=0; $i<count($arr_bind_values); $i++)

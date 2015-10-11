@@ -9,7 +9,7 @@ $mTemplate = new Mustache_Engine(array(
 ));
 
 $arr_currencies_list=get_active_currencies();
-$selected_currency=$arr_currencies_list[0];
+$selected_currency=current($arr_currencies_list);
 
 $arr_report_data=prepare_report('main-report', $_REQUEST+array('report_params'=>array('act'=>'reports')));
 
@@ -17,19 +17,13 @@ foreach ($arr_report_data['report_params'] as $cur)
 {
     if ($cur['name']=='currency_id')
     {
-        foreach ($arr_currencies_list as $currency)
-        {
-            if ($currency['id']==$cur['value'])
-            {
-                $selected_currency=$currency; break;
-            }
-        }
+        $selected_currency=$arr_currencies_list[$cur['value']];
         break;
     }
 }
 
 echo $mTemplate->render('report-page', $arr_report_data+array(
-        'currencies'=>$arr_currencies_list,
+        'currencies'=>array_values($arr_currencies_list),
         'selected_currency_symbol'=>$selected_currency['symbol'])
 );
 
@@ -37,6 +31,42 @@ echo $mTemplate->render('report-page', $arr_report_data+array(
 <script>
     function refresh_report(param_name, param_value)
     {
+        if (param_name=='custom_range')
+        {
+            var obj=$(param_value).parent();
+            var date_start=$('input[name="start"]', $(obj)).val();
+            date_start=date_start.split('.');
+            date_start=date_start[2] + '-' + date_start[1] + '-' + date_start[0];
+
+            var date_end=$('input[name="end"]', $(obj)).val();
+            date_end=date_end.split('.');
+            date_end=date_end[2] + '-' + date_end[1] + '-' + date_end[0];
+
+            if ($('#report_params input[name="date_start"]').length)
+            {
+                $('#report_params input[name="date_start"]').val(date_start);
+            }
+            else
+            {
+                $('#report_params').append('<input type="hidden" name="date_start" value="'+date_start+'" />');
+            }
+
+            if ($('#report_params input[name="date_end"]').length)
+            {
+                $('#report_params input[name="date_end"]').val(date_end);
+            }
+            else
+            {
+                $('#report_params').append('<input type="hidden" name="date_end" value="'+date_end+'" />');
+            }
+
+            // Remove report_period field, dates are already set
+            $('#report_params input[name="report_period"]').remove();
+            $("#report_params").submit();
+
+            return false;
+        }
+
         var arr_param_names=param_name.toString().split ('||');
         var arr_param_values=param_value.toString().split ('||');
         var names=[]; var values=[];
@@ -44,8 +74,10 @@ echo $mTemplate->render('report-page', $arr_report_data+array(
         arr_param_names.forEach(function(item, i)
         {
             names[i]=item.toString().split ('|');
-            values[i]=arr_param_values[i];
         });
+        values=arr_param_values;
+
+        var param_value_index=0;
 
         for (var i = 0; i < names.length; i++)
         {
@@ -54,41 +86,31 @@ echo $mTemplate->render('report-page', $arr_report_data+array(
 
             switch (param_name[0])
             {
-                case 'filter':
-                    $('#report_params').append('<input type="hidden" name="filter_by" value="'+param_name[1]+'" />');
-                    $('#report_params').append('<input type="hidden" name="filter_value" value="'+param_value+'" />');
-                break;
-
-                case 'custom_range':
-                    var obj=$(param_value).parent();
-                    var date_start=$('input[name="start"]', $(obj)).val();
-                    date_start=date_start.split('.');
-                    date_start=date_start[2] + '-' + date_start[1] + '-' + date_start[0];
-
-                    var date_end=$('input[name="end"]', $(obj)).val();
-                    date_end=date_end.split('.');
-                    date_end=date_end[2] + '-' + date_end[1] + '-' + date_end[0];
-
-                    if ($('#report_params input[name="date_start"]').length)
+                case 'filter': case 'force_filter':
+                    if (param_name[0]=='force_filter')
                     {
-                        $('#report_params input[name="date_start"]').val(date_start);
-                    }
-                    else
-                    {
-                        $('#report_params').append('<input type="hidden" name="date_start" value="'+date_start+'" />');
+                        // Remove previous filters
+                        $('#report_params [name="filter_by[]"]').remove();
+                        $('#report_params [name="filter_value[]"]').remove();
                     }
 
-                    if ($('#report_params input[name="date_end"]').length)
+                    for (var k=1; k<param_name.length; k++)
                     {
-                        $('#report_params input[name="date_end"]').val(date_end);
-                    }
-                    else
-                    {
-                        $('#report_params').append('<input type="hidden" name="date_end" value="'+date_end+'" />');
-                    }
+                        $('#report_params').append(
+                            $('<input/>')
+                                .attr('type', 'hidden')
+                                .attr('name', 'filter_by[]')
+                                .val(param_name[k])
+                        );
 
-                    // Remove report_period field, dates are already set
-                    $('#report_params input[name="report_period"]').remove();
+                        $('#report_params').append(
+                            $('<input/>')
+                                .attr('type', 'hidden')
+                                .attr('name', 'filter_value[]')
+                                .val(values[param_value_index])
+                        );
+                        param_value_index++;
+                    }
                 break;
 
                 default:
@@ -111,30 +133,15 @@ echo $mTemplate->render('report-page', $arr_report_data+array(
                         $('#report_params input[name="date_start"]').remove();
                         $('#report_params input[name="date_end"]').remove();
                     }
+                    param_value_index++;
                 break;
             }
         }
-
 
         $("#report_params").submit();
         return false;
     }
 </script>
-
-<?php
-
-
-switch($IN['report_type'])
-{
-    case 'clicks':
-        // Clicks report
-    break;
-
-    case 'sales':
-        // Sales report
-    break;
-}
-?>
 
 <script>
 $(document).ready(function()
@@ -417,12 +424,12 @@ $to = empty($_POST['to']) ? date('d.m.Y') : date('d.m.Y', strtotime($_POST['to']
                     return 0;
                 }
             }
-        }
+        };
     
         function cnv2(m) {
             n = $('.cnt', $('<div>' + m + '</div>')).text();
             if(n != '') {
-                n = n.split(':')
+                n = n.split(':');
                 if(n.length == 2) {
                     n0 = n[0]; n1 = n[1];
                 } else if(n.length == 1) {

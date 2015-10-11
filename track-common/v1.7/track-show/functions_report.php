@@ -5,23 +5,35 @@ function prepare_filtered_report($arr_allowed_main_columns, $IN)
     $arr_sql_data=array();
     $main_column=$IN['main_column'];
 
-    switch ($IN['filter_by'])
+    for ($i=0; $i<count($IN['filter_by']); $i++)
     {
-        case 'offer_name':
-            $arr_sql_add['join']=array('LEFT JOIN tbl_offers on tbl_offers.id = tbl_clicks.out_id');
-            $arr_sql_add['where']=array("tbl_offers."._str($IN['filter_by'])."='"._str($IN['filter_value'])."'");
-        break;
+        $cur_filter_by=$IN['filter_by'][$i];
+        $cur_filter_value=$IN['filter_value'][$i];
 
-        default:
-            $arr_sql_add['where']=array("tbl_clicks."._str($IN['filter_by'])."='"._str($IN['filter_value'])."'");
-        break;
+        switch ($cur_filter_by)
+        {
+            case 'offer_name':
+                $arr_sql_add['join'][]='LEFT JOIN tbl_offers on tbl_offers.id = tbl_clicks.out_id';
+                $arr_sql_add['where'][]="tbl_offers."._str($cur_filter_by)."='"._str($cur_filter_value)."'";
+            break;
+
+            default:
+                $arr_sql_add['where'][]="tbl_clicks."._str($cur_filter_by)."='"._str($cur_filter_value)."'";
+            break;
+        }
     }
 
     if ($main_column=='popular')
     {
-        $arr_report_columns = array('offer_name', 'source_name', 'campaign_name', 'campaign_ads', 'referer',
-            'link_name', 'country', 'region', 'city', 'user_ip', 'isp', 'user_os', 'user_platform', 'user_browser');
-        $arr_sql_add['limit'] = 'LIMIT 1';
+        $arr_report_columns = array('offer_name', 'source_name', 'campaign_name', 'campaign_ads', 'referer_domain',
+            'link_name', 'country', 'region', 'city', 'user_ip', 'isp', 'user_os', 'user_platform', 'user_browser',
+            'campaign_param1', 'campaign_param2', 'campaign_param3', 'campaign_param4', 'campaign_param5',
+            'click_param_value1', 'click_param_value2', 'click_param_value3', 'click_param_value4',
+            'click_param_value5', 'click_param_value6', 'click_param_value7', 'click_param_value8',
+            'click_param_value9', 'click_param_value10', 'click_param_value11', 'click_param_value12',
+            'click_param_value13', 'click_param_value14', 'click_param_value15');
+
+        $arr_sql_add['limit'] = 'LIMIT 2';
     }
     else
     {
@@ -31,7 +43,7 @@ function prepare_filtered_report($arr_allowed_main_columns, $IN)
 
     foreach ($arr_report_columns as $column)
     {
-        if ($column==$IN['filter_by'])
+        if (in_array($column, $IN['filter_by']))
         {
             // Skip filtered row from traffic structure results
             continue;
@@ -40,15 +52,29 @@ function prepare_filtered_report($arr_allowed_main_columns, $IN)
         $sql=generate_main_report_sql($arr_allowed_main_columns, $IN, $arr_sql_add);
 
         $result=mysql_query($sql);
+        $arr_data=array();
         while($row=mysql_fetch_assoc($result))
         {
             if ($main_column=='popular')
             {
                 $row['c0']=$column;
             }
-
-            $arr_sql_data[]=$row;
+            $arr_data[]=$row;
         }
+
+        if ($main_column=='popular')
+        {
+            if (count($arr_data)==1 && $arr_data[0]['c1']=='')
+            {
+                // Do not show parameters with one empty value
+                continue;
+            }
+            else
+            {
+                array_splice($arr_data, 1);
+            }
+        }
+        $arr_sql_data=array_merge ($arr_sql_data, $arr_data);
     }
 
     return $arr_sql_data;
@@ -59,22 +85,27 @@ function prepare_report($report_name, $request_parameters)
     // Default currency for this account: RUB (16)
     $main_currency_id=16;
 
+    global $arr_currencies_list;
+    if (!(is_array($arr_currencies_list) && count($arr_currencies_list)>0)){
+        $arr_currencies_list=get_active_currencies();
+    }
+
     // Set default values
     $allowed_report_in_params=array(
-        'report_type'=>'clicks',      // clicks, sales
-        'range_type'=>'all',          // all, hourly, daily, monthly
-        'main_column'=>'offer_name',  // link_name, category, country, ...
-        'filter_conversions'=>'all', // all, has_actions, no_actions
-        'filter_actions'=>'all',      // all, sales_only, leads_only
+        'report_type'=>'clicks_count', // clicks_count, actions_count, sales_count, leads_count, actions_conversion_rate, sales_conversion_rate, leads_conversion_rate, cost, profit, epc, roi, cpl
+        'range_type'=>'all',           // all, hourly, daily, monthly, weekday
+        'main_column'=>'offer_name',   // link_name, category, country, ...
+        'filter_conversions'=>'all',   // all, has_actions, no_actions
+        'filter_actions'=>'all',       // all, sales_only, leads_only
         'filter_by'=>'',
         'filter_value'=>'',
-        'sort_by'=>'clicks_count',    // main_column, clicks_count, actions_count, conversion_rate, costs, profit, roi, date_column
+        'sort_by'=>'clicks_count',     // main_column, clicks_count, actions_count, conversion_rate, costs, profit, roi, date_column
         'sort_order'=>'DESC',
-        'currency_id'=>'16',          // RUB (16) is default currency for this account
+        'currency_id'=>'16',           // RUB (16) is default currency for this account
         'timezone_offset'=>get_current_timezone_shift(),
         'date_start'=>get_current_day('-7 days'),
         'date_end'=>get_current_day(),
-        'report_period'=>'custom'); // today, yesterday, lastweek, lastmonth, lastquarter, custom
+        'report_period'=>'custom');    // today, yesterday, lastweek, lastmonth, lastquarter, custom
 
     //  Remove empty values and get only allowed keys
     $IN=array_replace($allowed_report_in_params, array_intersect_key(array_filter($request_parameters), $allowed_report_in_params));
@@ -109,8 +140,8 @@ function prepare_report($report_name, $request_parameters)
         break;
     }
 
-    $arr_allowed_main_columns=array('offer_name'=>'Оффер', 'offer_category'=>'Категория', 'os_and_version'=>'ОС',
-        'campaign_ads'=>'Кампания', 'link_name'=>'Ссылка', 'date_add_day'=>'День',
+    $arr_allowed_main_columns=array('popular'=>'Значение','offer_name'=>'Оффер', 'offer_category'=>'Категория', 'os_and_version'=>'ОС',
+        'campaign_ads'=>'Объявление', 'link_name'=>'Ссылка', 'date_add_day'=>'День',
         'date_add_hour'=>'Час', 'user_ip'=>'IP', 'user_agent'=>'User agent',
         'user_os'=>'ОС', 'user_os_version'=>'Версия ОС', 'user_platform'=>'Платформа',
         'user_platform_info'=>'Платформа 2', 'user_platform_info_extra'=>'Платформа 3',
@@ -118,17 +149,35 @@ function prepare_report($report_name, $request_parameters)
         'country'=>'Страна', 'state'=>'Область', 'city'=>'Город', 'region'=>'Регион',
         'isp'=>'Провайдер', 'rule_id'=>'ID ссылки', 'out_id'=>'ID оффера',
         'source_name'=>'Источник', 'campaign_name'=>'Кампания', 'ads_name'=>'Объявление',
-        'referer'=>'Источник', 'search_string'=>'Ключевое слово', 'campaign_param1'=>'Параметр ссылки #1',
+        'referer_domain'=>'Площадка', 'search_string'=>'Ключевое слово', 'campaign_param1'=>'Параметр ссылки #1',
         'campaign_param2'=>'Параметр ссылки #2', 'campaign_param3'=>'Параметр ссылки #3',
         'campaign_param4'=>'Параметр ссылки #4', 'campaign_param5'=>'Параметр ссылки #5',
-        'click_param_name1'=>'Параметр перехода #1', 'click_param_name2'=>'Параметр перехода #2',
-        'click_param_name3'=>'Параметр перехода #3', 'click_param_name4'=>'Параметр перехода #4',
-        'click_param_name5'=>'Параметр перехода #5', 'click_param_name6'=>'Параметр перехода #6',
-        'click_param_name7'=>'Параметр перехода #7', 'click_param_name8'=>'Параметр перехода #8',
-        'click_param_name9'=>'Параметр перехода #9', 'click_param_name10'=>'Параметр перехода #10',
-        'click_param_name11'=>'Параметр перехода #11', 'click_param_name12'=>'Параметр перехода #12',
-        'click_param_name13'=>'Параметр перехода #13', 'click_param_name14'=>'Параметр перехода #14',
-        'click_param_name15'=>'Параметр перехода #15');
+        'click_param_value1'=>'Параметр перехода #1', 'click_param_value2'=>'Параметр перехода #2',
+        'click_param_value3'=>'Параметр перехода #3', 'click_param_value4'=>'Параметр перехода #4',
+        'click_param_value5'=>'Параметр перехода #5', 'click_param_value6'=>'Параметр перехода #6',
+        'click_param_value7'=>'Параметр перехода #7', 'click_param_value8'=>'Параметр перехода #8',
+        'click_param_value9'=>'Параметр перехода #9', 'click_param_value10'=>'Параметр перехода #10',
+        'click_param_value11'=>'Параметр перехода #11', 'click_param_value12'=>'Параметр перехода #12',
+        'click_param_value13'=>'Параметр перехода #13', 'click_param_value14'=>'Параметр перехода #14',
+        'click_param_value15'=>'Параметр перехода #15');
+
+    // Rename click parameters if we have filtered by known traffic source
+    $source_filtered=array_search ('source_name', $IN['filter_by']);
+    if ($source_filtered!==false)
+    {
+        global $source_config;
+        // [!] LP can use source and still pass utm_
+        // Skip source_name=source value, it's the same as undefined
+        if ($IN['filter_value'][$source_filtered]!='source')
+        {
+            $i=1;
+            foreach($source_config[$IN['filter_value'][$source_filtered]]['params'] as $key=>$val)
+            {
+                $arr_allowed_main_columns['click_param_value'.$i]=$val['name'];
+                $i++;
+            }
+        }
+    }
 
     $arr_data=array();
     if (isset($IN['filter_by']) && $IN['filter_by']!='')
@@ -150,15 +199,15 @@ function prepare_report($report_name, $request_parameters)
         {
             // Report is not using default currency, need to get correct sales values
             $sql2='SELECT '.implode (', ', array_merge($sql_select, array('SUM(tbl_clicks.conversion_currency_sum) as profit_currency'))).'
-          FROM
-              tbl_clicks
-              '.implode (' ', $sql_join).'
-          WHERE
-              1=1 AND
-              '.implode (' AND ', array_merge($sql_where, array('tbl_clicks.conversion_currency_id='._str($IN['currency_id'])))).'
-          GROUP BY
-              '.implode (',', $sql_group).'
-          ORDER BY '.implode (', ', $sql_order);
+                   FROM
+                      tbl_clicks
+                      '.implode (' ', $sql_join).'
+                   WHERE
+                      1=1 AND
+                      '.implode (' AND ', array_merge($sql_where, array('tbl_clicks.conversion_currency_id='._str($IN['currency_id'])))).'
+                   GROUP BY
+                      '.implode (',', $sql_group).'
+                   ORDER BY '.implode (', ', $sql_order);
             $result2=mysql_query($sql2);
             $arr_data2=array();
             while($row=mysql_fetch_assoc($result2))
@@ -176,96 +225,241 @@ function prepare_report($report_name, $request_parameters)
         case 'all':
             foreach ($arr_data as $i=>$row)
             {
-                // All sales are in the same currency, use accurate value
+                $arr_report_data['table_rows'][$i]['values']=array
+                (
+                    'main-column'=>array('value' => $row['c1']),
+                    'clicks-count'=>array('value' => $row['clicks_count']),
+                    'actions-count'=>array('value' => $row['actions_count']),
+                    'sales-count'=>array('value' => $row['sales_count']),
+                    'leads-count'=>array('value' => $row['leads_count']),
+                    'actions-conversion-rate'=>array('value' => $row['actions_conversion_rate']),
+                    'sales-conversion-rate'=>array('value' => $row['sales_conversion_rate']),
+                    'leads-conversion-rate'=>array('value' => $row['leads_conversion_rate']),
+                    'cost'=>array('value' => $row['cost']),
+                    'profit'=>array('value' => $row['profit']),
+                    'epc'=>array('value' => $row['epc']),
+                    'roi'=>array('value' => $row['roi']),
+                    'cpl'=>array('value' => $row['cpl'])
+                );
+
+                // 1. Main column
+                $report_column=($IN['main_column']=='popular')?$row['c0']:$IN['main_column'];
+                $arr_report_data['table_rows'][$i]['values']['main-column']['value']=format_main_column($report_column, $row['c1']);
+
+                if ($arr_report_data['table_rows'][$i]['values']['main-column']['value']=='')
+                {
+                    $arr_report_data['table_rows'][$i]['values']['main-column']['value']='—';
+                }
+                $arr_report_data['table_rows'][$i]['values']['main-column']['class']='report-header link';
+                $arr_report_data['table_rows'][$i]['values']['main-column']['nowrap']='nowrap';
+                $arr_report_data['table_rows'][$i]['values']['main-column']['action']=array(
+                    'name'=>'main_column||filter|'.$IN['main_column'], 'value'=>'popular||'.$row['c1']
+                );
+
+                // 2. Clicks count
+                $arr_report_totals['clicks_count']+=$row['clicks_count'];
+
+                // 3. Actions count
+                $arr_report_data['table_rows'][$i]['values']['actions-count']['class']='c-action';
+                if ($row['actions_count']==0){$arr_report_data['table_rows'][$i]['values']['actions-count']['class'].=' inactive';}
+                $arr_report_totals['actions_count']+=$row['actions_count'];
+
+                // 4. Sales count
+                $arr_report_data['table_rows'][$i]['values']['sales-count']['class']='c-sale';
+                if ($row['sales_count']==0){$arr_report_data['table_rows'][$i]['values']['sales-count']['class'].=' inactive';}
+                $arr_report_totals['sales_count']+=$row['sales_count'];
+
+                // 5. Leads count
+                $arr_report_data['table_rows'][$i]['values']['leads-count']['class']='c-lead';
+                if ($row['leads_count']==0){$arr_report_data['table_rows'][$i]['values']['leads-count']['class'].=' inactive';}
+                $arr_report_totals['leads_count']+=$row['leads_count'];
+
+                // 6. Actions conversion rate
+                $arr_report_data['table_rows'][$i]['values']['actions-conversion-rate']['value']=round($row['actions_conversion_rate'], 3).'%';
+                $arr_report_data['table_rows'][$i]['values']['actions-conversion-rate']['class']='c-action';
+                if (round($row['actions_conversion_rate'], 3)==0)
+                {
+                    $arr_report_data['table_rows'][$i]['values']['actions-conversion-rate']['class'].=' inactive';
+                }
+
+                // 7. Sales conversion rate
+                $arr_report_data['table_rows'][$i]['values']['sales-conversion-rate']['value']=round($row['sales_conversion_rate'], 3).'%';
+                $arr_report_data['table_rows'][$i]['values']['sales-conversion-rate']['class']='c-sale';
+                if (round($row['sales_conversion_rate'], 3)==0)
+                {
+                    $arr_report_data['table_rows'][$i]['values']['sales-conversion-rate']['class'].=' inactive';
+                }
+
+                // 8. Leads conversion rate
+                $arr_report_data['table_rows'][$i]['values']['leads-conversion-rate']['value']=round($row['leads_conversion_rate'], 3).'%';
+                $arr_report_data['table_rows'][$i]['values']['leads-conversion-rate']['class']='c-lead';
+                if (round($row['leads_conversion_rate'], 3)==0)
+                {
+                    $arr_report_data['table_rows'][$i]['values']['leads-conversion-rate']['class'].=' inactive';
+                }
+
+                // 9. Costs
+                $v=($row['cost']==0)?0:round(convert_currency($row['cost'], $main_currency_id, $IN['currency_id'], $IN['date_start']), 2);
+                $arr_report_data['table_rows'][$i]['values']['cost']['value']=number2currency($v, $arr_currencies_list[$IN['currency_id']]['code']);
+                if ($v==0){$arr_report_data['table_rows'][$i]['values']['cost']['class']='inactive';}
+                $arr_report_totals['cost']+=$v;
+
+                // 10. Profit and EPC
                 if (isset($arr_data2) && isset($arr_data2['_'.$row['c1']]) && $arr_data2['_'.$row['c1']]['profit']==$row['profit'])
                 {
-                    $profit=$arr_data2['_'.$row['c1']]['profit_currency'];
-                    $epc=($row['cnt']==0)?0:($profit/$row['cnt']);
+                    // All sales are in the same currency, use accurate value
+                    $v=round($arr_data2['_'.$row['c1']]['profit_currency'], 2);
+                    $arr_report_data['table_rows'][$i]['values']['profit']['value']=number2currency($v, $arr_currencies_list[$IN['currency_id']]['code']);;
+                    if ($v==0){$arr_report_data['table_rows'][$i]['values']['profit']['class']='inactive';}
+                    $arr_report_totals['profit']+=$v;
+
+                    $v=($row['clicks_count']==0)?0:round ($arr_data2['_'.$row['c1']]['profit_currency']/$row['clicks_count'], 3);
+                    $arr_report_data['table_rows'][$i]['values']['epc']['value']=number2currency($v, $arr_currencies_list[$IN['currency_id']]['code']);;
+                    if ($v==0){$arr_report_data['table_rows'][$i]['values']['epc']['class']='inactive';}
                 }
                 else
                 {
                     // Using currency rate for the beginning of the period
-                    $profit=($row['profit']==0)?0:convert_currency($row['profit'], $main_currency_id, $IN['currency_id'], $IN['date_start']);
-                    $epc=($row['epc']==0)?0:convert_currency($row['epc'], $main_currency_id, $IN['currency_id'], $IN['date_start']);
+                    $v=($row['profit']==0)?0:round (convert_currency($row['profit'], $main_currency_id, $IN['currency_id'], $IN['date_start']), 2);
+                    $arr_report_data['table_rows'][$i]['values']['profit']['value']=number2currency($v, $arr_currencies_list[$IN['currency_id']]['code']);;
+                    if ($v==0){$arr_report_data['table_rows'][$i]['values']['profit']['class']='inactive';}
+                    $arr_report_totals['profit']+=$v;
+
+                    $v=($row['epc']==0)?0:round (convert_currency($row['epc'], $main_currency_id, $IN['currency_id'], $IN['date_start']), 3);
+                    $arr_report_data['table_rows'][$i]['values']['epc']['value']=number2currency($v, $arr_currencies_list[$IN['currency_id']]['code']);;
+                    if ($v==0){$arr_report_data['table_rows'][$i]['values']['epc']['class']='inactive';}
                 }
 
-                $cost=($row['cost']==0)?0:convert_currency($row['cost'], $main_currency_id, $IN['currency_id'], $IN['date_start']);
+                $arr_report_data['table_rows'][$i]['values']['profit']['class'].=' c-action c-sale';
+                $arr_report_data['table_rows'][$i]['values']['epc']['class'].=' c-sale';
 
-                $arr_report_data['table_rows'][$i]['values']=array
-                (
-                    array('value' => $row['c1'], 'class' =>'report-header', 'nowrap' => 'nowrap', 'action'=>array('name'=>'main_column||filter|'.$IN['main_column'], 'value'=>'popular||'.$row['c1'])),
+                // 11. ROI
+                $v=number_format($row['roi'], 0, '.', ' ').' %';
+                $arr_report_data['table_rows'][$i]['values']['roi']['value']=$v;
+                $arr_report_data['table_rows'][$i]['values']['roi']['class']='c-action c-sale';
+                if ($v==0){$arr_report_data['table_rows'][$i]['values']['roi']['class'].=' inactive';}
 
-                    array('value' => $row['cnt']),
-                    array('value' => $row['actions_count'], 'class' =>'c-action'),
-                    array('value' => $row['sales_count'], 'class' =>'c-sale'),
-                    array('value' => $row['leads_count'], 'class' =>'c-lead'),
-                    array('value' => round($row['actions_conversion_rate'], 3).'%', 'class' =>'c-action'),
-                    array('value' => round($row['sales_conversion_rate'], 3).'%', 'class' =>'c-sale'),
-                    array('value' => round($row['leads_conversion_rate'], 3).'%', 'class' =>'c-lead'),
-                    array('value' => round($cost, 2)),
-                    array('value' => round($profit, 2), 'class'=>'c-action c-sale'),
-                    array('value' => round($epc, 3), 'class' =>'c-sale'),
-                    array('value' => number_format($row['roi'], 0, '.', ' ').' %', 'class'=>'c-action c-sale'),
-                    array('value' => round($row['cpl'], 3), 'class' =>'c-lead')
-                );
+                // 12. CPL
+                $v=round($row['cpl'], 3);
+                $arr_report_data['table_rows'][$i]['values']['cpl']['value']=number2currency($v, $arr_currencies_list[$IN['currency_id']]['code']);;
+                $arr_report_data['table_rows'][$i]['values']['cpl']['class']='c-lead';
+                if ($v==0){$arr_report_data['table_rows'][$i]['values']['cpl']['class'].=' inactive';}
 
-                // Add column to the beginning for traffic structure report
+                // 13. Return to numeric keys
+                $arr_report_data['table_rows'][$i]['values']=array_values($arr_report_data['table_rows'][$i]['values']);
+
+                // 14. Change columns for traffic structure report
                 if ($IN['main_column']=='popular')
                 {
-                    $arr_report_data['table_rows'][$i]['values'] = array_merge(array(array('value' => $arr_allowed_main_columns[$row['c0']],
-                        'action'=>array('name'=>'main_column', 'value'=>$row['c0']))),
+                    $arr_report_data['table_rows'][$i]['values'][0]['action']=array(
+                        'name'=>'main_column||filter|'.$row['c0'],
+                        'value'=>'popular||'.$row['c1']
+                    );
+
+                    $arr_report_data['table_rows'][$i]['values'] = array_merge(array(
+                        array('value' => $arr_allowed_main_columns[$row['c0']],
+                        'action'=>array('name'=>'main_column', 'value'=>$row['c0']), 'class'=>'link')),
                         $arr_report_data['table_rows'][$i]['values']);
                 }
-
-                $arr_report_totals['clicks_count']+=$row['cnt'];
-                $arr_report_totals['sales_count']+=$row['sales_count'];
-                $arr_report_totals['leads_count']+=$row['leads_count'];
-                $arr_report_totals['actions_count']+=$row['actions_count'];
-                $arr_report_totals['cost']+=$cost;
-                $arr_report_totals['profit']+=$profit;
             }
+
+            // Fill totals row
+            $arr_report_data['table-total']['clicks_total']=isset($arr_report_totals['clicks_count'])?$arr_report_totals['clicks_count']:null;
+            $arr_report_data['table-total']['sales_total']=isset($arr_report_totals['sales_count'])?$arr_report_totals['sales_count']:null;
+            $arr_report_data['table-total']['leads_total']=isset($arr_report_totals['leads_count'])?$arr_report_totals['leads_count']:null;
+            $arr_report_data['table-total']['actions_total']=isset($arr_report_totals['actions_count'])?$arr_report_totals['actions_count']:null;
+
+            if (isset($arr_report_data['table-total']['clicks_total']) && $arr_report_data['table-total']['clicks_total']>0 && isset($arr_report_data['table-total']['actions_total']))
+            {
+                $arr_report_data['table-total']['actions_conversion_total']=round($arr_report_data['table-total']['actions_total']/$arr_report_data['table-total']['clicks_total']*100, 3);
+            }
+
+            if (isset($arr_report_data['table-total']['clicks_total']) && $arr_report_data['table-total']['clicks_total']>0 && isset($arr_report_data['table-total']['sales_total']))
+            {
+                $arr_report_data['table-total']['sales_conversion_total']=round($arr_report_data['table-total']['sales_total']/$arr_report_data['table-total']['clicks_total']*100, 3);
+            }
+
+            if (isset($arr_report_data['table-total']['clicks_total']) && $arr_report_data['table-total']['clicks_total']>0 && isset($arr_report_data['table-total']['leads_total']))
+            {
+                $arr_report_data['table-total']['leads_conversion_total']=round($arr_report_data['table-total']['leads_total']/$arr_report_data['table-total']['clicks_total']*100, 3);
+            }
+
+            $arr_report_data['table-total']['cost_total']=isset($arr_report_totals['cost'])?$arr_report_totals['cost']:null;
+            $arr_report_data['table-total']['cost_total']=number2currency(number_format($arr_report_data['table-total']['cost_total'], 0, '.', ' '), $arr_currencies_list[$IN['currency_id']]['code']);
+
+            $arr_report_data['table-total']['profit_total']=isset($arr_report_totals['profit'])?$arr_report_totals['profit']:null;
+            $arr_report_data['table-total']['profit_total']=number2currency(number_format($arr_report_data['table-total']['profit_total'], 0, '.', ' '), $arr_currencies_list[$IN['currency_id']]['code']);
+
+            $arr_report_data['table-total']['epc_total']=(isset($arr_report_totals['clicks_count']) && ($arr_report_totals['clicks_count']!=0))?$arr_report_totals['profit']/$arr_report_totals['clicks_count']:0;
+            $arr_report_data['table-total']['epc_total']=number2currency(round($arr_report_data['table-total']['epc_total'], 3), $arr_currencies_list[$IN['currency_id']]['code']);
+
+            $arr_report_data['table-total']['roi_total']=(isset($arr_report_data['table-total']['cost_total']) && isset($arr_report_data['table-total']['profit_total']) && $arr_report_data['table-total']['cost_total']>0)?($arr_report_data['table-total']['profit_total']-$arr_report_data['table-total']['cost_total'])/$arr_report_data['table-total']['cost_total']*100:0;
+            $arr_report_data['table-total']['roi_total']=number_format($arr_report_data['table-total']['roi_total'], 0, '.', ' ');
+
+            $arr_report_data['table-total']['cpl_total']=(isset($arr_report_totals['cost']) && isset($arr_report_totals['leads_count']) && $arr_report_totals['leads_count']!=0)?$arr_report_totals['cost']/$arr_report_totals['leads_count']:0;
+            $arr_report_data['table-total']['cpl_total']=number2currency($arr_report_data['table-total']['cpl_total'], $arr_currencies_list[$IN['currency_id']]['code']);
+
         break;
 
-        case 'hourly':
+        case 'hourly': case 'daily': case 'monthly': case 'weekday':
+
+            $arr_column_values['hourly']=getHoursBetween(0,23);
+            $arr_column_values['daily']=getDatesBetween($IN['date_start'], $IN['date_end']);
+            $arr_column_values['monthly']=getMonthsBetween($IN['date_start'], $IN['date_end']);
+            $arr_column_values['weekday']=array('1'=>'Пн', '2'=>'Вт', '3'=>'Ср', '4'=>'Чт', '5'=>'Пт', '6'=>'Сб', '0'=>'Вс');
+
             $columns=array();
             foreach ($arr_data as $row)
             {
                 $main_column_value=($row['c1']!='')?$row['c1']:'{empty}';
-                $columns[$main_column_value][$row['hour_add']]=array('clicks_count'=>$row['cnt'],
-                                                                     'actions_count'=>$row['actions_count']);
+                $columns[$main_column_value][$row['column_name']]=$row;
             }
 
             $rowNumber=0;
             foreach ($columns as $key=>$value)
             {
-                switch($IN['main_column'])
-                {
-                    case 'source_name':
-                        $rowCaption=param_val($key, $IN['main_column']);
-                    break;
-
-                    default:
-                        $rowCaption=$key;
-                    break;
-                }
+                $column_index=0;
                 // First column
-                $arr_report_data['table_rows'][$rowNumber]['values'][0]=array('value'=>$rowCaption,
-                                                                              'class'=>'', 'nowrap'=>'nowrap');
-                for($i=0; $i<24; $i++)
+                $arr_report_data['table_rows'][$rowNumber]['values'][$column_index]=array(
+                    'value'=>format_main_column($IN['main_column'], $key),
+                    'class'=>'',
+                    'nowrap'=>'nowrap'
+                );
+                $arr_column_keys=array_keys($arr_column_values[$IN['range_type']]);
+                foreach ($arr_column_keys as $i)
                 {
-                    if (isset($columns[$key][$i]['actions_count']) && $columns[$key][$i]['actions_count']>0)
+                    switch ($IN['report_type'])
                     {
-                        $curCellValue=$columns[$key][$i]['clicks_count'].':'.$columns[$key][$i]['actions_count'];
-                        $class='bold';
-                    }
-                    else
-                    {
-                        $curCellValue=isset($columns[$key][$i]['clicks_count'])?$columns[$key][$i]['clicks_count']:null;
-                        $class='';
-                    }
+                        case 'stats_flow':
+                            if (isset($columns[$key][$i]['actions_count']) && $columns[$key][$i]['actions_count']>0)
+                            {
+                                $curCellValue=$columns[$key][$i]['clicks_count'].':'.$columns[$key][$i]['actions_count'];
+                                $class='bold';
+                            }
+                            else
+                            {
+                                $curCellValue=isset($columns[$key][$i]['clicks_count'])?$columns[$key][$i]['clicks_count']:null;
+                                $class='';
+                            }
+                            $link="?date={$IN['date_start']}&filter_by=hour&filter_value[]={$i}&filter_value[]={$key}";
+                        break;
 
-                    $link="?date={$IN['date_start']}&filter_by=hour&filter_value[]={$i}&filter_value[]={$key}";
-                    $arr_report_data['table_rows'][$rowNumber]['values'][$i+1]=array(
+                        case 'clicks_count':
+                            $curCellValue=isset($columns[$key][$i]['clicks_count'])?$columns[$key][$i]['clicks_count']:null;
+                            $class='';
+                        break;
+
+                        case 'actions_count':
+                            $curCellValue=(isset($columns[$key][$i]['actions_count']) && $columns[$key][$i]['actions_count']>0)?$columns[$key][$i]['actions_count']:null;
+                            $class='';
+                        break;
+
+                        case 'actions_conversion_rate':
+                            $curCellValue=(isset($columns[$key][$i]['actions_conversion_rate']) && $columns[$key][$i]['actions_conversion_rate']>0)?$columns[$key][$i]['actions_conversion_rate']:null;
+                            $class='';
+                        break;
+                    }
+                    $arr_report_data['table_rows'][$rowNumber]['values'][++$column_index]=array(
                         'value'=>$curCellValue,
                         'link'=>$link,
                         'class'=>$class
@@ -276,39 +470,11 @@ function prepare_report($report_name, $request_parameters)
         break;
     }
 
-    $arr_report_data['clicks_total']=isset($arr_report_totals['clicks_count'])?$arr_report_totals['clicks_count']:null;
-    $arr_report_data['sales_total']=isset($arr_report_totals['sales_count'])?$arr_report_totals['sales_count']:null;
-    $arr_report_data['leads_total']=isset($arr_report_totals['leads_count'])?$arr_report_totals['leads_count']:null;
-    $arr_report_data['actions_total']=isset($arr_report_totals['actions_count'])?$arr_report_totals['actions_count']:null;
-
-    if (isset($arr_report_data['clicks_total']) && $arr_report_data['clicks_total']>0 && isset($arr_report_data['actions_total']))
+    // Remove total row for traffic structure report
+    if ($IN['main_column']=='popular')
     {
-        $arr_report_data['actions_conversion_total']=round($arr_report_data['actions_total']/$arr_report_data['clicks_total']*100, 3);
+        unset($arr_report_data['table-total']);
     }
-
-    if (isset($arr_report_data['clicks_total']) && $arr_report_data['clicks_total']>0 && isset($arr_report_data['sales_total']))
-    {
-        $arr_report_data['sales_conversion_total']=round($arr_report_data['sales_total']/$arr_report_data['clicks_total']*100, 3);
-    }
-
-    if (isset($arr_report_data['clicks_total']) && $arr_report_data['clicks_total']>0 && isset($arr_report_data['leads_total']))
-    {
-        $arr_report_data['leads_conversion_total']=round($arr_report_data['leads_total']/$arr_report_data['clicks_total']*100, 3);
-    }
-
-    $arr_report_data['cost_total']=isset($arr_report_totals['cost'])?$arr_report_totals['cost']:null;
-    $arr_report_data['cost_total']=round($arr_report_data['cost_total'], 2);
-
-    $arr_report_data['profit_total']=isset($arr_report_totals['profit'])?$arr_report_totals['profit']:null;
-    $arr_report_data['profit_total']=round($arr_report_data['profit_total'], 2);
-
-    $arr_report_data['epc_total']=(isset($arr_report_totals['cost']) && isset($arr_report_totals['sales_count']) && ($arr_report_totals['sales_count']!=0))?$arr_report_totals['cost']/$arr_report_totals['sales_count']:0;
-    $arr_report_data['epc_total']=round($arr_report_data['epc_total'], 3);
-
-    $arr_report_data['roi_total']=(isset($arr_report_data['cost_total']) && isset($arr_report_data['profit_total']) && $arr_report_data['cost_total']>0)?($arr_report_data['profit_total']-$arr_report_data['cost_total'])/$arr_report_data['cost_total']*100:0;
-    $arr_report_data['roi_total']=number_format($arr_report_data['roi_total'], 0, '.', ' ');
-
-    $arr_report_data['cpl_total']=(isset($arr_report_totals['cost']) && isset($arr_report_totals['leads_count']) && $arr_report_totals['leads_count']!=0)?$arr_report_totals['cost']/$arr_report_totals['leads_count']:0;
 
     // Fill report params, hidden fields
     foreach ($IN as $key=>$value)
@@ -322,6 +488,7 @@ function prepare_report($report_name, $request_parameters)
             }
             continue;
         }
+
         if ($allowed_report_in_params[$key]==$value)
         {
             // Skip parameters set to default values
@@ -334,7 +501,17 @@ function prepare_report($report_name, $request_parameters)
             continue;
         }
 
-        $arr_report_data['report_params'][]=array('name'=>$key, 'value'=>$value);
+        if (is_array($value))
+        {
+            foreach ($value as $cur)
+            {
+                $arr_report_data['report_params'][]=array('name'=>$key.'[]', 'value'=>$cur);
+            }
+        }
+        else
+        {
+            $arr_report_data['report_params'][]=array('name'=>$key, 'value'=>$value);
+        }
     }
 
     // Fill report header values
@@ -343,7 +520,7 @@ function prepare_report($report_name, $request_parameters)
     $arr_report_data['date_to']=date('d.m.Y', strtotime($IN['date_end']));
 
     $arr_report_captions=array('default'=>'Отчет', 'offer_name'=>'Офферы', 'source_name'=>'Источники', 'campaign_name'=>'Кампании',
-        'campaign_ads'=>'Объявления', 'referer'=>'Площадки', 'link_name'=>'Ссылки', 'country'=>'Страны',
+        'campaign_ads'=>'Объявления', 'referer_domain'=>'Площадки', 'link_name'=>'Ссылки', 'country'=>'Страны',
         'region'=>'Регионы', 'city'=>'Города', 'user_ip'=>'IP адреса', 'isp'=>'Провайдеры',
         'user_os'=>'Операционные системы', 'user_platform'=>'Платформы', 'user_browser'=>'Браузеры'
     );
@@ -353,16 +530,25 @@ function prepare_report($report_name, $request_parameters)
     // Fill report breadcrumbs values
     if (isset($IN['filter_by']) && $IN['filter_by']!='')
     {
-        $arr_breadcrumbs_captions=array('offer_name'=>'Оффер', 'source_name'=>'Источник', 'campaign_name'=>'Кампания',
-            'campaign_ads'=>'Объявление', 'referer'=>'Площадка', 'link_name'=>'Ссылка', 'country'=>'Страна',
-            'region'=>'Регион', 'city'=>'Город', 'user_ip'=>'IP адрес', 'isp'=>'Провайдер',
-            'user_os'=>'ОС', 'user_platform'=>'Платформа', 'user_browser'=>'Браузер', 'popular'=>'Популярные'
-        );
-        if (isset($arr_breadcrumbs_captions[$IN['filter_by']]))
+        $arr_breadcrumbs_captions=array_merge ($arr_allowed_main_columns, array('popular'=>'Популярные'));
+
+        for ($i=0; $i<count($IN['filter_by']); $i++)
         {
-            $name=$arr_breadcrumbs_captions[$IN['filter_by']];
-            $arr_report_data['breadcrumbs']=array('values'=>array('name'=>$name, 'caption'=>$IN['filter_value']), 'selected_caption'=>$arr_breadcrumbs_captions[$IN['main_column']]);
+            if (isset($arr_breadcrumbs_captions[$IN['filter_by'][$i]]))
+            {
+                $name=$arr_breadcrumbs_captions[$IN['filter_by'][$i]];
+                $caption=format_main_column($IN['filter_by'][$i], $IN['filter_value'][$i]);
+
+                $arr_report_data['breadcrumbs']['values'][]=array
+                (
+                    'name'=>$name,
+                    'caption'=>$caption,
+                    'name_action'=>array('name'=>'main_column||force_filter|'.implode ('|', array_slice($IN['filter_by'], 0, $i)), 'value'=>$IN['filter_by'][$i].'||'.implode ('||', array_slice($IN['filter_value'], 0, $i))),
+                    'value_action'=>array('name'=>'main_column||force_filter|'.implode ('|', array_slice($IN['filter_by'], 0, $i+1)), 'value'=>'popular||'.implode ('||', array_slice($IN['filter_value'], 0, $i+1))),
+                );
+            }
         }
+        $arr_report_data['breadcrumbs']['selected_caption']=$arr_breadcrumbs_captions[$IN['main_column']];
     }
 
     // Fill report table toolbar values
@@ -406,14 +592,18 @@ function prepare_report($report_name, $request_parameters)
                 'EPC|epc|c-sale',
                 'ROI|roi|c-action c-sale',
                 'CPL|cpl|c-lead');
+            if ($IN['main_column']=='popular')
+            {
+                array_unshift($arr_table_columns, 'Параметр|popular');
+            }
         break;
 
-        case 'hourly':
+        case 'hourly': case 'daily': case 'monthly': case 'weekday':
             $arr_table_columns=array();
             $arr_table_columns[]=$arr_allowed_main_columns[$IN['main_column']].'|main_column|selected';
-            for ($i=0; $i<24; $i++)
+            foreach ($arr_column_values[$IN['range_type']] as $k=>$v)
             {
-                $arr_table_columns[]=sprintf("%02d", $i);
+                $arr_table_columns[]=$v;
             }
         break;
     }
@@ -422,58 +612,71 @@ function prepare_report($report_name, $request_parameters)
     {
         list ($caption, $name, $class)=array_pad(explode ('|', $cur), 3, '');
         $is_sorted=($name==$IN['sort_by'])?'sorting_desc':'sorting';
-        $arr_report_data['table-columns'][]=array('caption'=>$caption, 'name'=>$name, 'class'=>$class,
-            'is_sorted'=>$is_sorted);
+        $arr_report_data['table-columns'][]=array(
+            'caption'=>$caption, 'name'=>$name, 'class'=>$class,'is_sorted'=>$is_sorted
+        );
     }
 
     // Fill toolbar buttons
-    $arr_toolbar_buttons['main']=array('Оффер|main_column=offer_name',
-        'Источник|main_column=source_name',
-        'Кампания|main_column=campaign_name',
-        'Объявление|main_column=campaign_ads',
-        'Площадка|main_column=referer',
-        'Ссылка|main_column=link_name'
+    $arr_toolbar_buttons['main']=array('offer_name'=>'Оффер|main_column=offer_name',
+        'source_name'=>'Источник|main_column=source_name',
+        'campaign_name'=>'Кампания|main_column=campaign_name',
+        'campaign_ads'=>'Объявление|main_column=campaign_ads',
+        'referer_domain'=>'Площадка|main_column=referer_domain',
+        'link_name'=>'Ссылка|main_column=link_name'
     );
 
-    $arr_toolbar_buttons['geo']=array('Страна|main_column=country',
-        'Регион|main_column=region',
-        'Город|main_column=city',
-        'IP адрес|main_column=user_ip'
+    $arr_toolbar_buttons['geo']=array('country'=>'Страна|main_column=country',
+        'region'=>'Регион|main_column=region',
+        'city'=>'Город|main_column=city',
+        'user_ip'=>'IP адрес|main_column=user_ip'
     );
 
-    $arr_toolbar_buttons['isp']=array('Провайдер|main_column=isp');
+    $arr_toolbar_buttons['isp']=array('isp'=>'Провайдер|main_column=isp');
 
     $arr_toolbar_buttons['device']=array('ОС|main_column=user_os', 'Платформа|main_column=user_platform',
                                          'Браузер|main_column=user_browser');
 
-    $arr_toolbar_buttons['link-param']=array('Параметр ссылки #1|main_column=link_param1',
-        'Параметр ссылки #2|main_column=link_param2',
-        'Параметр ссылки #3|main_column=link_param3',
-        'Параметр ссылки #4|main_column=link_param4',
-        'Параметр ссылки #5|main_column=link_param5');
+    $arr_toolbar_buttons['link-param']=array('Параметр ссылки #1|main_column=campaign_param1',
+        'Параметр ссылки #2|main_column=campaign_param2',
+        'Параметр ссылки #3|main_column=campaign_param3',
+        'Параметр ссылки #4|main_column=campaign_param4',
+        'Параметр ссылки #5|main_column=campaign_param5');
 
-    $arr_toolbar_buttons['visit-param']=array('Параметр перехода #1|main_column=click_param1',
-        'Параметр перехода #2|main_column=click_param2',
-        'Параметр перехода #3|main_column=click_param3',
-        'Параметр перехода #4|main_column=click_param4',
-        'Параметр перехода #4|main_column=click_param4',
-        'Параметр перехода #5|main_column=click_param5',
-        'Параметр перехода #6|main_column=click_param6',
-        'Параметр перехода #7|main_column=click_param7',
-        'Параметр перехода #8|main_column=click_param8',
-        'Параметр перехода #9|main_column=click_param9',
-        'Параметр перехода #10|main_column=click_param10',
-        'Параметр перехода #11|main_column=click_param11',
-        'Параметр перехода #12|main_column=click_param12',
-        'Параметр перехода #13|main_column=click_param13',
-        'Параметр перехода #14|main_column=click_param14',
-        'Параметр перехода #15|main_column=click_param15');
+    $arr_toolbar_buttons['visit-param']=array($arr_allowed_main_columns['click_param_value1'].'|main_column=click_param_value1',
+        $arr_allowed_main_columns['click_param_value2'].'|main_column=click_param_value2',
+        $arr_allowed_main_columns['click_param_value3'].'|main_column=click_param_value3',
+        $arr_allowed_main_columns['click_param_value4'].'|main_column=click_param_value4',
+        $arr_allowed_main_columns['click_param_value5'].'|main_column=click_param_value5',
+        $arr_allowed_main_columns['click_param_value6'].'|main_column=click_param_value6',
+        $arr_allowed_main_columns['click_param_value7'].'|main_column=click_param_value7',
+        $arr_allowed_main_columns['click_param_value8'].'|main_column=click_param_value8',
+        $arr_allowed_main_columns['click_param_value9'].'|main_column=click_param_value9',
+        $arr_allowed_main_columns['click_param_value10'].'|main_column=click_param_value10',
+        $arr_allowed_main_columns['click_param_value11'].'|main_column=click_param_value11',
+        $arr_allowed_main_columns['click_param_value12'].'|main_column=click_param_value12',
+        $arr_allowed_main_columns['click_param_value13'].'|main_column=click_param_value13',
+        $arr_allowed_main_columns['click_param_value14'].'|main_column=click_param_value14',
+        $arr_allowed_main_columns['click_param_value15'].'|main_column=click_param_value15');
+
 
     $arr_toolbar_buttons['date-selector']=array('Сегодня|report_period=today',
         'Вчера|report_period=yesterday',
         'Последняя неделя|report_period=lastweek',
         'Последний месяц|report_period=lastmonth',
         'Последний квартал|report_period=lastquarter');
+
+    // Remove toolbar buttons for filtered values
+    foreach ($IN['filter_by'] as $cur)
+    {
+        foreach ($arr_toolbar_buttons as $key=>$toolbar_group)
+        {
+            if (isset($arr_toolbar_buttons[$key][$cur]))
+            {
+                unset($arr_toolbar_buttons[$key][$cur]);
+            }
+        }
+    }
 
     foreach ($arr_toolbar_buttons as $key=>$toolbar_group)
     {
@@ -482,10 +685,12 @@ function prepare_report($report_name, $request_parameters)
             list ($caption, $data)=explode ('|', $cur);
             list ($name, $value)=explode ('=', $data);
             $is_active=($value==$IN['main_column'])?'active':'';
-            $arr_report_data['toolbar-buttons-'.$key][]=array('caption'=>$caption, 'name'=>$name,
-                'value'=>$value, 'is_active'=>$is_active);
+            $arr_report_data['toolbar-buttons-'.$key][]=array(
+                'caption'=>$caption, 'name'=>$name, 'value'=>$value, 'is_active'=>$is_active
+            );
         }
     }
+
     return $arr_report_data;
 }
 
@@ -553,52 +758,45 @@ function generate_main_report_sql($arr_allowed_main_columns, $IN, $sql_add='')
         break;
     }
 
+    $sql_select['clicks_count']='COUNT(tbl_clicks.id) as clicks_count';
+    $sql_select['leads_count']='SUM(tbl_clicks.is_lead) as leads_count';
+    $sql_select['sales_count']='SUM(tbl_clicks.is_sale) as sales_count';
+    $sql_select['actions_count']='SUM(tbl_clicks.is_lead)+SUM(tbl_clicks.is_sale) as actions_count';
+    $sql_select['actions_conversion_rate']='(SUM(tbl_clicks.is_lead)+SUM(tbl_clicks.is_sale))/COUNT(tbl_clicks.id)*100 as actions_conversion_rate';
+    $sql_select['sales_conversion_rate']='(SUM(tbl_clicks.is_sale))/COUNT(tbl_clicks.id)*100 as sales_conversion_rate';
+    $sql_select['leads_conversion_rate']='(SUM(tbl_clicks.is_lead))/COUNT(tbl_clicks.id)*100 as leads_conversion_rate';
+    $sql_select['cost']='SUM(tbl_clicks.click_price) as cost';
+    $sql_select['profit']='SUM(tbl_clicks.conversion_price_main) as profit';
+    $sql_select['epc']='SUM(tbl_clicks.conversion_price_main)/COUNT(tbl_clicks.id) as epc';
+    $sql_select['roi']='(SUM(tbl_clicks.conversion_price_main)-SUM(tbl_clicks.click_price))/SUM(tbl_clicks.click_price)*100 as roi';
+    $sql_select['cpl']='SUM(tbl_clicks.click_price)/SUM(tbl_clicks.is_lead) as cpl';
+
     // Process range_type
-    switch ($IN['range_type'])
+    if (in_array($IN['range_type'], array('hourly', 'daily', 'monthly', 'weekday')))
     {
-        case 'all':
-            $sql_select['cnt']='COUNT(tbl_clicks.id) as cnt';
-            $sql_select['leads_count']='SUM(tbl_clicks.is_lead) as leads_count';
-            $sql_select['sales_count']='SUM(tbl_clicks.is_sale) as sales_count';
-            $sql_select['actions_count']='SUM(tbl_clicks.is_lead)+SUM(tbl_clicks.is_sale) as actions_count';
-            $sql_select['actions_conversion_rate']='(SUM(tbl_clicks.is_lead)+SUM(tbl_clicks.is_sale))/COUNT(tbl_clicks.id)*100 as actions_conversion_rate';
-            $sql_select['sales_conversion_rate']='(SUM(tbl_clicks.is_sale))/COUNT(tbl_clicks.id)*100 as sales_conversion_rate';
-            $sql_select['leads_conversion_rate']='(SUM(tbl_clicks.is_lead))/COUNT(tbl_clicks.id)*100 as leads_conversion_rate';
-            $sql_select['cost']='SUM(tbl_clicks.click_price) as cost';
-            $sql_select['profit']='SUM(tbl_clicks.conversion_price_main) as profit';
-            $sql_select['epc']='SUM(tbl_clicks.conversion_price_main)/COUNT(tbl_clicks.id) as epc';
-            $sql_select['roi']='(SUM(tbl_clicks.conversion_price_main)-SUM(tbl_clicks.click_price))/SUM(tbl_clicks.click_price)*100 as roi';
-            $sql_select['cpl']='SUM(tbl_clicks.click_price)/SUM(tbl_clicks.is_lead) as cpl';
-        break;
+        $t=array(
+            'hourly'=>'%H',
+            'daily'=>'%Y-%m-%d',
+            'monthly'=>'%Y-%m',
+            'weekday'=>'%w'
+        );
 
-        case 'hourly': case 'daily': case 'monthly':
-            $sql_select['cnt']='COUNT(tbl_clicks.id) as cnt';
-            $sql_select['actions_count']='SUM(tbl_clicks.is_lead)+SUM(tbl_clicks.is_sale) as actions_count';
-
-            $t=array(
-                'hourly'=>array('f'=>'HOUR', 'param'=>'hour_add'),
-                'daily'=>array('f'=>'DATE', 'param'=>'day_add'),
-                'monthly'=>array('f'=>'MONTH', 'param'=>'month_add')
-            );
-
-            if (in_array($IN['timezone_offset'], array('+00:00', '-00:00', '00:00')))
-            {
-                $sql_select[$t[$IN['range_type']]['param']]=$t[$IN['range_type']]['f'].'(tbl_clicks.date_add) as '.$t[$IN['range_type']]['param'];
-                $sql_group[]=$t[$IN['range_type']]['param'];
-            }
-            else
-            {
-                $sql_select[$t[$IN['range_type']]['param']]=$t[$IN['range_type']]['f']."(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '"._str($IN['timezone_offset'])."')) as ".$t[$IN['range_type']]['param'];
-                $sql_group[]=$t[$IN['range_type']]['param'];
-            }
-        break;
+        if (in_array($IN['timezone_offset'], array('+00:00', '-00:00', '00:00')))
+        {
+            $sql_select['column_name']="DATE_FORMAT(tbl_clicks.date_add, '".$t[$IN['range_type']]."') as column_name";
+        }
+        else
+        {
+            $sql_select['column_name']="DATE_FORMAT(CONVERT_TZ(tbl_clicks.date_add, '+00:00', '"._str($IN['timezone_offset'])."'), '".$t[$IN['range_type']]."') as column_name";
+        }
+        $sql_group[]='column_name';
     }
 
     switch ($IN['sort_by'])
     {
         case 'clicks_count':
             $sort_order=($IN['sort_order']=='ASC')?'ASC':'DESC';
-            $sql_order[]='cnt '.$sort_order;
+            $sql_order[]='clicks_count '.$sort_order;
         break;
 
         case 'main_column':
@@ -669,6 +867,39 @@ function generate_main_report_sql($arr_allowed_main_columns, $IN, $sql_add='')
     }
 
     return $sql;
+}
+
+function format_main_column($name, $value)
+{
+    switch ($name)
+    {
+        case 'referer_domain':
+            // Convert Punycode to UTF-8
+            $url_host=parse_url($value, PHP_URL_HOST);
+            return str_replace ($url_host, idn_to_utf8($url_host), $value);
+            break;
+
+        case 'source_name':
+            global $source_config;
+            if ($value!='source' && isset($source_config[$value]['name']))
+            {
+                return $source_config[$value]['name'];
+            }
+            else
+            {
+                return $value;
+            }
+            break;
+
+        case 'country':
+            $arr_countries_rus=array('AD' => 'Андорра', 'AE' => 'ОАЭ', 'AF' => 'Афганистан', 'AG' => 'Антигуа и Барбуда', 'AI' => 'Ангилья', 'AL' => 'Албания', 'AM' => 'Армения', 'AO' => 'Ангола', 'AQ' => 'Антарктида', 'AR' => 'Аргентина', 'AS' => 'Американское Самоа', 'AT' => 'Австрия', 'AU' => 'Австралия', 'AW' => 'Аруба', 'AX' => 'Аландские острова', 'AZ' => 'Азербайджан', 'BA' => 'Босния и Герцеговина', 'BB' => 'Барбадос', 'BD' => 'Бангладеш', 'BE' => 'Бельгия', 'BF' => 'Буркина-Фасо', 'BG' => 'Болгария', 'BH' => 'Бахрейн', 'BI' => 'Бурунди', 'BJ' => 'Бенин', 'BL' => 'Сен-Бартелеми', 'BM' => 'Бермуды', 'BN' => 'Бруней', 'BO' => 'Боливия', 'BQ' => 'Бонэйр, Синт-Эстатиус и Саба', 'BR' => 'Бразилия', 'BS' => 'Багамы', 'BT' => 'Бутан', 'BV' => 'Остров Буве', 'BW' => 'Ботсвана', 'BY' => 'Белоруссия', 'BZ' => 'Белиз', 'CA' => 'Канада', 'CC' => 'Кокосовые острова', 'CD' => 'ДР Конго', 'CF' => 'ЦАР', 'CG' => 'Республика Конго', 'CH' => 'Швейцария', 'CI' => 'Кот-д’Ивуар', 'CK' => 'Острова Кука', 'CL' => 'Чили', 'CM' => 'Камерун', 'CN' => 'КНР', 'CO' => 'Колумбия', 'CR' => 'Коста-Рика', 'CU' => 'Куба', 'CV' => 'Кабо-Верде', 'CW' => 'Кюрасао', 'CX' => 'Остров Рождества', 'CY' => 'Кипр', 'CZ' => 'Чехия', 'DE' => 'Германия', 'DJ' => 'Джибути', 'DK' => 'Дания', 'DM' => 'Доминика', 'DO' => 'Доминиканская Республика', 'DZ' => 'Алжир', 'EC' => 'Эквадор', 'EE' => 'Эстония', 'EG' => 'Египет', 'EH' => 'Западная Сахара', 'ER' => 'Эритрея', 'ES' => 'Испания', 'ET' => 'Эфиопия', 'FI' => 'Финляндия', 'FJ' => 'Фиджи', 'FK' => 'Фолклендские острова', 'FM' => 'Микронезия', 'FO' => 'Фарерские острова', 'FR' => 'Франция', 'GA' => 'Габон', 'GB' => 'Великобритания', 'GD' => 'Гренада', 'GE' => 'Грузия', 'GF' => 'Гвиана', 'GG' => 'Гернси', 'GH' => 'Гана', 'GI' => 'Гибралтар', 'GL' => 'Гренландия', 'GM' => 'Гамбия', 'GN' => 'Гвинея', 'GP' => 'Гваделупа', 'GQ' => 'Экваториальная Гвинея', 'GR' => 'Греция', 'GS' => 'Южная Георгия и Южные Сандвичев', 'GT' => 'Гватемала', 'GU' => 'Гуам', 'GW' => 'Гвинея-Бисау', 'GY' => 'Гайана', 'HK' => 'Гонконг', 'HM' => 'Херд и Макдональд', 'HN' => 'Гондурас', 'HR' => 'Хорватия', 'HT' => 'Гаити', 'HU' => 'Венгрия', 'ID' => 'Индонезия', 'IE' => 'Ирландия', 'IL' => 'Израиль', 'IM' => 'Остров Мэн', 'IN' => 'Индия', 'IO' => 'Британская территория в Индийском океане', 'IQ' => 'Ирак', 'IR' => 'Иран', 'IS' => 'Исландия', 'IT' => 'Италия', 'JE' => 'Джерси', 'JM' => 'Ямайка', 'JO' => 'Иордания', 'JP' => 'Япония', 'KE' => 'Кения', 'KG' => 'Киргизия', 'KH' => 'Камбоджа', 'KI' => 'Кирибати', 'KM' => 'Коморы', 'KN' => 'Сент-Китс и Невис', 'KP' => 'КНДР', 'KR' => 'Республика Корея', 'KW' => 'Кувейт', 'KY' => 'Каймановы острова', 'RU' => 'Россия', 'KZ' => 'Казахстан', 'LA' => 'Лаос', 'LB' => 'Ливан', 'LC' => 'Сент-Люсия', 'LI' => 'Лихтенштейн', 'LK' => 'Шри-Ланка', 'LR' => 'Либерия', 'LS' => 'Лесото', 'LT' => 'Литва', 'LU' => 'Люксембург', 'LV' => 'Латвия', 'LY' => 'Ливия', 'MA' => 'Марокко', 'MC' => 'Монако', 'MD' => 'Молдавия', 'ME' => 'Черногория', 'MF' => 'Сен-Мартен', 'MG' => 'Мадагаскар', 'MH' => 'Маршалловы Острова', 'MK' => 'Македония', 'ML' => 'Мали', 'MM' => 'Мьянма', 'MN' => 'Монголия', 'MO' => 'Макао', 'MP' => 'Северные Марианские острова', 'MQ' => 'Мартиника', 'MR' => 'Мавритания', 'MS' => 'Монтсеррат', 'MT' => 'Мальта', 'MU' => 'Маврикий', 'MV' => 'Мальдивы', 'MW' => 'Малави', 'MX' => 'Мексика', 'MY' => 'Малайзия', 'MZ' => 'Мозамбик', 'NA' => 'Намибия', 'NC' => 'Новая Каледония', 'NE' => 'Нигер', 'NF' => 'Остров Норфолк', 'NG' => 'Нигерия', 'NI' => 'Никарагуа', 'NL' => 'Нидерланды', 'NO' => 'Норвегия', 'NP' => 'Непал', 'NR' => 'Науру', 'NU' => 'Ниуэ', 'NZ' => 'Новая Зеландия', 'OM' => 'Оман', 'PA' => 'Панама', 'PE' => 'Перу', 'PF' => 'Французская Полинезия', 'PG' => 'Папуа — Новая Гвинея', 'PH' => 'Филиппины', 'PK' => 'Пакистан', 'PL' => 'Польша', 'PM' => 'Сен-Пьер и Микелон', 'PN' => 'Острова Питкэрн', 'PR' => 'Пуэрто-Рико', 'PS' => 'Государство Палестина', 'PT' => 'Португалия', 'PW' => 'Палау', 'PY' => 'Парагвай', 'QA' => 'Катар', 'RE' => 'Реюньон', 'RO' => 'Румыния', 'RS' => 'Сербия', 'RW' => 'Руанда', 'SA' => 'Саудовская Аравия', 'SB' => 'Соломоновы Острова', 'SC' => 'Сейшельские Острова', 'SD' => 'Судан', 'SE' => 'Швеция', 'SG' => 'Сингапур', 'SH' => 'Острова Святой Елены, Вознесения и Тристан-да-Кунья', 'SI' => 'Словения', 'SJ' => 'Шпицберген и Ян-Майен', 'SK' => 'Словакия', 'SL' => 'Сьерра-Леоне', 'SM' => 'Сан-Марино', 'SN' => 'Сенегал', 'SO' => 'Сомали', 'SR' => 'Суринам', 'SS' => 'Южный Судан', 'ST' => 'Сан-Томе и Принсипи', 'SV' => 'Сальвадор', 'SX' => 'Синт-Мартен', 'SY' => 'Сирия', 'SZ' => 'Свазиленд', 'TC' => 'Тёркс и Кайкос', 'TD' => 'Чад', 'TF' => 'Французские Южные и Антарктические Территории', 'TG' => 'Того', 'TH' => 'Таиланд', 'TJ' => 'Таджикистан', 'TK' => 'Токелау', 'TL' => 'Восточный Тимор', 'TM' => 'Туркмения', 'TN' => 'Тунис', 'TO' => 'Тонга', 'TR' => 'Турция', 'TT' => 'Тринидад и Тобаго', 'TV' => 'Тувалу', 'TW' => 'Китайская Республика', 'TZ' => 'Танзания', 'UA' => 'Украина', 'UG' => 'Уганда', 'UM' => 'Внешние малые острова (США)', 'US' => 'США', 'UY' => 'Уругвай', 'UZ' => 'Узбекистан', 'VA' => 'Ватикан', 'VC' => 'Сент-Винсент и Гренадины', 'VE' => 'Венесуэла', 'VG' => 'Британские Виргинские острова', 'VI' => 'Американские Виргинские острова', 'VN' => 'Вьетнам', 'VU' => 'Вануату', 'WF' => 'Уоллис и Футуна', 'WS' => 'Самоа', 'YE' => 'Йемен', 'YT' => 'Майотта', 'ZA' => 'ЮАР', 'ZM' => 'Замбия', 'ZW' => 'Зимбабве');
+            return $arr_countries_rus[$value];
+            break;
+
+        default:
+            return $value;
+        break;
+    }
 }
 
 
@@ -951,8 +1182,10 @@ function get_visitors_flow_data($IN = '', $report_name='', $limit = 20, $offset 
         // 12. Browser
         $cur['browser']=implode(' ', array_filter(array($row['user_browser'], $row['user_browser_version'])));
 
-        // 13. Referer
-        $cur['full_referer']=urldecode(str_replace(array('http://www.', 'www.'), '', $row['referer']));
+        // 13. Referer, converting Punycode domain to UTF-8
+        $referer_host=parse_url($row['referer'], PHP_URL_HOST);
+        $referer=str_replace ($referer_host, idn_to_utf8($referer_host), $row['referer']);
+        $cur['full_referer']=urldecode(str_replace(array('http://www.', 'www.'), '', $referer));
 
         if ($row['source_name'] == 'yadirect' and !empty($row['click_param_value8']))
         {
@@ -978,7 +1211,11 @@ function get_visitors_flow_data($IN = '', $report_name='', $limit = 20, $offset 
             }
             else
             {
-                $cur_referrer = str_replace(array('http://www.', 'www.'), '', $row['referer']);
+                // Converting from Punycode to UTF-8
+                $referer_host=parse_url($row['referer'], PHP_URL_HOST);
+                $referer=str_replace ($referer_host, idn_to_utf8($referer_host), $row['referer']);
+
+                $cur_referrer = str_replace(array('http://www.', 'www.'), '', $referer);
                 if (strpos($cur_referrer, 'http://') === 0) {
                     $cur_referrer = substr($cur_referrer, strlen('http://'));
                 }

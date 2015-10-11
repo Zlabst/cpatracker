@@ -225,7 +225,7 @@ $source_name = (empty($source) or $source == 'source' or empty($source_config[$s
                     var old_name_text = rule_old_name;
                 }
                 
-                $(rule_name).html('<input id="rn' + id + '" class="form-control rulenamein" placeholder="' + placeholder + '" value="' + (old_name_text) + '" >')
+                $(rule_name).html('<input id="rn' + id + '" class="form-control rulenamein" placeholder="' + placeholder + '" value="' + (old_name_text) + '" >');
                 $("#rn" + id).focus(); 
                 $("#rn" + id).select();
                 $("#rn" + id).click(function(e){
@@ -489,7 +489,7 @@ $source_name = (empty($source) or $source == 'source' or empty($source_config[$s
             $('.btnsave').on("click", function(e) {
                 e.preventDefault();
                 var flag = true;
-                var rule_id = $(this).attr('id').replace('btn_save_', '');;
+                var rule_id = $(this).attr('id').replace('btn_save_', '');
                 var rule_table = $('#' + rule_id + '');
 
                 if(!flag){ alert("В полях ввода для ссылки GET можно использовать только цифры и буквы латинского алфавита.");  return false;}

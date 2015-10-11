@@ -102,7 +102,7 @@ $(document).ready(function() {
         }
         a = parseFloat(a);
         return a;
-	}
+	};
 	
 	// Многомерная сортировка
 	srt_data = function(a, b, i, asc) {
@@ -122,7 +122,7 @@ $(document).ready(function() {
 				return 0;
 			}
 		}
-	}
+	};
 	
 	jQuery.fn.dataTableExt.oSort['click-data-asc'] = function(a, b) {
 		if(a.indexOf('sortdata') + 1) {
@@ -159,7 +159,7 @@ $(document).ready(function() {
 	    } 
 	    
 	    
-	}
+	};
 	
     window.table<?php echo $table_n; ?> = $('.dataTableT<?php echo $table_n; ?>').dataTable ({
     	"aoColumns": [

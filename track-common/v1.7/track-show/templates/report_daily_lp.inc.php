@@ -135,7 +135,7 @@ if (!isset($table_n)) {
                             $(rows[i]).addClass('last');
                         }
                     } 
-                }
+                };
 
 	
                 $('.dataTableT<?php echo $table_n; ?>').dataTable
@@ -163,8 +163,8 @@ if (!isset($table_n)) {
                                 "bInfo": false,
                                 "bAutoWidth": false,
                                 "fnDrawCallback": lp_aftersort
-                            }).fnSort([ [<?php echo count($var['arr_dates']) + 1; ?>,'desc'] ]);; // //fnSort([ [<?php echo count($var['arr_dates']) + 1; ?>,'desc'] ]);
-                        });
+                }).fnSort([[<?php echo count($var['arr_dates']) + 1; ?>, 'desc']]); // //fnSort([ [<?php echo count($var['arr_dates']) + 1; ?>,'desc'] ]);
+            });
         </script>
         <script>
             $(document).ready(function() 

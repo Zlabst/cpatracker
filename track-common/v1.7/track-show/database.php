@@ -113,6 +113,8 @@
       KEY `is_sale` (`is_sale`)
     ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
 
+    $arr_sql[]="ALTER TABLE `tbl_clicks` ADD `referer_domain` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL AFTER `referer`, ADD INDEX (`referer_domain`(255));";
+
     $arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_conversions` (
 		  `id` int(11) NOT NULL AUTO_INCREMENT,
 		  `type` varchar(255) CHARACTER SET utf8 NOT NULL,

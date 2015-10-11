@@ -59,7 +59,11 @@
     	$('#add_timezone')[0].reset();
     }
 </script>
-<h3>Настройка часовых поясов</h3>
+<div class="page-heading">
+    <div class="header-content">
+        <h2>Настройка часовых поясов</h2>
+    </div>
+</div>
 
 <p><b>Сейчас на сервере:</b> <span id="servertime"><?php echo date("d.m.Y H:i:s"); ?></span><br /></p>
 <br />
@@ -144,7 +148,7 @@
 <script type="text/javascript">
 	var currenttime = '<?php print date("F d, Y H:i:s", time())?>';
 
-	var montharray=new Array("01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12")
+	var montharray=["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"]
 	var serverdate=new Date(currenttime);
 
 	function padlength(what)
@@ -155,10 +159,10 @@
 
 	function displaytime()
 	{
-		serverdate.setSeconds(serverdate.getSeconds()+1)
+		serverdate.setSeconds(serverdate.getSeconds()+1);
 
-		var datestring=padlength(serverdate.getDate())+"."+montharray[serverdate.getMonth()]+"."+serverdate.getFullYear()
-		var timestring=padlength(serverdate.getHours())+":"+padlength(serverdate.getMinutes())+":"+padlength(serverdate.getSeconds())
+		var datestring=padlength(serverdate.getDate())+"."+montharray[serverdate.getMonth()]+"."+serverdate.getFullYear();
+		var timestring=padlength(serverdate.getHours())+":"+padlength(serverdate.getMinutes())+":"+padlength(serverdate.getSeconds());
 		document.getElementById("servertime").innerHTML=datestring+" "+timestring
 	}
 

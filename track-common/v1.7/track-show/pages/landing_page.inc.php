@@ -1,12 +1,14 @@
 <?php if (!$include_flag){exit();}
 	$tracklink = tracklink();
 ?>
-<div class="row">
-    <div class="col-md-12">
-        <h3>Целевые страницы</h3>
+
+
+<div class="page-heading">
+    <div class="header-content">
+        <h2>Целевые страницы</h2>
     </div>
 </div>
-	
+
 <div class="row" id="master-form">
     <div class="col-md-12">
     	<p>Для учета посетителей на ваших целевых страницах установите, пожалуйста, код счетчика:

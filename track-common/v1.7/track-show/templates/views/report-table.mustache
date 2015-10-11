@@ -1,37 +1,45 @@
+<style>
+    td.link span{border-bottom:1px dashed lightgray; cursor:pointer}
+    .pointer{cursor: pointer;}
+</style>
 <div class="table-report-box">
     <table class="table table-striped table-report">
         <thead>
         <tr>
             {{#table-columns}}
-            <th class="c-cell {{is_sorted}} {{class}}" style='visibility: hidden' onclick="return refresh_report('sort_by', '{{name}}');">{{caption}}</th>
+                <th class="c-cell {{is_sorted}} {{class}}" style='visibility: hidden' onclick="return refresh_report('sort_by', '{{name}}');">{{caption}}</th>
             {{/table-columns}}
         </tr>
         </thead>
         <tbody>
         {{#table_rows}}
-        <tr>
-            {{#values}}
-            <td {{nowrap}} class="c-cell {{class}}" style='visibility: hidden'><span {{#action}}onclick="return refresh_report('{{name}}', '{{value}}');"{{/action}}>{{value}}</td></span></td>
-            {{/values}}
-        </tr>
+            <tr>
+                {{#values}}
+                <td {{nowrap}} class="c-cell {{class}}" style='visibility: hidden;'>
+                    <span {{#action}}onclick="return refresh_report('{{name}}', '{{value}}');"{{/action}}>{{value}}</span>
+                </td>
+                {{/values}}
+            </tr>
         {{/table_rows}}
         </tbody>
-        <tfoot>
-        <tr>
-            <td class="c-cell" style='visibility: hidden'>Итого</td>
-            <td class="c-cell" style='visibility: hidden'>{{clicks_total}}</td>
-            <td class="c-cell c-sale" style='visibility: hidden'>{{sales_total}}</td>
-            <td class="c-cell c-lead" style='visibility: hidden'>{{leads_total}}</td>
-            <td class="c-cell c-action" style='visibility: hidden'>{{actions_total}}</td>
-            <td class="c-cell c-sale" style='visibility: hidden'>{{sales_conversion_total}}%</td>
-            <td class="c-cell c-lead" style='visibility: hidden'>{{leads_conversion_total}}%</td>
-            <td class="c-cell c-action" style='visibility: hidden'>{{actions_conversion_total}}%</td>
-            <td class="c-cell" style='visibility: hidden'>{{cost_total}}</td>
-            <td class="c-cell c-action c-sale" style='visibility: hidden'>{{profit_total}}</td>
-            <td class="c-cell c-sale" style='visibility: hidden'>{{epc_total}}</td>
-            <td class="c-cell c-action c-sale" style='visibility: hidden'>{{roi_total}}%</td>
-            <td class="c-cell c-lead" style='visibility: hidden'>{{cpl_total}}</td>
-        </tr>
-        </tfoot>
+        {{#table-total}}
+            <tfoot>
+            <tr>
+                <td class="c-cell" style='visibility: hidden'>Итого</td>
+                <td class="c-cell" style='visibility: hidden'>{{clicks_total}}</td>
+                <td class="c-cell c-sale" style='visibility: hidden'>{{sales_total}}</td>
+                <td class="c-cell c-lead" style='visibility: hidden'>{{leads_total}}</td>
+                <td class="c-cell c-action" style='visibility: hidden'>{{actions_total}}</td>
+                <td class="c-cell c-sale" style='visibility: hidden'>{{sales_conversion_total}}%</td>
+                <td class="c-cell c-lead" style='visibility: hidden'>{{leads_conversion_total}}%</td>
+                <td class="c-cell c-action" style='visibility: hidden'>{{actions_conversion_total}}%</td>
+                <td class="c-cell" style='visibility: hidden'>{{cost_total}}</td>
+                <td class="c-cell c-action c-sale" style='visibility: hidden'>{{profit_total}}</td>
+                <td class="c-cell c-sale" style='visibility: hidden'>{{epc_total}}</td>
+                <td class="c-cell c-action c-sale" style='visibility: hidden'>{{roi_total}}%</td>
+                <td class="c-cell c-lead" style='visibility: hidden'>{{cpl_total}}</td>
+            </tr>
+            </tfoot>
+        {{/table-total}}
     </table>
 </div>

@@ -76,7 +76,7 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
         var checked_offers_arr = [];
         $('.offer_checkbox:checked').each(function() {
             checked_offers_arr.push($(this).attr('id').replace('chk', ''));
-        })
+        });
         return checked_offers_arr;
     }
     
@@ -304,7 +304,7 @@ global $page_headers, $page_type, $category_id, $arr_categories, $arr_offers, $c
     }
 	    
     function objk2arr(obj) {
-        arr = []
+        arr = [];
         for(i in obj) {
             arr.push(i);
         }

@@ -615,7 +615,7 @@
             var currentYear = selected.getFullYear();
             var maxYear = (maxDate && maxDate.getFullYear()) || (currentYear + 5);
             var minYear = (minDate && minDate.getFullYear()) || (currentYear - 50); 
-            var yearHtml = '<select class="yearselect">'
+            var yearHtml = '<select class="yearselect">';
             
             for (var y = minYear; y <= maxYear; y++) {
                 yearHtml += '<option value="' + y + '"' +

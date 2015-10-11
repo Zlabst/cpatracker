@@ -131,7 +131,7 @@ $(document).ready(function() {
 //		});
 //	}
 
-	<!-- =============================================== -->
+	<!-- =============================================== -->;
 	<!-- =========== Bootstrap Date Picker ========== -->
 	<!-- =============================================== --> 
 	var tmp = $.fn.popover.Constructor.prototype.show;
@@ -140,7 +140,7 @@ $(document).ready(function() {
 	  if (this.options.callback) {
 	    this.options.callback();
 	  }
-	}
+	};
 	if ($('[data-toggle="range-popover"]').length > 0) {
 		$('[data-toggle="range-popover"]').popover({
 			container: "body",

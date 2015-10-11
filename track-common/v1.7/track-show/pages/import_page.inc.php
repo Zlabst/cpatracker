@@ -9,6 +9,7 @@ $mTemplate = new Mustache_Engine(array(
 ));
 
 $arr_currencies_list=get_active_currencies();
+$arr_currencies_list=array_values($arr_currencies_list);
 $selected_currency=$arr_currencies_list[0];
 
 $arr_page_data=array('networks'=>load_networks_list(),

@@ -208,7 +208,7 @@
             var result=jQuery.parseJSON(msg);
             if (result[0]) {
                 window.location.replace(result[1]);
-                return; 
+
             } else {
                 switch (result[1]) {
                     case 'config_found': 

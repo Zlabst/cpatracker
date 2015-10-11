@@ -43,6 +43,7 @@ function fatal_handler() {
     }
 }
 
+
 function convert_currency($value, $from, $to, $date)
 {
     if ($from==$to){return $value;}
@@ -84,18 +85,55 @@ function convert_currency($value, $from, $to, $date)
 
 function get_active_currencies()
 {
+    $arr_result=array();
     $sql="SELECT tbl_currency.id, tbl_currency.code, tbl_currency.caption, tbl_currency.symbol FROM tbl_currency WHERE (is_active=1 or code='RUR') AND code!='XXX' order by id asc";
     $result=mysql_query($sql);
     $arr_currencies_list=array();
     $i=1;
     while ($row=mysql_fetch_assoc($result))
     {
-        $data=array('id'=>$row['id'], 'symbol'=>$row['symbol'], 'caption'=>$row['caption'].', '.$row['symbol']);
+        $data=array('id'=>$row['id'], 'code'=>$row['code'], 'symbol'=>$row['symbol'], 'caption'=>$row['caption'].', '.$row['symbol']);
+        // Default currency for this account is RUR
         if ($row['code']=='RUR'){$arr_currencies_list[0]=$data; continue;}
         $arr_currencies_list[$i++]=$data;
     }
     ksort($arr_currencies_list);
-    return $arr_currencies_list;
+    foreach ($arr_currencies_list as $k=>$v)
+    {
+        $arr_result[$v['id']]=$v;
+    }
+    return $arr_result;
+}
+
+
+function number2currency($number, $currency)
+{
+    switch ($currency)
+    {
+        case 'RUR':
+            return $number.' р.';
+        break;
+
+        case 'USD':
+            return $number.' $';
+        break;
+
+        case 'UAH':
+            return $number.' грн.';
+        break;
+
+        case 'EUR':
+            return $number.' €';
+        break;
+
+        case 'KZT':
+            return $number.' тг.';
+        break;
+
+        default:
+            return $number.' '.$currency;
+        break;
+    }
 }
 
 /**
@@ -639,6 +677,16 @@ function get_class_by_platform($platform) {
     return $c;
 }
 
+function getHoursBetween($start, $end){
+    $retval=array();
+    for ($i=$start;$i<=$end;$i++)
+    {
+        $t=sprintf("%02d", $i);
+        $retval[$t]=$t;
+    }
+    return $retval;
+}
+
 function getDatesBetween($strDateFrom, $strDateTo) {
     $aryRange = array();
 
@@ -646,16 +694,19 @@ function getDatesBetween($strDateFrom, $strDateTo) {
     $iDateTo = mktime(1, 0, 0, substr($strDateTo, 5, 2), substr($strDateTo, 8, 2), substr($strDateTo, 0, 4));
 
     if ($iDateTo >= $iDateFrom) {
-        array_push($aryRange, date('Y-m-d', $iDateFrom)); // first entry
+        $aryRange[date('Y-m-d', $iDateFrom)]=date('d.m', $iDateFrom);
+        // array_push($aryRange, date('Y-m-d', $iDateFrom)); // first entry
         while ($iDateFrom < $iDateTo) {
             $iDateFrom+=86400; // add 24 hours
-            array_push($aryRange, date('Y-m-d', $iDateFrom));
+            $aryRange[date('Y-m-d', $iDateFrom)]=date('d.m', $iDateFrom);
+            // array_push($aryRange, date('Y-m-d', $iDateFrom));
         }
     }
     return $aryRange;
 }
 
-function getMonthsBetween($strDateFrom, $strDateTo) {
+function getMonthsBetween($strDateFrom, $strDateTo)
+{
     $aryRange = array();
 
     $iDateFrom = mktime(1, 0, 0, substr($strDateFrom, 5, 2), substr($strDateFrom, 8, 2), substr($strDateFrom, 0, 4));
@@ -678,9 +729,11 @@ function getMonthsBetween($strDateFrom, $strDateTo) {
                 $cur_month = $begin_month;
             else
                 $cur_month = 1;
-            for ($cur_month; $cur_month <= $max_month; $cur_month++) {
-                $item = ((strlen($cur_month) < 2) ? '0' . $cur_month : $cur_month) . '.' . $cur_year;
-                array_push($aryRange, $item);
+            for ($cur_month; $cur_month <= $max_month; $cur_month++)
+            {
+                $item =$cur_year.'-'. ((strlen($cur_month) < 2) ? ('0'.$cur_month) : $cur_month);
+                $aryRange[$item]=((strlen($cur_month) < 2) ? ('0'.$cur_month) : $cur_month).'.'.$cur_year;
+                // array_push($aryRange, $item);
             }
         }
     }

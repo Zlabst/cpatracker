@@ -49,4 +49,4 @@ function ApplySortability() {
 		rows.tsort('td:eq(' + nr + ')', { order: bsSort[nr], attr: 'value' });
 	});
 
-};
+}
