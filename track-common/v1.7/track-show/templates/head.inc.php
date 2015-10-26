@@ -16,8 +16,8 @@
 <!-- Main Styles -->
 <link rel="stylesheet" type="text/css" href="<?php echo _HTML_LIB_PATH;?>/../templates/css/main.css">	
 
-<!-- Custom Styles -->	
-<link rel="stylesheet" href="<?php echo _HTML_LIB_PATH;?>/bootstrap/fonts/font-awesome-4.2.0/css/font-awesome.min.css">	
+<!-- Custom Styles -->
+<link rel="stylesheet" href="<?php echo _HTML_LIB_PATH;?>/font-awesome/css/font-awesome.min.css">
 <link rel="stylesheet" href="<?php echo _HTML_LIB_PATH;?>/bootstrap/fonts/icons/cpa.css">
 <link rel="stylesheet" href="<?php echo _HTML_LIB_PATH;?>/bootstrap/fonts/pfagorasanspro/pfagorasanspro.css">
 <link rel="stylesheet" href="<?php echo _HTML_LIB_PATH;?>/bootstrap/plugins/bootstrap-select/dist/css/bootstrap-select.min.css">	

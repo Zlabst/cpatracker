@@ -8,21 +8,25 @@ class SalesDoubler {
     private $network_description = 'Украинская CPA-сеть с проверенными офферам, которые тщательно отбираются и тестируются представителями сети. Собственная платформа, отзывчивая техническая поддержка, много эксклюзивных рекламодателей с хорошей конверсией. Основные тематики: интернет-магазины, образовательные услуги, потребительские кредиты.';
 
     private $params = array(
-        'subid' => 'TRANS_ID',
-        'profit' => 'AFF_REV',
-        'status' => 'status',
-        'f1' => 'SALE_AMOUNT',
-        't4' => 'CAMPAIGN',
-        't7' => 'SOURCE',
-        't8' => 'PROMO',
-        't9' => 'TID1',
-        't10' => 'TID2',
-        'i3' => 'CONVERSION_ID',
+        'subid' => array('url_param'=>'TRANS_ID', 'caption'=>'SubID'),
+        'profit' => array('url_param'=>'AFF_REV', 'caption'=>'Сумма продажи'),
+        'status' => array('url_param'=>'status', 'caption'=>'Статус'),
+        'f1' => array('url_param'=>'SALE_AMOUNT', 'caption'=>'Сумма'),
+        't4' => array('url_param'=>'CAMPAIGN', 'caption'=>'Кампания'),
+        't7' => array('url_param'=>'SOURCE', 'caption'=>'Источник'),
+        't8' => array('url_param'=>'PROMO', 'caption'=>'Промо'),
+        't9' => array('url_param'=>'TID1', 'caption'=>'tid1'),
+        't10' => array('url_param'=>'TID2', 'caption'=>'tid2'),
+        'i3' => array('url_param'=>'CONVERSION_ID', 'caption'=>'ID действия'),
     );
 
     private $common;
     function __construct() {
         $this->common = new common($this->params);
+    }
+
+    function get_params_info(){
+        return $this->params;
     }
 
     function get_network_info()
@@ -31,7 +35,7 @@ class SalesDoubler {
         $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
-            $url .= '&' . $name . '={' . $value . '}';
+            $url .= '&' . $name . '={' . $value['url_param'] . '}';
         }
 
         $url .= '&ak=' . $this->common->get_code();
@@ -70,21 +74,24 @@ class SalesDoubler {
 
         switch ($data['status']) {
             case 'approved':
-                $data['txt_status'] = 'Approved';
+                $data['txt_status'] = 'approved';
                 $data['status'] = 1;
-                break;
+            break;
+
             case 'rejected':
-                $data['txt_status'] = 'Declined';
+                $data['txt_status'] = 'rejected';
                 $data['status'] = 2;
-                break;
+            break;
+
             case 'pending':
-                $data['txt_status'] = 'Created';
+                $data['txt_status'] = 'waiting';
                 $data['status'] = 3;
-                break;
+            break;
+
             default:
-                $data['txt_status'] = 'Unknown';
+                $data['txt_status'] = '';
                 $data['status'] = 0;
-                break;
+            break;
         }
 
         $this->common->process_conversion($data);

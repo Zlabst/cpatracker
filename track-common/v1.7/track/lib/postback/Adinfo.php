@@ -8,19 +8,23 @@ class Adinfo {
     private $network_description = 'Надежная партнерская программа с большим количеством эксклюзивных офферов.';
 
     private $params = array(
-        'profit' => 'commission',
-        'subid' => 'sud_id',
-        'date_add' => 'lead_time',
-        'txt_status' => 'status',
-        't1' => 'uip',
-        'i2' => 'offer_id',
-        'i3' => 'order_id',
-        'i4' => 'group_id',
+        'profit' => array('url_param'=>'commission', 'caption'=>'Сумма продажи'),
+        'subid' => array('url_param'=>'sud_id', 'caption'=>'SubID'),
+        'date_add' => array('url_param'=>'lead_time', 'caption'=>'Дата продажи'),
+        'txt_status' => array('url_param'=>'status', 'caption'=>'Статус'),
+        't1' => array('url_param'=>'uip', 'caption'=>'IP'),
+        'i2' => array('url_param'=>'offer_id', 'caption'=>'ID оффера'),
+        'i3' => array('url_param'=>'order_id', 'caption'=>'ID заказа'),
+        'i4' => array('url_param'=>'group_id', 'caption'=>'ID группы')
     );
 
     private $common;
     function __construct() {
         $this->common = new common($this->params);
+    }
+
+    function get_params_info(){
+        return $this->params;
     }
 
     function get_network_info()
@@ -29,7 +33,7 @@ class Adinfo {
         $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
-            $url .= '&' . $name . '={' . $value . '}';
+            $url .= '&' . $name . '={' . $value['url_param'] . '}';
         }
 
         $url .= '&ak=' . $this->common->get_code();
@@ -66,7 +70,7 @@ class Adinfo {
             break;
 
             case 'cancel':
-                $data['txt_status'] = 'declined';
+                $data['txt_status'] = 'rejected';
                 $data['status'] = 2;
             break;
 
@@ -76,7 +80,7 @@ class Adinfo {
             break;
 
             default:
-                $data['txt_status'] = 'Unknown';
+                $data['txt_status'] = '';
                 $data['status'] = 0;
             break;
         }

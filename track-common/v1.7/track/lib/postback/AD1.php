@@ -8,29 +8,33 @@ class AD1 {
     private $network_description = 'Одной из самых привлекательных СРА сетей в рунете. С момента запуска в 2011 году, разработчики активно работают над сетью, добавляют новые инструменты и активно привлекают рекламодателей. Сеть работает на собственной платформе Zotto, выплаты по запросу от 30 рублей. Постоянно проходят конкурсы для вебмастеров с крупными призами.';
 
     private $params = array(
-        'subid' => 'subid',
-        'profit' => 'summ_approved',
-        'date_add' => 'postback_date',
-        'txt_status' => 'status',
-        't1' => 'uip',
-        't2' => 'uagent',
-        't3' => 'goal_title',
-        't4' => 'offer_name',
-        'f1' => 'summ_total',
-        'i1' => 'goal_id',
-        'i2' => 'offer_id',
-        'i3' => 'order_id',
-        'i4' => 'click_time',
-        'i5' => 'lead_time',
-        'i6' => 'postback_time',
-        'i7' => 'rid',
-        'd1' => 'click_date',
-        'd2' => 'lead_date'
+        'subid' => array('url_param'=>'subid', 'caption'=>'SubID'),
+        'profit' => array('url_param'=>'summ_approved', 'caption'=>'Сумма продажи'),
+        'date_add' => array('url_param'=>'postback_date', 'caption'=>'Дата продажи'),
+        'txt_status' => array('url_param'=>'status', 'caption'=>'Статус'),
+        't1' => array('url_param'=>'uip', 'caption'=>'IP'),
+        't2' => array('url_param'=>'uagent', 'caption'=>'User-agent'),
+        't3' => array('url_param'=>'goal_title', 'caption'=>'Название цели'),
+        't4' => array('url_param'=>'offer_name', 'caption'=>'Оффер'),
+        'f1' => array('url_param'=>'summ_total', 'caption'=>'Сумма'),
+        'i1' => array('url_param'=>'goal_id', 'caption'=>'ID цели'),
+        'i2' => array('url_param'=>'offer_id', 'caption'=>'ID оффера'),
+        'i3' => array('url_param'=>'order_id', 'caption'=>'ID заказа'),
+        'i4' => array('url_param'=>'click_time', 'caption'=>'Время перехода'),
+        'i5' => array('url_param'=>'lead_time', 'caption'=>'Время продажи'),
+        'i6' => array('url_param'=>'postback_time', 'caption'=>'postback_time'),
+        'i7' => array('url_param'=>'rid', 'caption'=>'rid'),
+        'd1' => array('url_param'=>'click_date', 'caption'=>'Дата перехода'),
+        'd2' => array('url_param'=>'lead_date', 'caption'=>'Дата продажи')
     );
 
     private $common;
     function __construct() {
         $this->common = new common($this->params);
+    }
+
+    function get_params_info(){
+        return $this->params;
     }
 
     function get_network_info()
@@ -39,7 +43,7 @@ class AD1 {
         $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
-            $url .= '&' . $name . '={' . $value . '}';
+            $url .= '&' . $name . '={' . $value['url_param'] . '}';
         }
         $url .= '&ak=' . $this->common->get_code();
 
@@ -56,7 +60,8 @@ class AD1 {
         );
     }
 
-    function process_conversion($data_all = array()) {
+    function process_conversion($data_all = array())
+    {
         $this->common->log($this->network_name, $data_all['post'], $data_all['get']);
         $data = $this->common->request($data_all);
         $data['network'] = $this->network_name;
@@ -64,23 +69,27 @@ class AD1 {
         $cnt = count($data);
         $i = 0;
 
-        switch ($data['status']) {
+        switch ($data['status'])
+        {
             case 'approved':
-                $data['txt_status'] = 'Approved';
+                $data['txt_status'] = 'approved';
                 $data['status'] = 1;
-                break;
+            break;
+
             case 'declined':
-                $data['txt_status'] = 'Declined';
+                $data['txt_status'] = 'rejected';
                 $data['status'] = 2;
-                break;
+            break;
+
             case 'waiting':
-                $data['txt_status'] = 'Waiting';
+                $data['txt_status'] = 'waiting';
                 $data['status'] = 3;
-                break;
+            break;
+
             default:
-                $data['txt_status'] = 'Unknown';
+                $data['txt_status'] = '';
                 $data['status'] = 0;
-                break;
+            break;
         }
 
         $this->common->process_conversion($data);

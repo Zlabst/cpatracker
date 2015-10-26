@@ -2,16 +2,8 @@
     <div role="toolbar" class="btn-toolbar">
 
         <div class="btn-group" data-toggle="buttons">
-            {{#report-toolbar-filter-conversions}}
-                <label class="btn btn-default {{active}}" onclick="return refresh_report('{{action}}', '{{value}}');" >
-                    {{caption}}
-                </label>
-            {{/report-toolbar-filter-conversions}}
-        </div>
-
-        <div class="btn-group" data-toggle="buttons">
             {{#report-toolbar-filter-actions}}
-                <label class="btn btn-default {{active}}" onclick="return refresh_report('filter_actions||report_type', '{{value}}||clicks_count');">
+                <label class="btn btn-default {{active}}" onclick="return refresh_report('filter_actions||report_type', '{{value}}||{{value}}_count');">
                     {{caption}}
                 </label>
             {{/report-toolbar-filter-actions}}
@@ -29,5 +21,5 @@
                 </ul>
             </label>
         </div>
-    </div><!--Toolbar-->
+    </div>
 </div>

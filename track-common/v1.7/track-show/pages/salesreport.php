@@ -51,6 +51,8 @@ krsort($sales);
             <div class="btn-group">
                 <a href="?act=reports&type=salesreport&subtype=daily" type="button" class="btn btn-default <?php echo $days_active?>">По дням</a>
                 <a href="?act=reports&type=salesreport&subtype=monthly" type="button" class="btn btn-default <?php echo $month_active?>">По месяцам</a>
+                <a href="?act=reports&type=salesreport&subtype=weekday" type="button" class="btn btn-default <?php echo $weekday_active?>">По дням недели</a>
+                <a href="?act=reports&type=salesreport&subtype=weekday" type="button" class="btn btn-default <?php echo $weekday_active?>">По дням недели</a>
             </div>
         </div>
     </div>

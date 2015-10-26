@@ -16,6 +16,9 @@ class common {
 
     function process_conversion($data)
     {
+        // Default account currency id: 16; RUB
+        $main_currency_id=16;
+
         $cnt = count($this->params);
         $i = 0;
         $is_lead = (isset($data['is_lead'])) ? 1 : 0;
@@ -23,20 +26,30 @@ class common {
         unset($data['is_lead']);
         unset($data['is_sale']);
 
-        switch (strtoupper($data['txt_param20']))
+        $arr_currencies=get_active_currencies();
+        $conversion_currency_code=strtoupper($data['txt_param20']);
+        if ($conversion_currency_code=='RUB'){$conversion_currency_code='RUR';}
+        $conversion_currency_id=0;
+        foreach ($arr_currencies as $id=>$cur)
         {
-            case 'UAH':
-                $data['profit'] = convert_to_usd('uah', $data['profit']);
-            break;
-
-            case 'USD':
-                $data['profit'] = convert_to_usd('usd', $data['profit']);
-            break;
-
-            default:
-                $data['profit'] = convert_to_usd('rub', $data['profit']);
-            break;
+            if ($cur['code']==$conversion_currency_code)
+            {
+                $conversion_currency_id=$id;
+            }
         }
+
+        // Currency is not found in active, use default currency
+        if ($conversion_currency_id==0){$conversion_currency_id=$main_currency_id;}
+
+        if ($conversion_currency_id==$main_currency_id)
+        {
+            $conversion_profit=$data['profit'];
+        }
+        else
+        {
+            $conversion_profit=convert_currency($data['profit'], $conversion_currency_id, $main_currency_id, date('Y-m-d'));
+        }
+        $conversion_profit_currency=$data['profit'];
 
         // Специальная обработка "статусного постбэка" от сети CTR.
         // В этом случае приходит только статус, связанный с остальными данными через order_id (i3)
@@ -44,9 +57,12 @@ class common {
 
         $ctr_order = false; // флаг, о том, что некоторые операции (замену логов) выполнять не нужно,
                             // так как это не полный запрос, а только статус
-        if ($data['network'] == 'CTR' and !empty($data['status'])) {
-            $q = 'SELECT * FROM `tbl_conversions` WHERE (`i3` = "' . mysql_real_escape_string($data['i3']) . '" AND `network` = "CTR") LIMIT 1';
-            if ($rs = db_query($q) and mysql_num_rows($rs) > 0) {
+        if ($data['network'] == 'CTR' and !empty($data['status']))
+        {
+            $q = 'SELECT * FROM `tbl_conversions` WHERE (`i3` = "' . mysql_real_escape_string($data['i3']) . '"
+            AND `network` = "CTR") LIMIT 1';
+            if ($rs = db_query($q) and mysql_num_rows($rs) > 0)
+            {
                 $r = mysql_fetch_assoc($rs);
                 $data['subid'] = $r['subid'];
             }
@@ -71,26 +87,29 @@ class common {
             $q = 'SELECT `id`, `is_sale`, `is_lead` FROM `' . $table . '` WHERE `subid` = "' . mysql_real_escape_string($subid) . '"';
             $r = mysql_query($q) or die($q . '<br />' . mysql_error());
 
-            if (mysql_num_rows($r) > 0) {
+            if (mysql_num_rows($r) > 0)
+            {
                 $f = mysql_fetch_assoc($r);
                 $click_id = $f['id'];
-                if ($data['profit'] > 0) {
+                if ($data['profit'] > 0)
+                {
                     $is_lead = $f['is_lead'] > 0 ? 1 : 0;
                     $is_sale = 1;
-                } else {
+                }
+                else
+                {
                     $is_lead = 1;
                     $is_sale = $f['is_sale'] > 0 ? 1 : 0;
                 }
 
-                $q = 'UPDATE `' . $table . '` SET `is_sale` = ' . $is_sale . ', `is_lead` = ' . intval($is_lead) . ', `conversion_price_main` = "' . mysql_real_escape_string($data['profit']) . '" WHERE `id` = ' . $click_id;
+                $q = "UPDATE `" . $table . "` SET
+                `is_sale` = ".intval($is_sale).",
+                `is_lead` = ".intval($is_lead).",
+                `conversion_currency_sum` = '".mysql_real_escape_string($conversion_profit_currency)."',
+                `conversion_currency_id` = '".mysql_real_escape_string($conversion_currency_id)."',
+                `conversion_price_main` = '" . mysql_real_escape_string($conversion_profit) . "'
+                WHERE `id` = '" . mysql_real_escape_string($click_id)."'";
                 mysql_query($q) or die(mysql_error());
-
-                // Обновление кэша
-                if (_CLICKS_SPOT_SIZE > 0) {
-                    $time_from = time_edge(strtotime($tmp), 'hour', 'begin');
-                    $q = "UPDATE `tbl_clicks_cache_hour` SET `rebuild` = '1' WHERE `time` = '" . date('Y-m-d H:i:s', $time_from) . "'";
-                    mysql_query($q);
-                }
             }
 
             // ----------------------------
@@ -101,50 +120,56 @@ class common {
             // Дополнительные поля, которых нет в $params, но которые нам нужны в БД
             $additional_fields = array('date_add', 'txt_status', 'status', 'network', 'type');
 
-
-
-            foreach ($data as $name => $value) {
-                if (array_key_exists($name, $this->params) or in_array($name, $additional_fields)) {
+            foreach ($data as $name => $value)
+            {
+                if (array_key_exists($name, $this->params) or in_array($name, $additional_fields))
+                {
                     $upd[$name] = $value;
                     unset($data[$name]);
                 }
             }
 
-            //if (empty($upd['date_add'])) {
             $upd['date_add'] = mysql_now(); // date('Y-m-d H:i:s');
-            //}
+
+            $upd['profit']=$conversion_profit;
+            $upd['currency_id']=$conversion_currency_id;
+            $upd['profit_currency']=$conversion_profit_currency;
+
             // Проверяем, есть ли уже конверсия с таким SubID
-            $q = 'SELECT * FROM `tbl_conversions` WHERE `subid` = "' . mysql_real_escape_string($subid) . '" LIMIT 1';
+            $q = "SELECT * FROM `tbl_conversions` WHERE `subid` = '" . mysql_real_escape_string($subid) . "' LIMIT 1";
 
             $r = db_query($q) or die(mysql_error());
 
-            if (mysql_num_rows($r) > 0) {
+            if (mysql_num_rows($r) > 0)
+            {
                 $f = mysql_fetch_assoc($r);
-
                 $upd['id'] = $conv_id = $f['id'];
 
                 $q = updatesql($upd, 'tbl_conversions', 'id');
                 db_query($q);
 
                 // Чистим логи
-                if (!$ctr_order) {
+                if (!$ctr_order)
+                {
                     db_query('DELETE FROM `tbl_postback_params` WHERE `conv_id` = ' . $f['id']) or die(mysql_error());
                 }
-            } else {
+            }
+            else
+            {
                 $q = insertsql($upd, 'tbl_conversions');
                 db_query($q);
-
                 $conv_id = mysql_insert_id();
             }
 
             // Нужно ли нам отменить продажу?
-            if ($status == 2) {
+            if ($status == 2)
+            {
                 delete_sale($click_id, $conv_id, 'sale');
-                //return false;
             }
 
             // Пишем postback логи
-            foreach ($data as $name => $value) {
+            foreach ($data as $name => $value)
+            {
                 if (strpos($name, 'pbsave_') !== false) {
                     $name = str_replace('pbsave_', '', $name);
                     $ins = array(

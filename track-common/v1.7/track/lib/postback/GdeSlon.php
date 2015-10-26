@@ -8,22 +8,26 @@ class GdeSlon {
     private $network_description = 'Крупнейшая российская товарная партнерская сеть. Удобные механизмы для создания партнерских магазинов, товарные виджеты для ваших сайтов, купоны и промо-коды. Идеальный выбор для создания собственных сайтов, нацеленных на SEO продвижение или раскрутку в социальных сетях. Привлекайте клиентов и получайте вознаграждение, об остальном позаботится партнерская программа.';
 
     private $params = array(
-        'profit' => 'profit',
-        'subid' => 'sub_id',
-        't1' => 'action_ip',
-        't2' => 'user_agent',
-        't5' => 'click_id',
-        't7' => 'user_referrer',
-        'f1' => 'order_sum',
-        'i2' => 'merchant_id',
-        'i3' => 'order_id',
-        'i4' => 'click_time',
-        'i6' => 'action_time',
+        'profit' => array('url_param'=>'profit', 'caption'=>'Сумма продажи'),
+        'subid' => array('url_param'=>'sub_id', 'caption'=>'SubID'),
+        't1' => array('url_param'=>'action_ip', 'caption'=>'IP'),
+        't2' => array('url_param'=>'user_agent', 'caption'=>'User-agent'),
+        't5' => array('url_param'=>'click_id', 'caption'=>'ID перехода'),
+        't7' => array('url_param'=>'user_referrer', 'caption'=>'Реферер'),
+        'f1' => array('url_param'=>'order_sum', 'caption'=>'Сумма'),
+        'i2' => array('url_param'=>'merchant_id', 'caption'=>'ID продавца'),
+        'i3' => array('url_param'=>'order_id', 'caption'=>'ID заказа'),
+        'i4' => array('url_param'=>'click_time', 'caption'=>'Дата перехода'),
+        'i6' => array('url_param'=>'action_time', 'caption'=>'Дата продажи'),
     );
 
     private $common;
     function __construct() {
         $this->common = new common($this->params);
+    }
+
+    function get_params_info(){
+        return $this->params;
     }
 
     function get_network_info()

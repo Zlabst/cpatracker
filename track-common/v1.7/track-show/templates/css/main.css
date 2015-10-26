@@ -1947,6 +1947,8 @@ ol.help li p {
 .search .form-control-feedback {
   pointer-events: auto;
 }
+
+
 .table-link-list-alt {
   /*table-layout: fixed;*/
   border-color: #d1e0eb;
@@ -2026,6 +2028,94 @@ ol.help li p {
   font-weight: 600;
   font-size: 12px;
 }
+
+/* Table sales list */
+
+.table-sales-list {
+    /*table-layout: fixed;*/
+    border-color: #d1e0eb;
+}
+.table-sales-list > thead > tr > th {
+    color: #7b9cb3;
+    background-color: #dfedf7;
+    font-weight: 600;
+}
+.table-sales-list > thead > tr > th:nth-of-type(1) {
+
+}
+.table-sales-list > thead > tr > th:nth-of-type(2) {
+    border-left: 1px solid #d1e0eb;
+}
+.table-sales-list > thead > tr > th:nth-of-type(3) {
+    border-left: 1px solid #d1e0eb;
+}
+.table-sales-list > thead > tr > th:nth-of-type(4) {
+    border-left: 1px solid #d1e0eb;
+}
+.table-sales-list > thead > tr > th:nth-of-type(5) {
+    border-left: 1px solid #d1e0eb;
+}
+.table-sales-list > thead > tr > th:nth-of-type(6) {
+    border-left: 1px solid #d1e0eb;
+}
+.table-sales-list > thead > tr > th:nth-of-type(7) {
+    border-left: 1px solid #d1e0eb;
+}
+.table-sales-list > thead > tr > th:nth-of-type(8) {
+    border-left: 1px solid #d1e0eb;
+}
+.table-sales-list > thead > tr > th:nth-of-type(9) {
+    border-left: 1px solid #d1e0eb;
+}
+.table-sales-list > tbody > tr > td {
+    font-size: 15px;
+}
+.table-sales-list > tbody > tr > td:nth-of-type(1) span {
+    display: inline-block;
+}
+.table-sales-list > tbody > tr > td:nth-of-type(4) {
+
+}
+.table-sales-list > tbody > tr > td.no-padding {
+    padding: 0;
+}
+.table-sales-list > tbody > tr > td.inactive {
+    color: #a9b8c4;
+}
+.table-sales-list tbody > tr:hover > td.dropdown-cell > .dropdown .dropdown-toggle {
+    color: #b0c3d6;
+}
+.table-sales-list.table-striped > tbody > tr:nth-child(2n+1) {
+    background-color: white;
+}
+.table-sales-list.table-striped > tbody > tr:nth-child(4n+3) {
+    background-color: #ebf4fa;
+}
+.table-sales-list .accordion-toggle {
+    cursor: pointer;
+}
+.table-sales-list .inner {
+    border: 1px solid #a5cbe8;
+    padding-top: 10px;
+}
+.table-sales-list .table-link-description {
+    border: none;
+    margin-bottom: 10px;
+}
+.table-sales-list .table-link-description thead > tr > th,
+.table-sales-list .table-link-description tbody > tr > td {
+    padding: 0 8px;
+}
+.table-sales-list .table-link-description thead > tr > th {
+    color: #7b9cb3;
+    font-weight: 400;
+    font-size: 12px;
+}
+.table-sales-list .table-link-description tbody > tr > td {
+    font-weight: 600;
+    font-size: 12px;
+}
+
 /* jQ */
 .show-if-offer-checked {
 	display: none;

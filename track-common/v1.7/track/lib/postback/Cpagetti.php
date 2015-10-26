@@ -8,20 +8,25 @@ class Cpagetti {
     private $network_description = 'Товарная партнерская сеть с оплатой за подтвержденную заявку, актуальные предложения по самым популярным тематикам на широкую аудиторию. Всегда адекватная техническая поддержка, быстрый обзвон рекламодателями и конкурентные выплаты.';
 
     private $params = array(
-        'date' => 'time',
-        't1' => 'ip',
-        'profit' => 'money',
-        'txt_status' => 'status', // wait, accept, decline, invalid
-        'i2' => 'offer',
-        'i3' => 'conversion_id',
-        'i7' => 'landing',
-        'i11' => 'layer',
-        't5' => 'sub2',
+        'date_add' => array('url_param'=>'time', 'caption'=>'Дата продажи'),
+        't1' => array('url_param'=>'ip', 'caption'=>'IP'),
+        'profit' => array('url_param'=>'money', 'caption'=>'Сумма продажи'),
+        'txt_status' => array('url_param'=>'status', 'caption'=>'Статус'),
+        'i2' => array('url_param'=>'offer', 'caption'=>'Оффер'),
+        'i3' => array('url_param'=>'conversion_id', 'caption'=>'ID конверсии'),
+        'i7' => array('url_param'=>'landing', 'caption'=>'Целевая страница'),
+        'i11' => array('url_param'=>'layer', 'caption'=>'layer'),
+        't5' => array('url_param'=>'sub2', 'caption'=>'sub2')
     );
 
     private $common;
     function __construct() {
         $this->common = new common($this->params);
+    }
+
+    function get_params_info()
+    {
+        return $this->params;
     }
 
     function get_network_info()
@@ -30,7 +35,7 @@ class Cpagetti {
         $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
-            $url .= '&' . $name . '={' . $value . '}';
+            $url .= '&' . $name . '={' . $value['url_param'] . '}';
         }
 
         $url .= '&ak=' . $this->common->get_code();
@@ -60,17 +65,17 @@ class Cpagetti {
         switch ($data['txt_status'])
         {
             case 'accept':
-                $data['txt_status'] = 'Approved';
+                $data['txt_status'] = 'approved';
                 $data['status'] = 1;
             break;
 
             case 'decline': case 'invalid':
-                $data['txt_status'] = 'Declined';
+                $data['txt_status'] = 'rejected';
                 $data['status'] = 2;
             break;
 
             default:
-                $data['txt_status'] = 'Unknown';
+                $data['txt_status'] = '';
                 $data['status'] = 0;
             break;
         }

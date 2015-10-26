@@ -8,37 +8,42 @@ class Advertise {
     private $network_description = 'Партнерская сеть с повышенными ставками на все офферы, ежедневные выплаты без комиссии и эксклюзивные промо-материалы. Среди рекламодателей: онлайн-игры, сайты знакомств, wow-товары и финансовые сервисы.';
 
     private $params = array(
-        'subid' => 'subid',
-        'profit' => 'amount',
-        'date_add' => 'action_time',
-        'txt_status' => 'status',
-        'type' => 'action_type',
-        'f1' => 'order_sum',
-        'i2' => 'offer_id',
-        'i3' => 'order_id',
-        'i4' => 'click_time',
-        'i5' => 'source_id',
-        'i6' => 'conversion_time',
-        'i7' => 'action_id',
-        'i8' => 'stats_action_id',
-        't1' => 'action_ip',
-        't2' => 'user_agent',
-        't4' => 'offer_name',
-        't7' => 'source_name',
-        't8' => 'user_referer',
-        't9' => 'country',
-        't10' => 'city',
-        't16' => 'subid1',
-        't17' => 'subid2',
-        't18' => 'subid3',
-        't19' => 'subid4',
-        't21' => 'keyword',
-        't22' => 'action_name',
+        'subid' => array('url_param'=>'subid', 'caption'=>'SubID'),
+        'profit' => array('url_param'=>'amount', 'caption'=>'Сумма продажи'),
+        'date_add' => array('url_param'=>'action_time', 'caption'=>'Дата продажи'),
+        'txt_status' => array('url_param'=>'status', 'caption'=>'Статус'),
+        'type' => array('url_param'=>'action_type', 'caption'=>'Тип действия'),
+        'f1' => array('url_param'=>'order_sum', 'caption'=>'Сумма продажи'),
+        'i2' => array('url_param'=>'offer_id', 'caption'=>'ID оффера'),
+        'i3' => array('url_param'=>'order_id', 'caption'=>'ID заказа'),
+        'i4' => array('url_param'=>'click_time', 'caption'=>'Дата перехода'),
+        'i5' => array('url_param'=>'source_id', 'caption'=>'ID источника'),
+        'i6' => array('url_param'=>'conversion_time', 'caption'=>'Дата продажи'),
+        'i7' => array('url_param'=>'action_id', 'caption'=>'ID действия'),
+        'i8' => array('url_param'=>'stats_action_id', 'caption'=>'stats_action_id'),
+        't1' => array('url_param'=>'action_ip', 'caption'=>'IP'),
+        't2' => array('url_param'=>'user_agent', 'caption'=>'User-agent'),
+        't4' => array('url_param'=>'offer_name', 'caption'=>'Оффер'),
+        't7' => array('url_param'=>'source_name', 'caption'=>'Источник'),
+        't8' => array('url_param'=>'user_referer', 'caption'=>'Реферер'),
+        't9' => array('url_param'=>'country', 'caption'=>'Страна'),
+        't10' => array('url_param'=>'city', 'caption'=>'Город'),
+        't16' => array('url_param'=>'subid1', 'caption'=>'subid1'),
+        't17' => array('url_param'=>'subid2', 'caption'=>'subid2'),
+        't18' => array('url_param'=>'subid3', 'caption'=>'subid3'),
+        't19' => array('url_param'=>'subid4', 'caption'=>'subid4'),
+        't21' => array('url_param'=>'keyword', 'caption'=>'Ключевое слово'),
+        't22' => array('url_param'=>'action_name', 'caption'=>'Действие')
     );
 
     private $common;
     function __construct() {
         $this->common = new common($this->params);
+    }
+
+    function get_params_info()
+    {
+        return $this->params;
     }
 
     function get_network_info()
@@ -47,7 +52,7 @@ class Advertise {
         $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
-            $url .= '&' . $name . '={' . $value . '}';
+            $url .= '&' . $name . '={' . $value['url_param'] . '}';
         }
 
         $url .= '&ak=' . $this->common->get_code();
@@ -76,22 +81,27 @@ class Advertise {
         }
 
         unset($data['net']);
-        switch ($data['txt_status']) {
+        switch ($data['txt_status'])
+        {
             case 'approved':
                 $data['txt_status'] = 'approved';
                 $data['status'] = 1;
-                break;
+            break;
+
             case 'rejected':
-                $data['txt_status'] = 'declined';
+                $data['txt_status'] = 'rejected';
                 $data['status'] = 2;
-                break;
+            break;
+
             case 'processing':
                 $data['txt_status'] = 'waiting';
                 $data['status'] = 3;
+            break;
+
             default:
-                $data['txt_status'] = 'Unknown';
+                $data['txt_status'] = '';
                 $data['status'] = 0;
-                break;
+            break;
         }
 
         $this->common->process_conversion($data);

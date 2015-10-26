@@ -8,40 +8,40 @@ class Wapempire {
     private $network_description = ' Международная мобильная CPA-сеть с русскоязычными владельцами. Большой выбор мобильных офферов с оплатой по моделям CPI и CPA, включая зарубежный 1Wap-click.';
 
     private $params = array(
-        'profit' => 'payout',
-        'subid' => 'aff_sub',
-        'date_add' => 'datetime',
-        't1' => 'ip',
-        't4' => 'offer_name',
-        't7' => 'source',
-        't12' => 'device_os',
-        't13' => 'device_brand',
-        't14' => 'affiliate_name',
-        't15' => 'file_name',
-        't16' => 'aff_sub2',
-        't17' => 'aff_sub3',
-        't18' => 'aff_sub4',
-        't19' => 'aff_sub5',
-        't20' => 'currency',
-        't21' => 'device_model',
-        't22' => 'device_os_version',
-        't23' => 'device_id',
-        't24' => 'android_id',
-        't25' => 'mac_address',
-        't26' => 'open_udid',
-        't27' => 'ios_ifa',
-        't28' => 'ios_ifv',
-        't29' => 'unid',
-        't30' => 'mobile_ip',
-        'i1' => 'goal_id',
-        'i2' => 'offer_id',
-        'i3' => 'transaction_id',
-        'i7' => 'offer_url_id',
-        'i10' => 'offer_file_id',
-        'i11' => 'device_id',
-        'i12' => 'affiliate_id',
-        'i13' => 'affiliate_ref',
-        'i14' => 'offer_ref',
+        'profit' => array('url_param'=>'payout', 'caption'=>'Сумма продажи'),
+        'subid' => array('url_param'=>'aff_sub', 'caption'=>'SubID'),
+        'date_add' => array('url_param'=>'datetime', 'caption'=>'Дата продажи'),
+        't1' => array('url_param'=>'ip', 'caption'=>'IP'),
+        't4' => array('url_param'=>'offer_name', 'caption'=>'Оффер'),
+        't7' => array('url_param'=>'source', 'caption'=>'Источник'),
+        't12' => array('url_param'=>'device_os', 'caption'=>'ОС'),
+        't13' => array('url_param'=>'device_brand', 'caption'=>'Устройство'),
+        't14' => array('url_param'=>'affiliate_name', 'caption'=>'Партнер'),
+        't15' => array('url_param'=>'file_name', 'caption'=>'Файл'),
+        't16' => array('url_param'=>'aff_sub2', 'caption'=>'SubID 2'),
+        't17' => array('url_param'=>'aff_sub3', 'caption'=>'SubID 3'),
+        't18' => array('url_param'=>'aff_sub4', 'caption'=>'SubID 4'),
+        't19' => array('url_param'=>'aff_sub5', 'caption'=>'SubID 5'),
+        't20' => array('url_param'=>'currency', 'caption'=>'Валюта'),
+        't21' => array('url_param'=>'device_model', 'caption'=>'Модель устройства'),
+        't22' => array('url_param'=>'device_os_version', 'caption'=>'Версия ОС'),
+        't23' => array('url_param'=>'device_id', 'caption'=>'ID устройства'),
+        't24' => array('url_param'=>'android_id', 'caption'=>'Android ID'),
+        't25' => array('url_param'=>'mac_address', 'caption'=>'Mac адрес'),
+        't26' => array('url_param'=>'open_udid', 'caption'=>'open_udid'),
+        't27' => array('url_param'=>'ios_ifa', 'caption'=>'ios_ifa'),
+        't28' => array('url_param'=>'ios_ifv', 'caption'=>'ios_ifv'),
+        't29' => array('url_param'=>'unid', 'caption'=>'unid'),
+        't30' => array('url_param'=>'mobile_ip', 'caption'=>'IP'),
+        'i1' => array('url_param'=>'goal_id', 'caption'=>'ID цели'),
+        'i2' => array('url_param'=>'offer_id', 'caption'=>'ID оффера'),
+        'i3' => array('url_param'=>'transaction_id', 'caption'=>'ID транзакции'),
+        'i7' => array('url_param'=>'offer_url_id', 'caption'=>'offer_url_id'),
+        'i10' => array('url_param'=>'offer_file_id', 'caption'=>'offer_file_id'),
+        'i11' => array('url_param'=>'device_id', 'caption'=>'ID устройства'),
+        'i12' => array('url_param'=>'affiliate_id', 'caption'=>'ID партнера'),
+        'i13' => array('url_param'=>'affiliate_ref', 'caption'=>'affiliate_ref'),
+        'i14' => array('url_param'=>'offer_ref', 'caption'=>'offer_ref'),
     );
 
     private $common;
@@ -49,13 +49,17 @@ class Wapempire {
         $this->common = new common($this->params);
     }
 
+    function get_params_info()
+    {
+        return $this->params;
+    }
+
     function get_network_info()
     {
-
         $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
-            $url .= '&' . $name . '={' . $value . '}';
+            $url .= '&' . $name . '={' . $value['url_param'] . '}';
         }
 
         $url .= '&ak=' . $this->common->get_code();

@@ -8,17 +8,21 @@ class KMA {
     private $network_description = 'Конвертируем ваш трафик в деньги!';
 
     private $params = array(
-        'profit' => 'sum',
-        'subid' => 'data1',
-        't4' => 'campaignid',
-        'i3' => 'orderid',
-        't6' => 'chan',
-        't5' => 'data2',
+        'profit' => array('url_param'=>'sum', 'caption'=>'Сумма продажи'),
+        'subid' => array('url_param'=>'data1', 'caption'=>'SubID'),
+        't4' => array('url_param'=>'campaignid', 'caption'=>'ID кампании'),
+        'i3' => array('url_param'=>'orderid', 'caption'=>'ID заказа'),
+        't6' => array('url_param'=>'chan', 'caption'=>'Канал'),
+        't5' => array('url_param'=>'data2', 'caption'=>'data2'),
     );
 
     private $common;
     function __construct() {
         $this->common = new common($this->params);
+    }
+
+    function get_params_info(){
+        return $this->params;
     }
 
     function get_network_info()
@@ -27,7 +31,7 @@ class KMA {
         $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
-            $url .= '&' . $name . '={' . $value . '}';
+            $url .= '&' . $name . '={' . $value['url_param'] . '}';
         }
 
         $url .= '&ak=' . $this->common->get_code();

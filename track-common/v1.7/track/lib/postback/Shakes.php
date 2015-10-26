@@ -8,20 +8,25 @@ class Shakes {
     private $network_description = 'Конвертируем ваш трафик в деньги!';
 
     private $params = array(
-        'profit' => 'cost',
-        'subid' => 'sub1',
-        'date_add' => 'date', // unix
-        'txt_status' => 'status',
-        't1' => 'ip',
-        't5' => 'sub2',
-        'i2' => 'offer',
-        'i7' => 'landing',
-        'i11' => 'layer',
+        'profit' => array('url_param'=>'cost', 'caption'=>'Сумма продажи'),
+        'subid' => array('url_param'=>'sub1', 'caption'=>'SubID'),
+        'date_add' => array('url_param'=>'date', 'caption'=>'Дата продажи'),
+        'txt_status' => array('url_param'=>'status', 'caption'=>'Статус'),
+        't1' => array('url_param'=>'ip', 'caption'=>'IP'),
+        't5' => array('url_param'=>'sub2', 'caption'=>'SubID 2'),
+        'i2' => array('url_param'=>'offer', 'caption'=>'Оффер'),
+        'i7' => array('url_param'=>'landing', 'caption'=>'Сайт'),
+        'i11' => array('url_param'=>'layer', 'caption'=>'layer')
     );
 
     private $common;
     function __construct() {
         $this->common = new common($this->params);
+    }
+
+    function get_params_info()
+    {
+        return $this->params;
     }
 
     function get_network_info()
@@ -30,7 +35,7 @@ class Shakes {
         $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
-            $url .= '&' . $name . '={' . $value . '}';
+            $url .= '&' . $name . '={' . $value['url_param'] . '}';
         }
 
         $url .= '&ak=' . $this->common->get_code();
@@ -56,22 +61,24 @@ class Shakes {
         $data['type'] = 'sale';
         unset($data['net']);
 
-        switch ($data['txt_status']) {
+        switch ($data['txt_status'])
+        {
             case 'confirm':
-                $data['txt_status'] = 'Approved';
+                $data['txt_status'] = 'approved';
                 $data['status'] = 1;
-                break;
+            break;
+
             case 'decline':
             case 'reject':
-                $data['txt_status'] = 'Declined';
+                $data['txt_status'] = 'rejected';
                 $data['status'] = 2;
-                break;
+            break;
+
             default:
-                $data['txt_status'] = 'Unknown';
+                $data['txt_status'] = '';
                 $data['status'] = 0;
-                break;
+            break;
         }
         $this->common->process_conversion($data);
     }
-
 }

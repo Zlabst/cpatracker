@@ -77,7 +77,6 @@ $arr_template_data=array('hide-table-footer'=>true,
     'date_next'=>$date_next,
     'csrf'=>CSRF_KEY);
 
-
 // Render template
 echo $mTemplate->render('stats-flow-page', $arr_report_data+$arr_template_data+$arr_flow_data);
 ?>

@@ -30,7 +30,7 @@ if (_ENABLE_DEBUG && isset($_GET['debug'])) {
 
 // Set allowed for inclusion files list, security measure
 $page_sidebar_allowed = array('sidebar-left-links.inc.php', 'sidebar-left-reports.inc.php', 'sidebar-left-rules.inc.php', 'sidebar-left-support.inc.php', 'sidebar-left-install.inc.php');
-$page_content_allowed = array('reports.php', 'sales.php', 'stats-flow.php', 'links_page.inc.php', 'rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'costs_page.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php', 'landing_page.inc.php', 'reset_password.inc.php', 'lost_password.inc.php');
+$page_content_allowed = array('reports.php', 'sales.php', 'stats-flow.php', 'links_page.inc.php', 'rules_page.inc.php', 'import_page.inc.php', 'support_page.inc.php', 'timezone_settings_page.inc.php', 'login.php', 'salesreport.php', 'pixel_page.inc.php', 'system-first-run.php', 'system-message-cache.php', 'notifications_page.inc.php', 'targetreport.php', 'landing_page.inc.php', 'reset_password.inc.php', 'lost_password.inc.php');
 
 // Страницы, на которые можно войти без авторизации
 $open_pages = array('login', 'lostpassword', 'resetpassword', 'install');
@@ -236,6 +236,37 @@ if ($_REQUEST['ajax_act'] == 'a_load_flow')
     $IN['flow_report']=array('date'=>$_REQUEST['date'], 'filter_by'=>$filter_by, 'filter_value'=>$filter_value);
 
     list($more, $arr_data, $offset) = get_visitors_flow_data($IN, 'flow_report', 100, $offset);
+
+    $out = array(
+        'more' => $more,
+        'data' => $arr_data,
+        'offset' => $offset
+    );
+
+    echo json_encode($out);
+    exit();
+}
+
+if ($_REQUEST['ajax_act'] == 'a_load_sales_flow')
+{
+    // 20 - first request limit, 100 - second and next request limit
+    $offset=isset($_REQUEST['offset'])?$_REQUEST['offset']+100:20;
+    if ($_REQUEST['filter_by']=='subid'){$offset=0;}
+    if ($_REQUEST['limit']!='')
+    {
+        $limit=$_REQUEST['limit'];
+    }
+    else
+    {
+        $limit=100;
+    }
+
+    $IN=$_REQUEST;
+    if (isset($IN['date_start']))
+    {
+        $IN['report_period']='custom';
+    }
+    list($more, $arr_data, $offset) = get_sales_flow_data($IN, 'flow_report', $limit, $offset);
 
     $out = array(
         'more' => $more,
@@ -918,44 +949,77 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             break;
 
         case 'add_costs':
-            $timezone_shift = get_current_timezone_shift();
+            // Default account currency id: 16; RUB
+            $main_currency_id=16;
 
-            $date_range = explode(' - ', trim($_REQUEST['date_range']));
-            $date_start = $date_range[0];
-            $date_end = $date_range[1];
+            $IN=$_REQUEST;
 
-            $source_name = $_REQUEST['source_name'];
-            $campaign_name = $_REQUEST['campaign_name'];
-            $ads_name = $_REQUEST['ads_name'];
-            $costs_value = trim(str_replace(',', '.', $_REQUEST['costs_value']));
-            $costs_value = convert_to_usd($_REQUEST['currency_code'], $costs_value);
-
-            if ($date_start == '' || $date_end == '' || $source_name == '' || $costs_value == '') {
-                exit();
+            if ($IN['filter_by']!='')
+            {
+                $IN['filter_by']=explode ('||', $IN['filter_by']);
+            }
+            else
+            {
+                unset($IN['filter_by']);
             }
 
-            $date_start = date2mysql($date_start);
-            $date_end = date2mysql($date_end);
-            $where = '';
-            if ($campaign_name != '') {
-                $where.=" and campaign_name='" . mysql_real_escape_string($campaign_name) . "'";
+            if ($IN['filter_value']!='')
+            {
+                $IN['filter_value']=explode ('||', $IN['filter_value']);
             }
-            if ($ads_name != '') {
-                $where.=" and ads_name='" . mysql_real_escape_string($ads_name) . "'";
+            else
+            {
+                unset($IN['filter_value']);
             }
 
-            $sql = "select count(id) as cnt from tbl_clicks where CONVERT_TZ(date_add, '+00:00', '" . _str($timezone_shift) . "') BETWEEN '" . mysql_real_escape_string($date_start) . " 00:00:00' AND '" . mysql_real_escape_string($date_end) . " 23:59:59' and source_name='" . mysql_real_escape_string($source_name) . "' {$where}";
+            $arr_currencies_list=get_active_currencies();
+            $selected_currency=current($arr_currencies_list);
+            $arr_sql=prepare_report('main-report', $IN+array('report_params'=>array('act'=>'reports')), true);
+            $arr_sql['select']='tclicks.id';
+            unset($arr_sql['group']);
+            unset($arr_sql['limit']);
+            unset($arr_sql['order']);
 
-            $rs = mysql_query($sql);
-            $row = mysql_fetch_assoc($rs);
-            if ($row['cnt'] > 0) {
-                $click_price = $costs_value / $row['cnt'];
-                $click_price = number_format($click_price, 5);
-                $sql = "update tbl_clicks set click_price='" . mysql_real_escape_string($click_price) . "' where CONVERT_TZ(date_add, '+00:00', '" . _str($timezone_shift) . "') BETWEEN '" . mysql_real_escape_string($date_start) . " 00:00:00' AND '" . mysql_real_escape_string($date_end) . " 23:59:59' and source_name='" . mysql_real_escape_string($source_name) . "' {$where}";
-                mysql_query($sql);
+            $sql="SELECT ".$arr_sql['select'].
+                " FROM ".$arr_sql['from'].
+                " ".$arr_sql['join'].
+                " WHERE `"._str($IN['main_column'])."`='"._str($IN['value']).
+                "' AND ".$arr_sql['where'];
+
+            if ($IN['currency']==$main_currency_id)
+            {
+                if ($IN['clicks_count']>0)
+                {
+                    $cost_per_click=$IN['cost']/$IN['clicks_count'];
+                }
+                else
+                {
+                    $cost_per_click=0;
+                }
             }
+            else
+            {
+                if ($IN['clicks_count']>0)
+                {
+                    $cost_per_click=convert_currency($IN['cost'], $IN['currency_id'], $main_currency_id, $IN['date_start'], $IN)/$IN['clicks_count'];
+                }
+                else
+                {
+                    $cost_per_click=0;
+                }
+            }
+
+            $result=mysql_query($sql);
+            $arr_ids=array();
+            while ($row=mysql_fetch_assoc($result))
+            {
+                $arr_ids[]=$row['id'];
+            }
+
+            $sql="update tbl_clicks set tbl_clicks.click_price='"._str($cost_per_click)."' where id IN (".implode (',', $arr_ids).")";
+            mysql_query($sql);
             exit();
-            break;
+        break;
 
         case 'change_current_timezone':
             change_current_timezone($_REQUEST['id']);
@@ -993,9 +1057,10 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
 
         case 'get_network_info':
             $network_name = $_POST['network'];
+            $array_valid_chars=array('_');
 
             if ($network_name!='custom' &&
-                (!ctype_alnum($network_name) ||
+                (!ctype_alnum(str_replace($array_valid_chars, '', $network_name)) ||
                 !is_file(_TRACK_LIB_PATH . '/postback/' . $network_name . '.php')))
             {
                 exit;
@@ -1007,7 +1072,6 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             {
                 require(_TRACK_LIB_PATH . '/class/custom.php');
                 $network = new custom();
-
             }
             else
             {
@@ -1028,13 +1092,11 @@ $page = rq('page');
 
 switch ($page) {
     case 'import':
-    case 'costs':
     case 'postback':
     case 'pixel':
     case 'landing':
         $arr_left_menu = array(
             'import' => array('link' => 'index.php?page=import', 'icon' => 'icon-shopping-cart', 'caption' => 'Добавление продаж'),
-            'costs' => array('link' => 'index.php?page=costs', 'icon' => 'icon-credit-card', 'caption' => 'Добавление затрат'),
             'landing' => array('link' => 'index.php?page=landing', 'icon' => 'icon-cogs', 'caption' => 'Целевые страницы'),
         );
 
@@ -1074,17 +1136,7 @@ switch ($_REQUEST['page']) {
         $page_content = 'rules_page.inc.php';
         include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
         exit();
-        break;
-
-    case 'costs':
-        $arr_sources = get_sources();
-        $arr_campaigns = get_campaigns();
-        $arr_ads = get_ads();
-
-        $page_content = 'costs_page.inc.php';
-        include _TRACK_SHOW_COMMON_PATH . "/templates/main.inc.php";
-        exit();
-        break;
+    break;
 
     case 'import':
         $page_content = 'import_page.inc.php';

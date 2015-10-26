@@ -1,0 +1,105 @@
+{{#chart}}
+    {{#data}}
+        <div class="row" style="margin-top:15px;">
+            <div class="col-md-12">
+                <canvas id="salesBarChart" style="width:100%; height:230px; display:block;"></canvas>
+                <canvas id="salesLineChart" style="width:100%; height:230px; display:none;"></canvas>
+            </div>
+        </div>
+
+        <script>
+            var objChartBar = document.getElementById("salesBarChart").getContext("2d");
+            var chartDataBar = {
+                labels: [{{captions}}],
+                datasets: [
+                    {
+                        fillColor: "rgba(116,184,231,1)",
+                        strokeColor: "rgba(220,220,220,0.8)",
+                        highlightFill: "rgba(82,171,231,1)",
+                        highlightStroke: "rgba(220,220,220,1)",
+                        data: [{{values}}]
+                    }
+                ]
+            };
+            var chartOptionsBar={
+                //Boolean - Whether the scale should start at zero, or an order of magnitude down from the lowest value
+                scaleBeginAtZero : true,
+
+                //Boolean - Whether grid lines are shown across the chart
+                scaleShowGridLines : true,
+
+                //String - Colour of the grid lines
+                scaleGridLineColor : "rgba(0,0,0,.02)",
+
+                //Number - Width of the grid lines
+                scaleGridLineWidth : 1,
+
+                //Boolean - Whether to show horizontal lines (except X axis)
+                scaleShowHorizontalLines: true,
+
+                //Boolean - Whether to show vertical lines (except Y axis)
+                scaleShowVerticalLines: false,
+
+                //Boolean - If there is a stroke on each bar
+                barShowStroke : true,
+
+                //Number - Pixel width of the bar stroke
+                barStrokeWidth : 1,
+                bezierCurve : false,
+                //Number - Spacing between each of the X value sets
+                barValueSpacing:{{spacing}},
+                //String - A legend template
+                legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].fillColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"
+
+            };
+            var myBarChart = new Chart(objChartBar).Bar(chartDataBar, chartOptionsBar);
+        </script>
+        <script>
+            var objChartLine = document.getElementById("salesLineChart").getContext("2d");
+            var chartDataLine = {
+                labels: [{{captions}}],
+                datasets: [
+                    {
+                        fillColor: "rgba(116,184,231,1)",
+                        strokeColor: "rgba(220,220,220,0.8)",
+                        highlightFill: "rgba(82,171,231,1)",
+                        highlightStroke: "rgba(220,220,220,1)",
+                        data: [{{values}}]
+                    }
+                ]
+            };
+            var chartOptionsLine={
+                //Boolean - Whether the scale should start at zero, or an order of magnitude down from the lowest value
+                scaleBeginAtZero : true,
+
+                //Boolean - Whether grid lines are shown across the chart
+                scaleShowGridLines : true,
+
+                //String - Colour of the grid lines
+                scaleGridLineColor : "rgba(0,0,0,.02)",
+
+                //Number - Width of the grid lines
+                scaleGridLineWidth : 1,
+
+                //Boolean - Whether to show horizontal lines (except X axis)
+                scaleShowHorizontalLines: false,
+
+                //Boolean - Whether to show vertical lines (except Y axis)
+                scaleShowVerticalLines: true,
+
+                //Boolean - If there is a stroke on each bar
+                barShowStroke : true,
+
+                //Number - Pixel width of the bar stroke
+                barStrokeWidth : 1,
+                bezierCurve : false,
+                //Number - Spacing between each of the X value sets
+                barValueSpacing:{{spacing}},
+            //String - A legend template
+            legendTemplate : "<ul class=\"<%=name.toLowerCase()%>-legend\"><% for (var i=0; i<datasets.length; i++){%><li><span style=\"background-color:<%=datasets[i].fillColor%>\"></span><%if(datasets[i].label){%><%=datasets[i].label%><%}%></li><%}%></ul>"
+
+            };
+            var myLineChart;
+        </script>
+    {{/data}}
+{{/chart}}

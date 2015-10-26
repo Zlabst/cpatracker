@@ -69,7 +69,7 @@
 <br />
 <div class="row">
 <div class='col-md-10' style='margin-left:0px;'>
-	<table class='table table-bordered table-hover' id='timezones_list'>
+	<table class='table table-striped table-report' id='timezones_list' style="margin-bottom:20px;">
 		<thead>
 			<th>Название</th>
 			<th nowrap>Смещение от времени сервера</th>
@@ -78,8 +78,8 @@
 			<?php
 				foreach ($arr_timezone_settings as $cur)
 				{
-					echo "<tr style='cursor:pointer;' onclick='edit_timezone(this, {$cur['id']})'>
-							<td id='tz_name_{$cur['id']}'>"._e($cur['timezone_name'])."</td>
+					echo "<tr style='cursor:pointer;' nowrap onclick='edit_timezone(this, {$cur['id']})'>
+							<td class='report-header' id='tz_name_{$cur['id']}'>"._e($cur['timezone_name'])."</td>
 							<td id='tz_offset_{$cur['id']}'>";
 							if ($cur['timezone_offset_h']>=0)
 							{
@@ -97,45 +97,47 @@
 	</table>
 
 
-
+<form role="form" id="add_timezone" onSubmit='return add_timezone();'>
 <div class="row">
-	<form class="form-inline" role="form" id="add_timezone" onSubmit='return add_timezone();'>
-		  <div class="form-group col-xs-6">
-			    <input type="text" class="form-control" name='timezone_name' placeholder="Название часового пояса">
-		  </div>
-	  <div class="form-group">
-	    <select name='timezone_offset_h' class='form-control'>
-					<option value="" selected></option>
-					<option value="-12">-12 часов</option>
-					<option value="-11">-11 часов</option>
-					<option value="-10">-10 часов</option>
-					<option value="-9">-9 часов</option>
-					<option value="-8">-8 часов</option>
-					<option value="-7">-7 часов</option>
-					<option value="-6">-6 часов</option>
-					<option value="-5">-5 часов</option>
-					<option value="-4">-4 часа</option>
-					<option value="-3">-3 часа</option>
-					<option value="-2">-2 часа</option>
-					<option value="-1">-1 час</option>
-					<option value="0">0</option>
-					<option value="1">+1 час</option>
-					<option value="2">+2 часа</option>
-					<option value="3">+3 часа</option>
-					<option value="4">+4 часа</option>
-					<option value="5">+5 часов</option>
-					<option value="6">+6 часов</option>
-					<option value="7">+7 часов</option>
-					<option value="8">+8 часов</option>
-					<option value="9">+9 часов</option>
-					<option value="10">+10 часов</option>
-					<option value="11">+11 часов</option>
-					<option value="12">+12 часов</option>
-			</select>
-	  </div>
+        <div class="col-md-6">
+            <div class="input-group">
+                <input type="text" class="form-control" name='timezone_name' placeholder="Название часового пояса">
+                <div class="input-group-btn">
+                    <select name='timezone_offset_h' class='form-control' style="width:100px; margin-left:20px;">
+                        <option value="" selected></option>
+                        <option value="-12">-12 часов</option>
+                        <option value="-11">-11 часов</option>
+                        <option value="-10">-10 часов</option>
+                        <option value="-9">-9 часов</option>
+                        <option value="-8">-8 часов</option>
+                        <option value="-7">-7 часов</option>
+                        <option value="-6">-6 часов</option>
+                        <option value="-5">-5 часов</option>
+                        <option value="-4">-4 часа</option>
+                        <option value="-3">-3 часа</option>
+                        <option value="-2">-2 часа</option>
+                        <option value="-1">-1 час</option>
+                        <option value="0">0</option>
+                        <option value="1">+1 час</option>
+                        <option value="2">+2 часа</option>
+                        <option value="3">+3 часа</option>
+                        <option value="4">+4 часа</option>
+                        <option value="5">+5 часов</option>
+                        <option value="6">+6 часов</option>
+                        <option value="7">+7 часов</option>
+                        <option value="8">+8 часов</option>
+                        <option value="9">+9 часов</option>
+                        <option value="10">+10 часов</option>
+                        <option value="11">+11 часов</option>
+                        <option value="12">+12 часов</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
 	  <button type="button" onclick="add_timezone()" class="btn btn-default">Добавить</button>
 	  <span class="btn btn-link" id='cancel_timezone_edit' onclick="cancel_timezone_edit()" style='display:none;'>отменить</span>
-	  <span class="btn btn-link" id='delete_timezone' onclick="delete_timezone()" style='display:none; float:right;'><i class='icon-trash' title='Удалить часовой пояс'></i></span>
+	  <span class="btn btn-link" id='delete_timezone' onclick="delete_timezone()" style='display:none; float:right;'><i class='fa fa-trash' title='Удалить часовой пояс'></i></span>
 	  <input type="hidden" name="ajax_act" value="add_timezone">    
           <input type="hidden" name="csrfkey" value="<?php echo CSRF_KEY;?>">
 	  <input type="hidden" name="timezone_id" value="">

@@ -7,25 +7,30 @@ class CTR {
     private $registration_url = 'http://www.cpatracker.ru/networks/ctr';
     private $network_description = 'Позволит вам отслеживать эффективные каналы трафика и увеличивать конверсию и заработок.';
 
+
     private $params = array(
-        'subid' => 'sub_id',
-        'profit' => 'payment',
-        'date_add' => 'time',
-        'status' => 'status',
-        'txt_status' => 'status_name',
-        't1' => 'ip',
-        't4' => 'utm_campaign',
-        't6' => 'utm_content',
-        't7' => 'utm_source',
-        't9' => 'country',
-        'i2' => 'offer_id',
-        'i3' => 'order_id',
-        'i12' => 'out_order_id',
+        'subid' => array('url_param'=>'sub_id', 'caption'=>'SubID'),
+        'profit' => array('url_param'=>'payment', 'caption'=>'Сумма продажи'),
+        'date_add' => array('url_param'=>'time', 'caption'=>'Дата продажи'),
+        'status' => array('url_param'=>'status', 'caption'=>'ID статуса'),
+        'txt_status' => array('url_param'=>'status_name', 'caption'=>'Статус'),
+        't1' => array('url_param'=>'ip', 'caption'=>'IP'),
+        't4' => array('url_param'=>'utm_campaign', 'caption'=>'utm_campaign'),
+        't6' => array('url_param'=>'utm_content', 'caption'=>'utm_content'),
+        't7' => array('url_param'=>'utm_source', 'caption'=>'utm_source'),
+        't9' => array('url_param'=>'country', 'caption'=>'Страна'),
+        'i2' => array('url_param'=>'offer_id', 'caption'=>'ID оффера'),
+        'i3' => array('url_param'=>'order_id', 'caption'=>'ID заказа'),
+        'i12' => array('url_param'=>'out_order_id', 'caption'=>'out_order_id'),
     );
     private $common;
 
     function __construct() {
         $this->common = new common($this->params);
+    }
+
+    function get_params_info(){
+        return $this->params;
     }
 
     function get_network_info()
@@ -34,7 +39,7 @@ class CTR {
         $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
-            $url .= '&' . $name . '={' . $value . '}';
+            $url .= '&' . $name . '={' . $value['url_param'] . '}';
         }
 
         $url .= '&ak=' . $this->common->get_code();
@@ -58,5 +63,4 @@ class CTR {
         $data['network'] = $this->network_name;
         $this->common->process_conversion($data);
     }
-
 }

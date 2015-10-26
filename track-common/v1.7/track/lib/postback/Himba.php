@@ -8,19 +8,24 @@ class Himba {
     private $network_description = 'Партнерская сеть, фокусирующаяся на банковских услугах, страховании, кредитовании и образовательных офферах. Чаще всего рекламодатели платят за заполнение анкет, выдачу кредитных карт, оформление страховок или заявок на получение образовательных услуг. Подавляющее большинство трафика принимается со всей территории РФ, но есть офферы, которые принимают посетителей из Москвы и области или отдельных регионов.';
 
     private $params = array(
-        'profit' => 'amount',
-        'subid' => 'sub_id',
-        'status' => 'status',
-        't7' => 'source',
-        't16' => 'sub_id2',
-        'i1' => 'goal_id',
-        'i2' => 'offer_id',
-        'i3' => 'adv_sub',
+        'profit' => array('url_param'=>'amount', 'caption'=>'Сумма продажи'),
+        'subid' => array('url_param'=>'sub_id', 'caption'=>'SubID'),
+        'status' => array('url_param'=>'status', 'caption'=>'Статус'),
+        't7' => array('url_param'=>'source', 'caption'=>'Источник'),
+        't16' => array('url_param'=>'sub_id2', 'caption'=>'SubID 2'),
+        'i1' => array('url_param'=>'goal_id', 'caption'=>'ID цели'),
+        'i2' => array('url_param'=>'offer_id', 'caption'=>'ID оффера'),
+        'i3' => array('url_param'=>'adv_sub', 'caption'=>'adv_sub')
     );
 
     private $common;
     function __construct() {
         $this->common = new common($this->params);
+    }
+
+    function get_params_info()
+    {
+        return $this->params;
     }
 
     function get_network_info()
@@ -29,7 +34,7 @@ class Himba {
         $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
-            $url .= '&' . $name . '={' . $value . '}';
+            $url .= '&' . $name . '={' . $value['url_param'] . '}';
         }
 
         $url .= '&ak=' . $this->common->get_code();

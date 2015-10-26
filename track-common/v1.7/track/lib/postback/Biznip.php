@@ -8,22 +8,27 @@ class Biznip {
     private $network_description = 'Лучшая в рунете партнерская программа по инфотоварам. Собственные продукты высочайшего качества по работе в интернете, похудению, построению отношений. Привлеченным клиентам постоянно продолжают продавать услуги и товары с помощью почтовых рассылок, партнеры получают комиссию по повторным продажам, что позволяет стабильно зарабатывать даже после остановки трафика.';
 
     private $params = array(
-        'profit' => 'payout',
-        'subid' => 'aff_sub',
-        'txt_status' => 'status',
-        't5' => 'click_id',
-        't16' => 'aff_sub2',
-        't17' => 'aff_sub3',
-        't18' => 'aff_sub4',
-        't19' => 'aff_sub5',
-        'i1' => 'goal_id',
-        'i2' => 'offer_id',
-        'i3' => 'conversion_id',
+        'profit' => array('url_param'=>'payout', 'caption'=>'Сумма продажи'),
+        'subid' => array('url_param'=>'aff_sub', 'caption'=>'SubID'),
+        'txt_status' => array('url_param'=>'status', 'caption'=>'Статус'),
+        't5' => array('url_param'=>'click_id', 'caption'=>'ID перехода'),
+        't16' => array('url_param'=>'aff_sub2', 'caption'=>'aff_sub2'),
+        't17' => array('url_param'=>'aff_sub3', 'caption'=>'aff_sub3'),
+        't18' => array('url_param'=>'aff_sub4', 'caption'=>'aff_sub4'),
+        't19' => array('url_param'=>'aff_sub5', 'caption'=>'aff_sub5'),
+        'i1' => array('url_param'=>'goal_id', 'caption'=>'ID цели'),
+        'i2' => array('url_param'=>'offer_id', 'caption'=>'ID оффера'),
+        'i3' => array('url_param'=>'conversion_id', 'caption'=>'ID продажи'),
     );
 
     private $common;
     function __construct() {
         $this->common = new common($this->params);
+    }
+
+    function get_params_info()
+    {
+        return $this->params;
     }
 
     function get_network_info()
@@ -33,7 +38,7 @@ class Biznip {
 
         foreach ($this->params as $name => $value)
         {
-            $url .= '&' . $name . '={' . $value . '}';
+            $url .= '&' . $name . '={' . $value['url_param'] . '}';
         }
 
         $url .= '&ak=' . $this->common->get_code();
@@ -62,18 +67,28 @@ class Biznip {
 
         $data['date_add'] = date('Y-m-d H:i:s');
 
-        switch ($data['txt_status']) {
+        switch ($data['txt_status'])
+        {
             case 'pending':
+                $data['txt_status'] = 'waiting';
                 $data['status'] = 3;
-                break;
-            case 'approved':
-                $data['status'] = 1;
-                break;
-            case 'rejected':
-                $data['status'] = 2;
-                break;
-        }
+            break;
 
+            case 'approved':
+                $data['txt_status'] = 'approved';
+                $data['status'] = 1;
+            break;
+
+            case 'rejected':
+                $data['txt_status'] = 'rejected';
+                $data['status'] = 2;
+            break;
+
+            default:
+                $data['txt_status'] = '';
+                $data['status'] = 0;
+            break;
+        }
 
         $this->common->process_conversion($data);
     }

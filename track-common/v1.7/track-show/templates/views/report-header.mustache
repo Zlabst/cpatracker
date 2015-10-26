@@ -1,5 +1,5 @@
-<div class="header-report">
-    <div class="dropdown date-select">
+<div class="header-report" style="width:100%">
+    <div class="dropdown date-select pull-left">
         <a class="dropdown-toggle" href="">
             <h2>{{report_caption}} <span class="amid">за</span></h2>
             <div class="pull-right" id="per_day_range" style="margin-left:7px;">
@@ -24,6 +24,18 @@
             </li>
         </ul>
     </div>
+    {{#header-toolbar}}
+    <div role="toolbar" class="btn-toolbar pull-right">
+        <div class="btn-group" data-toggle="buttons">
+            {{#buttons}}
+                <label class="btn btn-default {{active}}" onclick="{{action}}">
+                    <input type="radio" name="{{name}}" autocomplete="off" {{checked}}>
+                    <i class="{{button-class}}"></i>
+                </label>
+            {{/buttons}}
+        </div>
+    </div>
+    {{/header-toolbar}}
 </div>
 
 <div class="hidden" id="date-range">

@@ -193,6 +193,7 @@
 		) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
 
     $arr_sql[]="ALTER TABLE `tbl_conversions` ADD `currency_id` INT NOT NULL AFTER `profit`, ADD INDEX (`currency_id`);";
+    $arr_sql[]="ALTER TABLE `tbl_conversions` ADD `profit_currency` DECIMAL(10,5) NOT NULL AFTER `currency_id`;";
 
     $arr_sql[]="CREATE TABLE IF NOT EXISTS `tbl_cpa_networks` (
       `id` int(11) NOT NULL auto_increment,

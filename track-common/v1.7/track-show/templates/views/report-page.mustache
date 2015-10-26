@@ -8,3 +8,12 @@
     {{>report-table-toolbar}}
 </div>
 {{>report-params}}
+
+
+{{#IN}}
+<form id="{{report_name}}_IN" style="display:none;">
+    {{#values}}
+    <input type="hidden" name="{{name}}" value="{{value}}">
+    {{/values}}
+</form>
+{{/IN}}

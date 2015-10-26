@@ -8,26 +8,29 @@ class HotPartner {
     private $network_description = 'CPA сеть работает с 2010 года на рынках России, Беларуси и Казахстана. Владеет собственным круглосуточным call-центром, платят вебмастерам по запросу 5 дней в неделю. Сеть специализируется на wow-товарах.';
 
     private $params = array(
-        'profit' => 'payout',
-        'subid' => 'pl_name',
-        'date_add' => 'time',
-        'txt_status' => 'status',
-        't1' => 'ip',
-        't4' => 'offer_name',
-        't7' => 'referer',
-        'i7' => 'shop_id',
-        'i10' => 'teaser_id',
-        'i11' => 'partner_id',
-        'i12' => 'order_id',
-        'i13' => 'partner_id',
-        'i14' => 'pl_id',
-        't15' => 'gate',
-        't16' => 'shop_name',
+        'profit' => array('url_param'=>'payout', 'caption'=>'Сумма продажи'),
+        'subid' => array('url_param'=>'pl_name', 'caption'=>'SubID'),
+        'date_add' => array('url_param'=>'time', 'caption'=>'Дата продажи'),
+        'txt_status' => array('url_param'=>'status', 'caption'=>'Статус'),
+        't1' => array('url_param'=>'ip', 'caption'=>'IP'),
+        't4' => array('url_param'=>'offer_name', 'caption'=>'Оффер'),
+        't7' => array('url_param'=>'referer', 'caption'=>'Реферер'),
+        'i7' => array('url_param'=>'shop_id', 'caption'=>'ID продавца'),
+        'i10' => array('url_param'=>'teaser_id', 'caption'=>'ID тизера'),
+        'i11' => array('url_param'=>'partner_id', 'caption'=>'ID партнера'),
+        'i12' => array('url_param'=>'order_id', 'caption'=>'ID заказа'),
+        'i14' => array('url_param'=>'pl_id', 'caption'=>'pl_id'),
+        't15' => array('url_param'=>'gate', 'caption'=>'gate'),
+        't16' => array('url_param'=>'shop_name', 'caption'=>'Продавец')
     );
     private $common;
 
     function __construct() {
         $this->common = new common($this->params);
+    }
+
+    function get_params_info(){
+        return $this->params;
     }
 
     function get_network_info()
@@ -36,7 +39,7 @@ class HotPartner {
         $url = tracklink() . '/p.php?n=' . $this->network_name;
 
         foreach ($this->params as $name => $value) {
-            $url .= '&' . $name . '={' . $value . '}';
+            $url .= '&' . $name . '={' . $value['url_param'] . '}';
         }
 
         $url .= '&ak=' . $this->common->get_code();
@@ -66,22 +69,22 @@ class HotPartner {
         switch ($data['txt_status'])
         {
             case 'confirmed': case 'payed':
-                $data['txt_status'] = 'Approved';
+                $data['txt_status'] = 'approved';
                 $data['status'] = 1;
             break;
 
             case 'cancel':
-                $data['txt_status'] = 'Declined';
+                $data['txt_status'] = 'rejected';
                 $data['status'] = 2;
             break;
 
             case 'new': case 'toconfirmed':
-                $data['txt_status'] = 'Waiting';
+                $data['txt_status'] = 'waiting';
                 $data['status'] = 3;
             break;
 
             default:
-                $data['txt_status'] = 'Unknown';
+                $data['txt_status'] = '';
                 $data['status'] = 0;
             break;
         }

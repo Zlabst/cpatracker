@@ -29,7 +29,13 @@ else
 	?>
 	<li <?php if ($active) { echo 'class="active"'; } ?>><a href="<?php echo $reports_lnk; ?>">Переходы</a>
             <ul id="submenu_all_offers" class="submenu" <?php if($active) { ?>style="display: block;"<?php } ?>>
-    		<?php echo type_subpanel2($params, 'basic', ''); ?>
+    		<?php // echo type_subpanel2($params, 'basic', '');
+            ?>
+                <li class="active"><a href="?act=reports&type=basic">Все</a></li>
+                <li class=""><a href="#" onclick="return refresh_report('range_type||report_period', 'daily||lastweek');">По дням</a></li>
+                <li class=""><a href="#" onclick="return refresh_report('range_type||report_period', 'monthly||lastquarter');">По месяцам</a></li>
+                <li class=""><a href="#" onclick="return refresh_report('range_type', 'hourly');">По часам</a></li>
+                <li class=""><a href="#" onclick="return refresh_report('range_type', 'weekday');">По дням недели</a></li>
             </ul>
         </li>
 	
@@ -39,19 +45,19 @@ else
         ?>
         <li <?php if ($active) { echo 'class="active"'; } ?>><a href="?act=reports&type=sales&subtype=daily">Продажи</a>
            <ul class="submenu" <?php if($active) { ?>style="display: block;"<?php } ?>>
-               <li <? if($subtype == 'daily') { echo 'class="active"';} ?>><a href="?act=reports&type=sales&subtype=daily">По дням</a></li>
-               <li <? if($subtype == 'monthly') { echo 'class="active"';} ?>><a href="?act=reports&type=sales&subtype=monthly">По месяцам</a></li>
+
+               <li <? if($subtype == 'daily') { echo 'class="active"';} ?>><a href="?act=reports&type=sales&subtype=daily&range_type=daily&report_period=lastweek&report_type=actions_count">По дням</a></li>
+               <li <? if($subtype == 'monthly') { echo 'class="active"';} ?>><a href="?act=reports&type=sales&subtype=monthly&range_type=monthly&report_period=lastquarter&report_type=actions_count">По месяцам</a></li>
+               <li <? if($subtype == 'hourly') { echo 'class="active"';} ?>><a href="?act=reports&type=sales&subtype=hourly&range_type=hourly&report_period=lastquarter&report_type=actions_count">По часам</a></li>
+               <li <? if($subtype == 'weekday') { echo 'class="active"';} ?>><a href="?act=reports&type=sales&subtype=weekday&range_type=weekday&report_period=lastquarter&report_type=actions_count">По дням недели</a></li>
+
            </ul>
         </li>
-        
+
         <?php
             $active = ($_REQUEST['mode'] == 'lp' or $_REQUEST['mode'] == 'lp_offers');
         ?>
-        <li <?php if ($active) { echo 'class="active"'; } ?>><a href="<?php echo $reports_lnk_lp; ?>">Целевые страницы</a>
-            <ul class="submenu" <?php if($active) { ?>style="display: block;"<?php } ?>>
-    		<?php echo type_subpanel2($params, 'basic', 'lp'); ?>
-            </ul>
-        </li>
+
        	<?php } ?>
     </ul>
 <?php

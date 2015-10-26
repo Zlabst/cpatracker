@@ -952,6 +952,21 @@ function get_links_categories_list() {
 
 function import_sale_info($lead_type, $amount, $currency_id, $subid)
 {
+    // Default account currency id: 16; RUB
+    $main_currency_id=16;
+
+    if ($lead_type=='sale')
+    {
+        if ($currency_id!=$main_currency_id)
+        {
+            // Perform conversion to main currency
+            $conversion_price_main=convert_currency($amount, $currency_id, $main_currency_id, date('Y-m-d'));
+        }
+        else
+        {
+            $conversion_price_main=$amount;
+        }
+    }
     $sql = "select id from tbl_conversions where subid='" . _str($subid) . "' and type='" . _str($lead_type) . "' limit 2";
     $result = db_query($sql) or die(mysql_error());
     $arr=array();
@@ -959,7 +974,8 @@ function import_sale_info($lead_type, $amount, $currency_id, $subid)
     {
         $arr[]=$row;
     }
-    if (count($arr)==2){
+    if (count($arr)==2)
+    {
         // Found at least two sales with same click id, do nothing
         return;
     }
@@ -969,31 +985,25 @@ function import_sale_info($lead_type, $amount, $currency_id, $subid)
     {
         $id = $row['id'];
 
-        $sql = "update tbl_conversions set profit='" . _str($amount) . "', currency_id='"._str($currency_id)."', date_add=NOW() where id='" . _str($id) . "'";
+        $sql = "update tbl_conversions set profit='" . _str($conversion_price_main) . "', profit_currency='" . _str($amount) . "', currency_id='"._str($currency_id)."', date_add=NOW() where id='" . _str($id) . "'";
         db_query($sql) or die(mysql_error());
     }
     else
     {
-        $sql = "insert into tbl_conversions (profit, currency_id, subid, date_add, type) values ('" . _str($amount) . "', '" . _str($currency_id) . "', '" . _str($subid) . "', NOW(), '" . _str($lead_type) . "')";
+        $sql = "insert into tbl_conversions (profit, profit_currency, currency_id, subid, date_add, type) values ('" . _str($conversion_price_main) . "', '" . _str($amount) . "', '" . _str($currency_id) . "', '" . _str($subid) . "', NOW(), '" . _str($lead_type) . "')";
         db_query($sql) or die(mysql_error());
     }
 
-    // Default account currency id: 16; RUB
-    $main_currency_id=16;
 
     switch ($lead_type)
     {
         case 'sale':
-            if ($currency_id!=$main_currency_id)
-            {
-                // Perform conversion to main currency
-                $conversion_price_main=convert_currency($amount, $currency_id, $main_currency_id, date('Y-m-d'));
-            }
-            else
-            {
-                $conversion_price_main=$amount;
-            }
-            $sql = "update tbl_clicks SET conversion_price_main='" . _str($conversion_price_main) . "', conversion_currency_id='"._str($currency_id)."', conversion_currency_sum='"._str($amount)."', is_sale='1' where subid='" . _str($subid) . "'";
+            $sql = "UPDATE tbl_clicks SET
+                      conversion_price_main='" . _str($conversion_price_main) . "',
+                      conversion_currency_id='"._str($currency_id)."',
+                      conversion_currency_sum='"._str($amount)."',
+                      is_sale='1'
+                      WHERE subid='" . _str($subid) . "'";
         break;
 
         case 'lead':
@@ -2907,7 +2917,9 @@ function load_networks_list()
                 case 'GdeSlon':
                     $name = 'Где Слон?';
                 break;
-
+                case '_7offers':
+                    $name = '7offers';
+                break;
                 default:
                     $name = $file;
                 break;
