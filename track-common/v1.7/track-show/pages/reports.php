@@ -141,6 +141,14 @@ echo $mTemplate->render('report-page', $arr_report_data+array(
         $("#report_params").submit();
         return false;
     }
+
+    function export_as_xls()
+    {
+        _url = location.href;
+        _url += (_url.split('?')[1] ? '&':'?') + 'export=1';
+        window.location.href = _url;
+    }
+
 </script>
 
 <script>

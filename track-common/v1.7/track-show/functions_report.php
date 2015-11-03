@@ -240,8 +240,8 @@ function prepare_report($report_name, $request_parameters, $return_sql_only=fals
             {
                 // 1. Main column
                 $report_column=($IN['main_column']=='popular')?$row['c0']:$IN['main_column'];
+                $arr_report_data['table_rows'][$i]['raw_values']['main-column']=format_cell_value($report_column, $row['c1']);
                 $arr_report_data['table_rows'][$i]['values']['main-column']['value']=format_cell_value($report_column, $row['c1']);
-
                 $arr_report_data['table_rows'][$i]['values']['main-column']['class']='report-header link';
                 $arr_report_data['table_rows'][$i]['values']['main-column']['nowrap']='nowrap';
                 $arr_report_data['table_rows'][$i]['values']['main-column']['action']=array(
@@ -249,28 +249,33 @@ function prepare_report($report_name, $request_parameters, $return_sql_only=fals
                 );
 
                 // 2. Clicks count
+                $arr_report_data['table_rows'][$i]['raw_values']['clicks-count']=$row['clicks_count'];
                 $arr_report_data['table_rows'][$i]['values']['clicks-count']['value']=format_cell_value('clicks_count', $row['clicks_count']);
                 $T['clicks_count']+=$row['clicks_count'];
 
                 // 3. Actions count
+                $arr_report_data['table_rows'][$i]['raw_values']['actions-count']=$row['actions_count'];
                 $arr_report_data['table_rows'][$i]['values']['actions-count']['value']=format_cell_value('actions_count', $row['actions_count']);
                 $arr_report_data['table_rows'][$i]['values']['actions-count']['class']='c-action';
                 if ($row['actions_count']==0){$arr_report_data['table_rows'][$i]['values']['actions-count']['class'].=' inactive';}
                 $T['actions_count']+=$row['actions_count'];
 
                 // 4. Sales count
+                $arr_report_data['table_rows'][$i]['raw_values']['sales-count']=$row['sales_count'];
                 $arr_report_data['table_rows'][$i]['values']['sales-count']['value']=format_cell_value('sales_count', $row['sales_count']);
                 $arr_report_data['table_rows'][$i]['values']['sales-count']['class']='c-sale';
                 if ($row['sales_count']==0){$arr_report_data['table_rows'][$i]['values']['sales-count']['class'].=' inactive';}
                 $T['sales_count']+=$row['sales_count'];
 
                 // 5. Leads count
+                $arr_report_data['table_rows'][$i]['raw_values']['leads-count']=$row['leads_count'];
                 $arr_report_data['table_rows'][$i]['values']['leads-count']['value']=format_cell_value('leads_count', $row['leads_count']);
                 $arr_report_data['table_rows'][$i]['values']['leads-count']['class']='c-lead';
                 if ($row['leads_count']==0){$arr_report_data['table_rows'][$i]['values']['leads-count']['class'].=' inactive';}
                 $T['leads_count']+=$row['leads_count'];
 
                 // 6. Actions conversion rate
+                $arr_report_data['table_rows'][$i]['raw_values']['actions-conversion-rate']=$row['actions_conversion_rate'];
                 $arr_report_data['table_rows'][$i]['values']['actions-conversion-rate']['value']=format_cell_value('actions_conversion_rate', $row['actions_conversion_rate']);
                 $arr_report_data['table_rows'][$i]['values']['actions-conversion-rate']['class']='c-action';
                 if (round($row['actions_conversion_rate'], 3)==0)
@@ -279,6 +284,7 @@ function prepare_report($report_name, $request_parameters, $return_sql_only=fals
                 }
 
                 // 7. Sales conversion rate
+                $arr_report_data['table_rows'][$i]['raw_values']['sales-conversion-rate']=$row['sales_conversion_rate'];
                 $arr_report_data['table_rows'][$i]['values']['sales-conversion-rate']['value']=format_cell_value('sales_conversion_rate', $row['sales_conversion_rate']);
                 $arr_report_data['table_rows'][$i]['values']['sales-conversion-rate']['value']=round($row['sales_conversion_rate'], 3).'%';
                 $arr_report_data['table_rows'][$i]['values']['sales-conversion-rate']['class']='c-sale';
@@ -288,6 +294,7 @@ function prepare_report($report_name, $request_parameters, $return_sql_only=fals
                 }
 
                 // 8. Leads conversion rate
+                $arr_report_data['table_rows'][$i]['raw_values']['leads-conversion-rate']=$row['leads_conversion_rate'];
                 $arr_report_data['table_rows'][$i]['values']['leads-conversion-rate']['value']=format_cell_value('leads_conversion_rate', $row['leads_conversion_rate']);
                 $arr_report_data['table_rows'][$i]['values']['leads-conversion-rate']['class']='c-lead';
                 if (round($row['leads_conversion_rate'], 3)==0)
@@ -296,6 +303,7 @@ function prepare_report($report_name, $request_parameters, $return_sql_only=fals
                 }
 
                 // 9. Costs
+                $arr_report_data['table_rows'][$i]['raw_values']['cost']=convert_currency($row['cost'], $main_currency_id, $IN['currency_id'], $IN['date_start']);
                 $arr_report_data['table_rows'][$i]['values']['cost']['value']=format_cell_value('cost', convert_currency($row['cost'], $main_currency_id, $IN['currency_id'], $IN['date_start']), $IN);
                 if ($row['cost']==0){$arr_report_data['table_rows'][$i]['values']['cost']['class']='inactive';}
 
@@ -321,11 +329,13 @@ function prepare_report($report_name, $request_parameters, $return_sql_only=fals
                 {
                     // All sales are in the same currency, use accurate value
                     $v=$arr_data2['_'.$row['c1']]['profit_currency'];
+                    $arr_report_data['table_rows'][$i]['raw_values']['profit']=$v;
                     $arr_report_data['table_rows'][$i]['values']['profit']['value']=format_cell_value('profit', $v, $IN);
                     if ($v==0){$arr_report_data['table_rows'][$i]['values']['profit']['class']='inactive';}
                     $T['profit']+=$v;
 
                     $v=($row['clicks_count']==0)?0:$arr_data2['_'.$row['c1']]['profit_currency']/$row['clicks_count'];
+                    $arr_report_data['table_rows'][$i]['raw_values']['epc']=$v;
                     $arr_report_data['table_rows'][$i]['values']['epc']['value']=format_cell_value('epc', $v, $IN);
                     if ($v==0){$arr_report_data['table_rows'][$i]['values']['epc']['class']='inactive';}
                 }
@@ -333,11 +343,13 @@ function prepare_report($report_name, $request_parameters, $return_sql_only=fals
                 {
                     // Using currency rate for the beginning of the period
                     $v=($row['profit']==0)?0:convert_currency($row['profit'], $main_currency_id, $IN['currency_id'], $IN['date_start']);
+                    $arr_report_data['table_rows'][$i]['raw_values']['profit']=$v;
                     $arr_report_data['table_rows'][$i]['values']['profit']['value']=format_cell_value('profit', $v, $IN);
                     if ($v==0){$arr_report_data['table_rows'][$i]['values']['profit']['class']='inactive';}
                     $T['profit']+=$v;
 
                     $v=($row['epc']==0)?0:convert_currency($row['epc'], $main_currency_id, $IN['currency_id'], $IN['date_start']);
+                    $arr_report_data['table_rows'][$i]['raw_values']['epc']=$v;
                     $arr_report_data['table_rows'][$i]['values']['epc']['value']=format_cell_value('epc', $v, $IN);
                     if ($v==0){$arr_report_data['table_rows'][$i]['values']['epc']['class']='inactive';}
                 }
@@ -346,14 +358,15 @@ function prepare_report($report_name, $request_parameters, $return_sql_only=fals
                 $arr_report_data['table_rows'][$i]['values']['epc']['class'].=' c-sale';
 
                 // 11. ROI
+                $arr_report_data['table_rows'][$i]['raw_values']['roi']=$row['roi'];
                 $arr_report_data['table_rows'][$i]['values']['roi']['value']=format_cell_value('roi', $row['roi']);
                 $arr_report_data['table_rows'][$i]['values']['roi']['class']='c-action c-sale';
                 if ($row['roi']==0){$arr_report_data['table_rows'][$i]['values']['roi']['class'].=' inactive';}
                 if ($row['roi']<0){$arr_report_data['table_rows'][$i]['values']['roi']['class'].=' negative';}
 
-
                 // 12. CPL
                 $v=convert_currency($row['cpl'], $main_currency_id, $IN['currency_id'], $IN['date_start']);
+                $arr_report_data['table_rows'][$i]['raw_values']['cpl']=$v+0;
                 $arr_report_data['table_rows'][$i]['values']['cpl']['value']=format_cell_value('cpl', $v, $IN);
                 $arr_report_data['table_rows'][$i]['values']['cpl']['class']='c-lead';
                 if ($v==0){$arr_report_data['table_rows'][$i]['values']['cpl']['class'].=' inactive';}
@@ -469,7 +482,24 @@ function prepare_report($report_name, $request_parameters, $return_sql_only=fals
             }
             $T['cpl_formatted']=format_cell_value('cpl', $T['cpl'], $IN);
 
-            // 13. Fill report totals row values
+            // 13. Fill totals RAW values
+            $arr_report_data['table-total']['raw_values']=array(
+                'main_column'=>'Итого',
+                'clicks_count'=>$T['clicks_count'],
+                'actions_count'=>$T['actions_count'],
+                'sales_count'=>$T['sales_count'],
+                'leads_count'=>$T['leads_count'],
+                'actions_conversion'=>$T['actions_conversion'],
+                'sales_conversion'=>$T['sales_conversion'],
+                'leads_conversion'=>$T['leads_conversion'],
+                'cost'=>$T['cost'],
+                'profit'=>$T['profit'],
+                'epc'=>$T['epc'],
+                'roi'=>$T['roi'],
+                'cpl'=>$T['cpl']
+            );
+
+            // 14. Fill report totals row values
             $arr_report_data['table-total']['values']=array(
                 array('class'=>'', 'value'=>'Итого'),
                 array('class'=>'', 'value'=>$T['clicks_count_formatted']),
@@ -710,7 +740,6 @@ function prepare_report($report_name, $request_parameters, $return_sql_only=fals
             $arr_report_data['table-total']['values'][]=$v;
         }
 
-
         $arr_filter_column_buttons=array(
             'Переходы|clicks_count|actions,sales,leads', 'Действия|actions_count|actions', 'Продажи|sales_count|sales',
             'Лиды|leads_count|leads', 'Конверсия|actions_conversion_rate|actions', 'Конверсия|sales_conversion_rate|sales',
@@ -876,6 +905,14 @@ function prepare_report($report_name, $request_parameters, $return_sql_only=fals
         );
     }
 
+    // Add Excel export
+    if ($IN['range_type']=='all'
+        && $IN['main_column']!='popular'
+        && $arr_report_data['table-total']['values'][1]['value']!=0)
+    {
+        $arr_report_data['report-toolbar-excel-export']=true;
+    }
+
     switch ($IN['range_type'])
     {
         case 'all':
@@ -958,7 +995,6 @@ function prepare_report($report_name, $request_parameters, $return_sql_only=fals
         $arr_allowed_main_columns['click_param_value13'].'|main_column=click_param_value13',
         $arr_allowed_main_columns['click_param_value14'].'|main_column=click_param_value14',
         $arr_allowed_main_columns['click_param_value15'].'|main_column=click_param_value15');
-
 
     $arr_toolbar_buttons['date-selector']=array('Сегодня|report_period=today',
         'Вчера|report_period=yesterday',

@@ -448,10 +448,69 @@ if ($result['error']) {
     }
     
     $global_ntf_cnt = count($global_notifications);
-} 
+}
 
-if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
-    switch ($_REQUEST['ajax_act']) {
+if ($_REQUEST['export']==1)
+{
+    $arr_currencies_list=get_active_currencies();
+    $selected_currency=current($arr_currencies_list);
+
+    $arr_report_data=prepare_report('main-report', $_REQUEST+array('report_params'=>array('act'=>'reports')));
+
+    if ($_REQUEST['export']==1)
+    {
+        require_once (_TRACK_SHOW_COMMON_PATH . '/lib/excel_writer/ExcelWriterXML.php');
+        $xml = new ExcelWriterXML('report.xls');
+        $boldFormat = $xml->addStyle('StyleHeader');
+        $boldFormat ->fontBold();
+
+        $sheet = $xml->addSheet('Report');
+        $sheet->cellWidth(1,1,100);
+        $sheet->writeString(1, 1, 'Значение', 'StyleHeader');
+        $sheet->writeString(1, 2, 'Переходов', 'StyleHeader');
+        $sheet->writeString(1, 3, 'Действий', 'StyleHeader');
+        $sheet->writeString(1, 4, 'Продаж', 'StyleHeader');
+        $sheet->writeString(1, 5, 'Лидов', 'StyleHeader');
+        $sheet->writeString(1, 6, 'Конверсия в действия', 'StyleHeader');
+        $sheet->writeString(1, 7, 'Конверсия в продажи', 'StyleHeader');
+        $sheet->writeString(1, 8, 'Конверсия в лиды', 'StyleHeader');
+        $sheet->writeString(1, 9, 'Затраты', 'StyleHeader');
+        $sheet->writeString(1, 10, 'Прибыль', 'StyleHeader');
+        $sheet->writeString(1, 11, 'EPC', 'StyleHeader');
+        $sheet->writeString(1, 12, 'ROI', 'StyleHeader');
+        $sheet->writeString(1, 13, 'CPL', 'StyleHeader');
+
+        $iRow = 2;
+        foreach ($arr_report_data['table_rows'] as $i=>$cur)
+        {
+            $sheet->writeString($iRow, 1, $cur['raw_values']['main-column']);
+            $sheet->writeString($iRow, 2, $cur['raw_values']['clicks-count']);
+            $sheet->writeString($iRow, 3, $cur['raw_values']['actions-count']);
+            $sheet->writeString($iRow, 4, $cur['raw_values']['sales-count']);
+            $sheet->writeString($iRow, 5, $cur['raw_values']['leads-count']);
+            $sheet->writeString($iRow, 6, $cur['raw_values']['actions-conversion-rate']);
+            $sheet->writeString($iRow, 7, $cur['raw_values']['sales-conversion-rate']);
+            $sheet->writeString($iRow, 8, $cur['raw_values']['leads-conversion-rate']);
+            $sheet->writeString($iRow, 9, $cur['raw_values']['cost']);
+            $sheet->writeString($iRow, 10, $cur['raw_values']['profit']);
+            $sheet->writeString($iRow, 11, $cur['raw_values']['epc']);
+            $sheet->writeString($iRow, 12, $cur['raw_values']['roi']);
+            $sheet->writeString($iRow, 13, $cur['raw_values']['cpl']);
+
+            $iRow++;
+        }
+
+        $xml->sendHeaders();
+        $xml->writeData();
+        exit();
+    }
+    exit();
+}
+
+if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY))
+{
+    switch ($_REQUEST['ajax_act'])
+    {
         case 'mark_notify_as_read':
             $id = rq('id', 2);
             change_status('tbl_notifications', $id, 1);
@@ -464,7 +523,7 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             );
             echo json_encode($out);
             exit;
-            break;
+        break;
 
         case 'get_rules_json':
 
@@ -581,7 +640,7 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
             $xml->sendHeaders();
             $xml->writeData();
             exit();
-            break;
+        break;
 
         case 'tsv_export':
             $filename = 'report.txt';
@@ -846,7 +905,8 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY)) {
                     $get_arr = explode('=', $rull['val']);
                     $get_name = $get_arr[0];
                     $get_val = $get_arr[1];
-                    if (!preg_match($pattern, $get_name) || !preg_match($pattern, $get_val)) {
+                    if (!preg_match($pattern, $get_name) /*|| !preg_match($pattern, $get_val)*/)
+                    {
                         exit;
                     }
                 }
