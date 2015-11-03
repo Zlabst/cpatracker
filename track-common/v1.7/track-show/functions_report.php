@@ -349,6 +349,8 @@ function prepare_report($report_name, $request_parameters, $return_sql_only=fals
                 $arr_report_data['table_rows'][$i]['values']['roi']['value']=format_cell_value('roi', $row['roi']);
                 $arr_report_data['table_rows'][$i]['values']['roi']['class']='c-action c-sale';
                 if ($row['roi']==0){$arr_report_data['table_rows'][$i]['values']['roi']['class'].=' inactive';}
+                if ($row['roi']<0){$arr_report_data['table_rows'][$i]['values']['roi']['class'].=' negative';}
+
 
                 // 12. CPL
                 $v=convert_currency($row['cpl'], $main_currency_id, $IN['currency_id'], $IN['date_start']);
