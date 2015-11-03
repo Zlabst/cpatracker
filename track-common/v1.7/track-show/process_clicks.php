@@ -646,8 +646,6 @@ function download_clicks()
 	global $tracklist;
 	foreach($tracklist as $n => $track) 
 	{
-		if($n == 0) continue; // First tracker is master, don't touch
-
 		if(substr($track['path'], 0, 4) == 'http') 
 		{
 			// Remote tracker
@@ -655,6 +653,8 @@ function download_clicks()
 		}
 		else
 		{
+            if($n == 0) continue; // First tracker is master, don't touch
+            
 			// Local tracker
 			foreach(array('clicks', 'postback') as $type) 
 			{
@@ -799,6 +799,7 @@ function mark_file_processing_now($cur_file)
 
 function mark_file_processed($file_name, $cur_file)
 {
+    check_create_directory(_CACHE_PATH."/clicks_processed");
 	rename ($file_name, _CACHE_PATH."/clicks_processed/{$cur_file}");	    	
 }
 
