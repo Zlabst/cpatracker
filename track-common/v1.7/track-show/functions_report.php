@@ -1107,7 +1107,7 @@ function generate_main_report_sql($arr_allowed_main_columns, $IN, $sql_add='')
         case 'sales_conversion_rate': case 'leads_conversion_rate': case 'cost': case 'profit':
         case 'roi': case 'epc': case 'cpl':
             $sort_order=($IN['sort_order']=='ASC')?'ASC':'DESC';
-            $sql_order[]=$IN['sort_by'].' '.$sort_order;
+            $sql_order[]=$IN['sort_by'].' '.$sort_order.', clicks_count DESC';
         break;
     }
 
@@ -1364,6 +1364,7 @@ function pos_class($num) {
 
 function get_visitors_flow_data($IN = '', $report_name='', $limit = 20, $offset = 0)
 {
+
     global $allowed_report_in_params;
 
     $date=$IN[$report_name]['date'];
