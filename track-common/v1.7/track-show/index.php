@@ -1158,6 +1158,8 @@ switch ($page) {
         $arr_left_menu = array(
             'import' => array('link' => 'index.php?page=import', 'icon' => 'icon-shopping-cart', 'caption' => 'Добавление продаж'),
             'landing' => array('link' => 'index.php?page=landing', 'icon' => 'icon-cogs', 'caption' => 'Целевые страницы'),
+            'payment' => array('link' => 'https://www.cpatracker.ru/system/panel/', 'icon' => 'icon-cogs', 'caption' => 'Оплата'),
+
         );
 
         foreach ($arr_left_menu as $k => $v) {
