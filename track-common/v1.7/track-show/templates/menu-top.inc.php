@@ -51,7 +51,7 @@ if (count($arr_timezone_settings) == 0) {
                 <li <?php if (isset($_REQUEST['page']) && in_array($_REQUEST['page'], array('import', 'postback'))) {
     echo 'class="active"';
 } ?>><a href="?page=import">Инструменты</a></li>
-                <li><a href="#" onclick="jivo_api.setContactInfo({email : '<?php echo $auth_info[1];?>'}); jivo_api.open(); return false;">Поддержка</a></li>
+                <li><a href="#" onclick="jivo_api.setContactInfo({email : '<?php echo $auth_info[1];?>', phone: '<?php echo $_DB_NAME;?>'}); jivo_api.open(); return false;">Поддержка</a></li>
             </ul>
 
             <!-- New offer form-->
