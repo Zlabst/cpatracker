@@ -646,10 +646,30 @@ if (count($arr_offers['data']) > 0) {
     </div>
 <?php } ?>
 
-<div class="pagination">
-    <div class="btn-toolbar" role="toolbar">
-        <div class="pagination-left">
-            <a class="hover-underline" href="http://cpatracker.ru/docs/topic2" target="_blank"><i class="icon icon-info"></i>Как работать с офферами</a>
+<?php
+if (empty($arr_offers) || count($arr_offers['data'])==0)
+{
+?>
+    <div class="row" style="margin-top:30px;">
+        <div class="col-sm-12">
+            <p style="font-size:16px;">Вы можете отслеживать эффективность собственных сайтов, целевых страниц, групп ВКонтакте, мобильных приложений, страниц-прокладок, офферов в CPA сетях и любых других интернет-страниц, на которые можно перейти из браузера. Все эти объекты в системе мы называем &laquo;офферы&raquo;, от английского слова offer (предложение).</p>
+            <p style="font-size:16px;">
+                Начните работу с CPA Tracker с <span style="color:#15c; cursor:pointer; text-decoration:underline;" onclick="return toggle_offer_add_form(event);">добавления</span> вашего первого оффера.
+            </p>
         </div>
     </div>
-</div>
+<?php
+}
+
+if(count($arr_offers['data'])==1)
+{?>
+    <div class="row" style="margin-top:30px;">
+        <div class="col-sm-12">
+            <p style="font-size:16px;">Вы добавили оффер в систему. Теперь нужно создать ссылку, с помощью которой вы будете отслеживать переходы.<br />Перейдите в раздел &laquo;<a style="color:#15c; cursor:pointer; text-decoration:underline;" href="/track-show/?page=rules">Ссылки</a>&raquo;, введите название ссылки и нажмите на кнопку &laquo;Добавить&raquo;.</p>
+            <p style="font-size:16px;">В названии ссылки можно использовать английские буквы, цифры, дефис и знак подчеркивания «_». Это название будет являться частью вашей ссылки для отслеживания, примерно так: http://www.jmp1.ru/12345/<span style="color:red;">link1</span>/campaign-ads</p>
+            <p style="font-size:16px;">После добавления выберите в левом меню раздела &laquo;Ссылки&raquo; рекламую систему или &laquo;Универсальную ссылку&raquo;, если вы будете размещать ссылку на сайтах или группах в социальных сетях, скопируйте ссылку в буфер обмена и используйте ее для перенаправления посетителей.</p>
+        </div>
+    </div>
+<?php
+}
+?>
