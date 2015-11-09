@@ -11,7 +11,7 @@
 <script src="<?php echo _HTML_LIB_PATH;?>/bootstrap/js/custom.js"></script>
 
 <style>
-    #jivo_chat_widget{display: none;}
+    #jivo_chat_widget{display: none !important;}
     </style>
 <!-- BEGIN JIVOSITE CODE {literal} -->
 <script type='text/javascript'>
