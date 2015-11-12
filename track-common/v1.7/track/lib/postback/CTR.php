@@ -60,6 +60,29 @@ class CTR {
     function process_conversion($data_all = array()) {
         $this->common->log($this->network_name, $data_all['post'], $data_all['get']);
         $data = $this->common->request($data_all);
+
+        switch ($data['status'])
+        {
+            case '0': case '1':
+                $data['txt_status']='waiting';
+                $data['status'] = 3;
+            break;
+
+            case '3':
+                $data['txt_status']='approved';
+                $data['status'] = 1;
+            break;
+
+            case '4': case '13': case '99': case '88': case '77':
+                $data['txt_status']='rejected';
+                $data['status'] = 2;
+            break;
+
+            default:
+                $data['status'] = 0;
+            break;
+        }
+
         $data['network'] = $this->network_name;
         $this->common->process_conversion($data);
     }
