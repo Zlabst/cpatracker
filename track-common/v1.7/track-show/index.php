@@ -1040,11 +1040,27 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY))
             unset($arr_sql['limit']);
             unset($arr_sql['order']);
 
-            $sql="SELECT ".$arr_sql['select'].
-                " FROM ".$arr_sql['from'].
-                " ".$arr_sql['join'].
-                " WHERE `"._str($IN['main_column'])."`='"._str($IN['value']).
-                "' AND ".$arr_sql['where'];
+            switch ($IN['main_column'])
+            {
+                case 'campaign_ads':
+                    $arr_campaign_ads=explode ('-', $IN['value']);
+                    $sql="SELECT ".$arr_sql['select'].
+                        " FROM ".$arr_sql['from'].
+                        " ".$arr_sql['join'].
+                        " WHERE
+                            campaign_name='"._str($arr_campaign_ads[0])."' AND
+                            ads_name='"._str($arr_campaign_ads[1])."' AND
+                        ".$arr_sql['where'];
+                    break;
+
+                default:
+                    $sql="SELECT ".$arr_sql['select'].
+                        " FROM ".$arr_sql['from'].
+                        " ".$arr_sql['join'].
+                        " WHERE `"._str($IN['main_column'])."`='"._str($IN['value']).
+                        "' AND ".$arr_sql['where'];
+                break;
+            }
 
             if ($IN['currency']==$main_currency_id)
             {

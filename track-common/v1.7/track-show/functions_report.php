@@ -18,6 +18,11 @@ function prepare_filtered_report($arr_allowed_main_columns, $IN)
                 $arr_sql_add['where'][]="tbl_offers."._str($cur_filter_by)."='"._str($cur_filter_value)."'";
             break;
 
+            case 'campaign_ads':
+                $arr_campaign=explode ('-', $cur_filter_value);
+                $arr_sql_add['where'][]="tclicks.campaign_name='"._str($arr_campaign[0])."' and tclicks.ads_name='"._str($arr_campaign[1])."'";
+            break;
+
             default:
                 $arr_sql_add['where'][]="tclicks."._str($cur_filter_by)."='"._str($cur_filter_value)."'";
             break;
@@ -174,7 +179,6 @@ function prepare_report($report_name, $request_parameters, $return_sql_only=fals
         switch ($IN['type'])
         {
             case 'lp':
-
                 // Get list of LP
                 $sql_add=array();
                 $sql_add['where'][]='tclicks.is_parent=1';
