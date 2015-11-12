@@ -575,9 +575,12 @@ function mysqldate2short($str) {
 }
 
 // Apply timezone settings and return current day
-function get_current_day($offset = '') {
+function get_current_day($offset = '')
+{
     $timezone_shift = get_current_timezone_shift();
+
     $dt = strtotime(current(explode(':', $timezone_shift)) . ' hours');
+
     if ($offset == '') {
         return date('Y-m-d', $dt);
     } else {
@@ -1140,28 +1143,55 @@ function add_offer($offer_info) {
     return array(true);
 }
 
-function delete_sale($click_id, $conversion_id, $type) {
+function delete_sale($click_id, $conversion_id, $type)
+{
     $sql = "delete from tbl_conversions where id='" . _str($conversion_id) . "' and type='" . _str($type) . "'";
     db_query($sql);
-    switch ($type) {
+    switch ($type)
+    {
         case 'lead':
-            $sql = "update tbl_clicks set is_lead='0' where id='" . _str($click_id) . "'";
-            db_query($sql);
-            break;
+            if ($click_id>0)
+            {
+                $sql = "update tbl_clicks set is_lead='0' where id='" . _str($click_id) . "'";
+                db_query($sql);
+            }
+        break;
 
         case 'sale':
-            $sql = "update tbl_clicks set is_sale='0', conversion_price_main='0' where id='" . _str($click_id) . "'";
-            db_query($sql);
-            break;
+            if ($click_id>0)
+            {
+                $sql = "update tbl_clicks set is_sale='0', conversion_price_main='0' where id='" . _str($click_id) . "'";
+                db_query($sql);
+            }
+        break;
 
         default:
-            $sql = "update tbl_clicks set is_lead='0', is_sale='0', conversion_price_main='0' where id='" . _str($click_id) . "'";
-            db_query($sql);
+            if ($click_id>0)
+            {
+                $sql = "update tbl_clicks set is_lead='0', is_sale='0', conversion_price_main='0' where id='" . _str($click_id) . "'";
+                db_query($sql);
+            }
+        break;
     }
-    echo $sql;
-
     return;
 }
+
+function delete_sale_by_id($conversion_id)
+{
+    $sql="select type, subid from tbl_conversions where id='"._str($conversion_id)."' limit 1";
+    $result=mysql_query($sql);
+    $row=mysql_fetch_assoc($result);
+    $type=$row['type'];
+    $subid=$row['subid'];
+    $sql="select id from tbl_clicks where subid='"._str($subid)."' limit 1";
+    $result=mysql_query($sql);
+    $row=mysql_fetch_assoc($result);
+    $click_id=$row['id'];
+
+    delete_sale($click_id, $conversion_id, $type);
+    return;
+}
+
 
 function delete_rule($rule_id, $status = 1) {
     // Get rule name

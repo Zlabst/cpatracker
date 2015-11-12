@@ -1,5 +1,5 @@
 {{#flow_rows}}
-    <tr>
+    <tr id="sales_{{conversion_id}}_main">
         <td class="accordion-toggle" data-toggle="collapse-next" nowrap="">{{short_date}}</td>
         <td class="accordion-toggle" data-toggle="collapse-next">{{offer_name}}</td>
         <td class="accordion-toggle" data-toggle="collapse-next">{{network_name}}</td>
@@ -17,7 +17,7 @@
         </td>
     </tr>
     <!--hidden row-->
-    <tr>
+    <tr id="sales_{{conversion_id}}_hidden">
         <td colspan="9" class="no-padding">
             <div class="collapse">
                 <div class="inner">
@@ -111,6 +111,17 @@
                         </tbody>
                     </table>
                     {{/network_params}}
+                    <table class="table table-link-description">
+                        <tbody>
+                            <tr>
+                                <td style="text-align:right; font-size:14px; font-weight:normal;">
+                                    <span style="cursor:pointer;" onclick="delete_sale(this, '{{conversion_id}}');">
+                                        <i style="color:red; cursor:pointer;" class="fa fa-trash-o"></i> Удалить продажу
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div><!--inner-->
             </div><!--collapse-->
         </td>

@@ -349,6 +349,21 @@ echo $mTemplate->render('sales-page', $arr_report_data+array(
         );
         return false;
     }
+
+    function delete_sale(obj, conversion_id)
+    {
+        $.ajax({
+            type: 'POST',
+            url: 'index.php',
+            data: 'csrfkey=<?php echo CSRF_KEY;?>&ajax_act=delete_sale&conversion_id=' + conversion_id
+        }).done(function(msg)
+        {
+            $("#sales_"+conversion_id+"_main").remove();
+            $("#sales_"+conversion_id+"_hidden").remove();
+        });
+
+        return false;
+    }
 </script>
 
 <script>

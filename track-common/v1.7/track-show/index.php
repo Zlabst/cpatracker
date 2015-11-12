@@ -763,12 +763,10 @@ if (isset($_REQUEST['csrfkey']) && ($_REQUEST['csrfkey'] == CSRF_KEY))
             break; // ну а вдруг кто-то уберёт exit ;)
 
         case 'delete_sale':
-            $type = $_REQUEST['type'];
-            $click_id = rq('click_id', 2);
             $conversion_id = rq('conversion_id', 2);
-            delete_sale($click_id, $conversion_id, $type);
+            delete_sale_by_id($conversion_id);
             exit();
-            break;
+        break;
 
         case 'get_sales':
             $sales = get_sales($_POST['sType'], $_POST['sStart'], $_POST['sEnd']);

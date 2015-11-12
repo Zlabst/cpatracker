@@ -1826,8 +1826,14 @@ function get_sales_flow_data($request_parameters, $report_name, $limit = 20, $of
     $subids=implode (',', $arr_sales_subids);
 
     $sql="select
-        tbl_clicks.*, tbl_offers.offer_name from tbl_clicks left join tbl_offers on tbl_clicks.out_id=tbl_offers.id
-      where subid in ($subids)";
+        tbl_clicks.*,
+        tbl_offers.offer_name
+        FROM
+          tbl_clicks
+        left join
+          tbl_offers on tbl_clicks.out_id=tbl_offers.id
+      where
+        subid in ($subids)";
     $result=mysql_query($sql);
     $arr_parent_ids=array();
     while ($row=mysql_fetch_assoc($result))
@@ -1838,6 +1844,7 @@ function get_sales_flow_data($request_parameters, $report_name, $limit = 20, $of
         }
         $arr_sales_clicks["'"._str($row['subid'])."'"]=$row;
     }
+
     $parent_ids=implode(',',$arr_parent_ids);
 
     $sql="select tbl_clicks.* from tbl_clicks where id in ($parent_ids)";
@@ -1850,7 +1857,8 @@ function get_sales_flow_data($request_parameters, $report_name, $limit = 20, $of
 
     $arr_report_data=array();
 
-    function net_loader($class) {
+    function net_loader($class)
+    {
         include_once _TRACK_LIB_PATH.'/postback/'.$class.'.php';
     }
 
@@ -1941,7 +1949,6 @@ function get_sales_flow_data($request_parameters, $report_name, $limit = 20, $of
             $arr_report_data[$i]['source_name']=$arr_parent_clicks[$arr_sales_clicks[$subid]['parent_id']]['source_name'];
         }
 
-
         // FILL CLICK INFO
         if (isset($arr_parent_clicks[$subid]))
         {
@@ -1951,6 +1958,9 @@ function get_sales_flow_data($request_parameters, $report_name, $limit = 20, $of
         {
             $click_info=$arr_sales_clicks[$subid];
         }
+
+        // Conversion ID
+        $arr_report_data[$i]['conversion_id'] = $row['id'];
 
         // Date
         $arr_report_data[$i]['date'] = mysqldate2string($row['click_date']);
