@@ -578,14 +578,24 @@ function mysqldate2short($str) {
 function get_current_day($offset = '')
 {
     $timezone_shift = get_current_timezone_shift();
-
     $dt = strtotime(current(explode(':', $timezone_shift)) . ' hours');
 
-    if ($offset == '') {
-        return date('Y-m-d', $dt);
-    } else {
-        return date('Y-m-d', strtotime($offset, $dt));
+    $current_php_timezone=date_default_timezone_get();
+    date_default_timezone_set('UTC');
+
+    if ($offset == '')
+    {
+        $retval=date('Y-m-d', $dt);
     }
+    else
+    {
+        $retval=date('Y-m-d', strtotime($offset, $dt));
+    }
+
+    // Return timezone settings
+    date_default_timezone_set($current_php_timezone);
+    
+    return $retval;
 }
 
 function get_rule_description($rule_id) {
