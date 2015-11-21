@@ -45,13 +45,17 @@ if ($track_key != _SELF_TRACK_KEY and $act != 'ping') {
     exit;
 }
 
-$maxsize = 10000; // максимальный размер отдаваемых данных
+$maxsize = 2000000; // максимальный размер отдаваемых данных
 // Получение данных
-if ($act == 'data_get') {
+if ($act == 'data_get')
+{
     $type = rq('type');
-    if (!in_array($type, array('clicks', 'postback'))) {
+    if (!in_array($type, array('clicks', 'postback')))
+    {
         $out = api_error('Unknown type');
-    } else {
+    }
+    else
+    {
         $path = _TRACK_PATH . '/cache/' . $type;
         $files = dir_files($path, $type);
         $size = 0;
@@ -64,7 +68,6 @@ if ($act == 'data_get') {
             $str=file_get_contents($path . '/' . $f);
             ini_set('mbstring.substitute_character', "none");
             $out['data'][$f]=mb_convert_encoding($str, 'UTF-8', 'UTF-8');
-
         }
     }
 
