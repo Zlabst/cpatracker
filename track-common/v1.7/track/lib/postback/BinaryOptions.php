@@ -81,6 +81,7 @@ class BinaryOptions {
         $this->common->log($this->network_name, $data_all['post'], $data_all['get']);
         $data = $this->common->request($data_all);
         $data['network'] = $this->network_name;
+        $data['txt_param20'] = 'usd';
         $data['status'] = 1;
         unset($data['net']);
 
