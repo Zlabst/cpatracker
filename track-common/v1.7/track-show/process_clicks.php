@@ -597,7 +597,7 @@ function api_get_files($url, $n = 0)
 			if(!file_exists($path)) 
 			{
 				$fp = fopen($path, 'w');
-				if($fp && fwrite($fp, $data) && fclose($fp)) 
+				if(($fp!==false) && (fwrite($fp, $data)!==false) && fclose($fp))
 				{
 					$url_params = $url['path'] . '/api.php?act=data_get_confirm&type=' . $type. '&key=' . $url['key'] . '&file=' . $f;
 					file_get_contents($url_params);

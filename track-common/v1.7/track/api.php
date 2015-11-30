@@ -72,7 +72,8 @@ if ($act == 'data_get')
     }
 
 // Данные получены сборщиком, теперь их можно удалять
-} elseif ($act == 'data_get_confirm') {
+} elseif ($act == 'data_get_confirm')
+{
     $type = rq('type');
     $confirm_files = explode(',', rq('file'));
     if (!in_array($type, array('clicks', 'postback'))) {
@@ -83,9 +84,10 @@ if ($act == 'data_get')
 
         $cnt = 0;
         foreach ($files as $f) {
-            if (in_array($f, $confirm_files)) {
-                // unlink($path . '/' . $f);
-                rename($path . '/' . $f, $path . '/' . $f . '*');
+            if (in_array($f, $confirm_files))
+            {
+                unlink($path . '/' . $f);
+                // rename($path . '/' . $f, $path . '/' . $f . '*');
                 $cnt++;
             }
         }
