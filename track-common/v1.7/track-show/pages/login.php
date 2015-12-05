@@ -24,7 +24,6 @@
 			<input type="hidden" name="act" value="login">
 			
 			<h2>Войти</h2>
-			<?php if(load_plugin('demo') != 'demo') { ?>
 			<p>Введите данные, указанные при регистрации. </br> Что делать, если вы <a href="#">забыли пароль</a>?</p>	
 			
 			<div class="form-group">
@@ -40,24 +39,6 @@
 					<input class="form-control " type="password" id="user-password" name="password" placeholder="Введите пароль"  tabindex="2">
 				</div>
 			</div><!-- form-group-->
-			<? } else { ?>
-			<p>Демо-версия для ознакомления.</p>
-			
-			<div class="form-group">
-				<label class="col-sm-2 control-label" for="user-email">Email</label>
-				<div class="col-sm-10">
-					<input class="form-control " type="email" name="email" id="user-email" placeholder="Введите Email" value="demo@cpatracker.ru" tabindex="1">
-				</div>
-			</div><!-- form-group-->
-			
-			<div class="form-group <? if(!empty($_REQUEST['error'])) { ?>has-error<? } ?>">
-				<label class="col-sm-2 control-label" for="user-password">Пароль</label>
-				<div class="col-sm-10">
-					<input class="form-control " type="password" id="user-password" name="password" placeholder="Введите пароль" value="demo" tabindex="2">
-				</div>
-			</div><!-- form-group-->
-			
-			<? } ?>
 			<? if(!empty($_REQUEST['error'])) { ?>
 			<div class="alert alert-danger" role="alert">Неверное имя пользователя или пароль.</div>			
 			<? } ?>
