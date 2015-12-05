@@ -11,7 +11,8 @@
 	define('_TRACK_SHOW_COMMON_PATH', dirname (__FILE__) . '/../track-common/' . _TRACK_VER . '/track-show');
 	define('_TRACK_LIB_PATH',      _TRACK_PATH . '/lib');
 	define('_ENABLE_DEBUG',        true);
-        define('_CLICKS_SPOT_SIZE',    500);
+    define('_CLICKS_SPOT_SIZE',    500);
+    define('_CLICKS_PROCESS_AT_ONCE', (60 * 24 * 10));
 	
 	define('_HTML_LIB_PATH',       '../track-common/' . _TRACK_VER . '/track-show/lib');
 	define('_HTML_TEMPLATE_PATH',  '../track-common/' . _TRACK_VER . '/track-show/templates');
