@@ -1,5 +1,5 @@
 <?php
-	define('_TRACK_VER',           'v1.6');
+	define('_TRACK_VER',           'v1.7');
 
 	define('_TRACK_STATIC_PATH',   dirname (__FILE__) . '/../track-common/static');
 	define('_TRACK_SETTINGS_PATH', dirname (__FILE__) . '/../track/cache');
