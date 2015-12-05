@@ -51,16 +51,17 @@ $is_authorized = (!in_array($_REQUEST['page'], $open_pages) and $settings[0] and
         }
         ?>
         
-            <?php
+        <?php
             if ($is_authorized)
             {
                 echo load_plugin('payreminder');
                 echo load_plugin('expiry');
             }
             echo $main_content;
-		if ($is_authorized) { ?>
-        	</div>
-        <? } ?>
+		    if ($is_authorized) {
+        	   echo '</div>';
+            } 
+        ?>
         <?php echo tpx('footer'); ?>
     </body>
 </html>

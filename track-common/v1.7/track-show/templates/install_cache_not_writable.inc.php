@@ -44,11 +44,11 @@
         </li>
         <li>
             <p>Откройте папку с установленным трекером, внутри папки <b>track</b> найдите папку <b>cache</b> и нажмите на ней правой кнопкой мыши.<br /> Выберите пункт <b>«Права доступа к файлу»</b></p>
-            <img src="<?php echo _HTML_TEMPLATE_PATH; ?>/img/help/screen-1.png" alt="screen" />
+            <img src="<?php echo _HTML_TEMPLATE_PATH; ?>/img/help/filezilla-1.png" alt="screen" />
         </li>
         <li>
             <p>Установите значения как показано на рисунке. Нажмите <b>ОК</b> и обновите эту страницу.</p>
-            <img src="<?php echo _HTML_TEMPLATE_PATH; ?>/img/help/screen-2.png" alt="screen" />
+            <img src="<?php echo _HTML_TEMPLATE_PATH; ?>/img/help/filezilla-2.png" alt="screen" />
         </li>
     </ol>
 
