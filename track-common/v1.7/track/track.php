@@ -43,20 +43,7 @@ $str = '';
 // Date
 $str .= date("Y-m-d H:i:s") . "\t";
 
-switch ($_SERVER_TYPE) {
-    case 'apache':
-        $ip = $_SERVER['REMOTE_ADDR'];
-        break;
-
-    case 'nginx':
-        if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
-        } else {
-            $ip = $_SERVER['REMOTE_ADDR'];
-        }
-
-        break;
-}
+$ip = $_SERVER['REMOTE_ADDR'];
 
 // Check if we have several ip addresses
 if (strpos($ip, ',') !== false) {
