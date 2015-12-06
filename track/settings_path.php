@@ -1,5 +1,5 @@
 <?php
-	define('_TRACK_VER',           'v1.6');
+	define('_TRACK_VER',           'v1.7');
 
 	define('_TRACK_PATH',          dirname (__FILE__));
 	define('_TRACK_SETTINGS_PATH', _TRACK_PATH . '/cache');
@@ -31,9 +31,8 @@ $s = (empty($_SERVER["HTTPS"]) && empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) ? '
 	
 	define('_SELF_TRACK_KEY',      'key123');
 	
-	// Оптимизируем trk4
+	define('_SERVER_TYPE',         'nginx');
 	/*
-	define('_SERVER_TYPE',         'apache'); // тип сервера
 	define('_XMLREADER_INSTALLED',  true);    // расширение точно установлено
 	define('_CACHE_PATH_CLICKS_CREATED',  true);  // каталоги точно созданы
 	*/
