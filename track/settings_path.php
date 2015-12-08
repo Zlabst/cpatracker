@@ -22,7 +22,7 @@
 	$html_delta_path = explode('/', substr($_SERVER['SCRIPT_FILENAME'], strlen($doc_root)));
 	$delta_uri = join('/', array_slice($html_delta_path, 0, count($html_delta_path) - 2));
 
-$s = (empty($_SERVER["HTTPS"]) && empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) ? '' : ((!empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") || $_SERVER['HTTP_X_FORWARDED_PROTO']=='https' ) ? "s" : "";
+	$s = (empty($_SERVER["HTTPS"]) && empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) ? '' : ((!empty($_SERVER["HTTPS"]) && $_SERVER["HTTPS"] == "on") || $_SERVER['HTTP_X_FORWARDED_PROTO']=='https' ) ? "s" : "";
 	$protocol = substr(strtolower($_SERVER["SERVER_PROTOCOL"]), 0, strpos(strtolower($_SERVER["SERVER_PROTOCOL"]), "/")) . $s;
 	$port = ($_SERVER["SERVER_PORT"] == "80") ? "" : (":".$_SERVER["SERVER_PORT"]);
 	$uri_root = $protocol . "://" . $_SERVER['SERVER_NAME'] . $port;
@@ -37,4 +37,6 @@ $s = (empty($_SERVER["HTTPS"]) && empty($_SERVER['HTTP_X_FORWARDED_PROTO'])) ? '
 	define('_XMLREADER_INSTALLED',  true);    // расширение точно установлено
 	define('_CACHE_PATH_CLICKS_CREATED',  true);  // каталоги точно созданы
 	*/
+
+	date_default_timezone_set('Europe/Moscow');
 ?>
